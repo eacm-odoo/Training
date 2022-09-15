@@ -97,7 +97,7 @@ class ResourceBenchReport(models.Model):
             day_totals = calendar._get_resources_work_day_total(employee_date_start, employee_date_end, employee.resource_id)
 
             planned_total = defaultdict(lambda: defaultdict(float))
-            employee_slots = self.env['planning.slot'].search([('employee_id', '=', employee.id), '!', '|',
+            employee_slots = self.env['planning.slot'].search([('state','=','published'), ('employee_id', '=', employee.id), '!', '|',
                                                                ('start_datetime', '>=', employee_date_end),
                                                                ('end_datetime', '<=', employee_date_start), ('project_id', '!=', False)])
             for slot in employee_slots:
