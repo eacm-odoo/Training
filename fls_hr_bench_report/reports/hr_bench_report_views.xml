@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_bench_report_view_tree" model="ir.ui.view">
+        <field name="name">hr.bench.report.view.tree</field>
+        <field name="model">hr.bench.report</field>
+        <field name="arch" type="xml">
+            <tree js_class="bench_report_list" create="0" decoration-danger="occupied_percent &lt; 0.9" decoration-warning="occupied_percent &lt; 0.75">
+                <field name="employee_id" />
+                <field name="date" />
+                <field name="available_hours" optional="show" />
+                <field name="planned_hours" optional="show" />
+                <field name="timesheeted_hours" optional="show" />
+                <field name="wasted_hours" optional="show" />
+                <field name="occupied_percent" widget="percentage" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="hr_bench_report_view_search" model="ir.ui.view">
+        <field name="name">hr.bench.report.view.search</field>
+        <field name="model">hr.bench.report</field>
+        <field name="arch" type="xml">
+            <search string="Search Bench Report">
+                <field name="employee_id" />
+                <field name="date" />
+                <group expand="0" string="Group By">
+                    <filter string="Employee" name="employee" domain="[]" context="{'group_by': 'employee_id'}" />
+                    <filter string="Date" name="report_date" domain="[]" context="{'group_by': 'date:week'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="hr_bench_report_action" model="ir.actions.act_window">
+        <field name="name">Bench Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hr.bench.report</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_employee':1,'search_default_report_date':2}</field>
+    </record>
+
+    <menuitem id="planning_menu_bench_report" name="Bench Report" action="hr_bench_report_action" sequence="11" parent="planning.planning_menu_reporting" groups="planning.group_planning_manager" />
+</odoo>

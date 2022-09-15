@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fls_planning_view_form" model="ir.ui.view">
+        <field name="name">First Line Software: Planning Shifts</field>
+        <field name="model">planning.slot</field>
+        <field name="inherit_id" ref="project_timesheet_forecast.project_forecast_view_form_inherit_project_timesheet_forecast"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_open_timesheets']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|', '|', ('can_open_timesheets', '=', False), ('employee_id', '=', False), ('effective_hours','=',0)]}</attribute>
+            </xpath>
+            <xpath expr="//button[@disabled='1']" position="attributes">
+                <attribute name="attrs">{'invisible': ['|', '|', ('can_open_timesheets', '=', True), ('employee_id', '=', False), ('effective_hours','=',0)]}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
