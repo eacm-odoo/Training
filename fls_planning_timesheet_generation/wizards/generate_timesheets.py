@@ -28,9 +28,9 @@ class PlanningGenerateTimesheets(models.TransientModel):
 
     def action_confirm(self):
         self.ensure_one()
-        to_process, _ = self.slot_ids._split_by_time(self.start_date, self.end_date)
+        to_process, _ = self.slot_ids.filtered(lambda s: not (s.start_datetime >= self.end_date or s.end_datetime <= self.start_date) and not s.timesheets_generated)._split_by_time(self.start_date, self.end_date)
         timesheets = self.env['account.analytic.line']
-        for slot in to_process.filtered(lambda s: not s.timesheets_generated):
+        for slot in to_process:
             calendar = slot.resource_id.calendar_id
             tz = timezone(calendar.tz)
             start_date = tz.localize(max(slot.start_datetime, self.start_date))
