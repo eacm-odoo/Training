@@ -15,10 +15,8 @@ class BenchReportDate(models.TransientModel):
     end_date = fields.Date(string="End Date", default=lambda self: fields.Datetime.today() + relativedelta(weeks=4))
 
     def open_at_date(self):
-        tree_view_id = self.env.ref('fls_hr_bench_report.hr_bench_report_view_tree').id
-        action = {
+        return {
             'type': 'ir.actions.act_window',
-            'views': [(tree_view_id, 'tree'), ],
             'view_mode': 'tree',
             'name':
                 _(
@@ -36,4 +34,3 @@ class BenchReportDate(models.TransientModel):
                     search_default_report_date=2
                 ),
         }
-        return action

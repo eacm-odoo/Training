@@ -1,6 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.osv import expression
-
+from datetime import timedelta
 
 class PlanningSlot(models.Model):
     _inherit = 'planning.slot'
@@ -9,12 +9,11 @@ class PlanningSlot(models.Model):
     timesheeted_hours = fields.Float(
         string="Timesheeted Hours",
         compute='_compute_timesheeted_hours',
-        compute_sudo=True,
         store=True,
         help="Number of hours on the employee's Timesheets for this shift"
     )
     generated_timesheet_ids = fields.One2many(
-        comodel_name='account.analytic.line', inverse_name='shift_id', string="Generated Timesheets", readonly=True, copy=False
+        string="Generated Timesheets", comodel_name='account.analytic.line', inverse_name='shift_id', readonly=True, copy=False
     )
 
     @api.depends('generated_timesheet_ids')
@@ -50,7 +49,7 @@ class PlanningSlot(models.Model):
                 'project_id': slot.project_id.id,
                 'task_id': slot.task_id.id,
                 'employee_id': slot.employee_id.id,
-                'unit_amount': (end - start).total_seconds() / 3600 * slot.resource_id.time_efficiency / 100 * slot.allocated_percentage / 100,
+                'unit_amount': (end - start)/timedelta(hours=1) * slot.resource_id.time_efficiency / 100 * slot.allocated_percentage / 100,
                 'date': start.date(),
             })
         return timesheets
@@ -58,10 +57,10 @@ class PlanningSlot(models.Model):
     def _split_by_time(self, start, end):
         trimmed_slots = self.env['planning.slot']
         for slot in self:
-            if start > slot.start_datetime:
+            if slot.start_datetime < start < slot.end_datetime:
                 trimmed_slots |= slot.copy({'start_datetime': slot.start_datetime, 'end_datetime': start, 'state': slot.state})
                 slot.start_datetime = start
-            if end < slot.end_datetime:
+            if slot.start_datetime < end < slot.end_datetime:
                 trimmed_slots |= slot.copy({'start_datetime': end, 'end_datetime': slot.end_datetime, 'state': slot.state})
                 slot.end_datetime = end
         return (self, trimmed_slots)

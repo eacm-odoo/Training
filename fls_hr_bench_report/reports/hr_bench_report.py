@@ -9,34 +9,34 @@ from odoo.tools.misc import get_lang
 
 class ResourceBenchReport(models.Model):
     _name = 'hr.bench.report'
-    _description = 'Bench Report'
+    _description = "Bench Report"
     _auto = False
 
     # Primary identifier fields
-    id = fields.Integer("", readonly=True)
-    name = fields.Char(related="employee_id.name", readonly=True)
-    date = fields.Date(string='Date', readonly=True)
-    employee_id = fields.Many2one(comodel_name='hr.employee', string='Employee', readonly=True)
+    id = fields.Integer(string="", readonly=True)
+    name = fields.Char(related='employee_id.name', readonly=True)
+    date = fields.Date(string="Date", readonly=True)
+    employee_id = fields.Many2one(string="Employee", comodel_name='hr.employee', readonly=True)
 
     # Pseudo-compute fields.
     # These are computed fields but since we need to be able to aggregate them, they have to be stored
     # in the database. Unfortunately, SQL views require all stored fields to be selected in the sql query.
     # This leads to an issue since once it's read from the database, the compute fields won't run. So,
     # to get around this, we precompute the values and then select them directly in the sql query.
-    available_hours = fields.Float(string='Available Hours', readonly=True)
-    planned_hours = fields.Float(string='Planned Hours', readonly=True)
-    timesheeted_hours = fields.Float(string='Timesheeted Hours', readonly=True)
-    wasted_hours = fields.Float(string='Wasted Hours', readonly=True)
-    occupied_percent = fields.Float(string='Occupied %', group_operator="avg", readonly=True)
+    available_hours = fields.Float(string="Available Hours", readonly=True)
+    planned_hours = fields.Float(string="Planned Hours", readonly=True)
+    timesheeted_hours = fields.Float(string="Timesheeted Hours", readonly=True)
+    wasted_hours = fields.Float(string="Wasted Hours", readonly=True)
+    occupied_percent = fields.Float(string="Occupied %", group_operator='avg', readonly=True)
 
     @property
     def _table_query(self):
         today = fields.Date.today()
         lang = get_lang(self.env)
-        date_start = self._context.get("date_start", today - timedelta(days=(today.weekday() + 1 - int(lang.week_start)) % 7))
+        date_start = self._context.get('date_start', today - timedelta(days=(today.weekday() + 1 - int(lang.week_start)) % 7))
         if not isinstance(date_start, date):
             date_start = fields.Date.from_string(date_start)
-        date_end = self._context.get("date_end", date_start + timedelta(weeks=4, days=-1))
+        date_end = self._context.get('date_end', date_start + timedelta(weeks=4, days=-1))
         if not isinstance(date_end, date):
             date_end = fields.Date.from_string(date_end)
 
@@ -64,7 +64,7 @@ class ResourceBenchReport(models.Model):
                         ELSE work_times.available_hours-timesheets.hours
                     END as wasted_hours
                 FROM hr_employee
-                CROSS JOIN (SELECT generate_series('%(date_start)s'::timestamp, '%(date_end)s'::timestamp, '1 day'::interval)::date date) as date_series
+                CROSS JOIN (SELECT generate_series('%(date_start)s'::timestamp, '%(date_end)s'::timestamp, '1 day')::date date) as date_series
                 LEFT JOIN (
                     SELECT
                         employee_id,
@@ -97,7 +97,7 @@ class ResourceBenchReport(models.Model):
             day_totals = calendar._get_resources_work_day_total(employee_date_start, employee_date_end, employee.resource_id)
 
             planned_total = defaultdict(lambda: defaultdict(float))
-            employee_slots = self.env['planning.slot'].search([('state','=','published'), ('employee_id', '=', employee.id), '!', '|',
+            employee_slots = self.env['planning.slot'].search([('state', '=', 'published'), ('employee_id', '=', employee.id), '!', '|',
                                                                ('start_datetime', '>=', employee_date_end),
                                                                ('end_datetime', '<=', employee_date_start), ('project_id', '!=', False)])
             for slot in employee_slots:
@@ -107,14 +107,12 @@ class ResourceBenchReport(models.Model):
                 for start, stop, meta in work_intervals[slot.resource_id.id]:
                     planned_total[slot.resource_id.id][start.date()] += (stop - start).total_seconds() / 3600 * slot.allocated_percentage / 100
 
-            values.extend([
-                OrderedDict({
-                    'employee_id': employee.id,
-                    'date': d,
-                    'available_hours': h,
-                    'planned_hours': planned_total[employee.resource_id.id][d]
-                }) for d, h in day_totals[employee.resource_id.id].items()
-            ])
+            values.extend([{
+                'employee_id': employee.id,
+                'date': d,
+                'available_hours': h,
+                'planned_hours': planned_total[employee.resource_id.id][d]
+            } for d, h in day_totals[employee.resource_id.id].items()])
         return values
 
     @api.model
@@ -129,5 +127,5 @@ class ResourceBenchReport(models.Model):
             if 'occupied_percent' in data:
                 total_available_hours = float(sum(data['aggregated_available_hours']))
                 total_wasted_hours = float(sum(data['aggregated_wasted_hours']))
-                data['occupied_percent'] = total_available_hours and 1.0 - (total_wasted_hours / total_available_hours) or 0
+                data.update(occupied_percent=total_available_hours and 1.0 - (total_wasted_hours / total_available_hours) or 0)
         return res

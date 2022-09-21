@@ -1,6 +1,4 @@
-/** @odoo-module */
-'use strict';
-
+/** @odoo-module  */
 import ListController from 'web.ListController';
 
 var BenchReportListController = ListController.extend({

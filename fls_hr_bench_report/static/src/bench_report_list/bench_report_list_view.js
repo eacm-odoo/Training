@@ -1,6 +1,4 @@
 /** @odoo-module */
-'use strict';
-
 import ListView from 'web.ListView';
 import BenchReportListController from './bench_report_list_controller';
 import viewRegistry from 'web.view_registry';
