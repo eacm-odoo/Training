@@ -13,7 +13,7 @@ class ResourceBenchReport(models.Model):
     _auto = False
 
     # Primary identifier fields
-    id = fields.Integer(string="", readonly=True)
+    id = fields.Integer(string="ID", readonly=True)
     name = fields.Char(related='employee_id.name', readonly=True)
     date = fields.Date(string="Date", readonly=True)
     employee_id = fields.Many2one(string="Employee", comodel_name='hr.employee', readonly=True)
@@ -109,10 +109,10 @@ class ResourceBenchReport(models.Model):
 
             values.extend([{
                 'employee_id': employee.id,
-                'date': d,
-                'available_hours': h,
+                'date': date,
+                'available_hours': available_hours,
                 'planned_hours': planned_total[employee.resource_id.id][d]
-            } for d, h in day_totals[employee.resource_id.id].items()])
+            } for date, available_hours in day_totals[employee.resource_id.id].items()])
         return values
 
     @api.model

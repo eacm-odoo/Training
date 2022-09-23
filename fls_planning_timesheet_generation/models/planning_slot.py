@@ -63,4 +63,5 @@ class PlanningSlot(models.Model):
             if slot.start_datetime < end < slot.end_datetime:
                 trimmed_slots |= slot.copy({'start_datetime': end, 'end_datetime': slot.end_datetime, 'state': slot.state})
                 slot.end_datetime = end
+        trimmed_slots._compute_allocated_hours()
         return (self, trimmed_slots)

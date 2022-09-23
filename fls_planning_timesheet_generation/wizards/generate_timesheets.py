@@ -21,7 +21,7 @@ class PlanningGenerateTimesheets(models.TransientModel):
         string="Shifts",
         comodel_name='planning.slot',
         default=_default_slot_ids,
-        domain="[('timesheets_generated','=',False), ('resource_type','=','user'), ('state','=','published'), ('employee_id.employee_type','=','employee'), ('start_datetime', '<', end_date), ('end_datetime', '>', startdate), ('project_id','!=', False)]",
+        domain="[('timesheets_generated','=',False), ('resource_type','=','user'), ('state','=','published'), ('employee_id.employee_type','=','employee'), ('start_datetime', '<', end_date), ('end_datetime', '>', start_date), ('project_id','!=', False)]",
     )
     start_date = fields.Datetime(string="Start Date", default=fields.Datetime.now().replace(day=1))
     end_date = fields.Datetime(string="End Date", default=fields.Datetime.now() + relativedelta(day=31))
