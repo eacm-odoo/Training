@@ -111,7 +111,7 @@ class ResourceBenchReport(models.Model):
                 'employee_id': employee.id,
                 'date': date,
                 'available_hours': available_hours,
-                'planned_hours': planned_total[employee.resource_id.id][d]
+                'planned_hours': planned_total[employee.resource_id.id][date]
             } for date, available_hours in day_totals[employee.resource_id.id].items()])
         return values
 
