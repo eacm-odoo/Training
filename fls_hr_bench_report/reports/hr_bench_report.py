@@ -71,7 +71,7 @@ class ResourceBenchReport(models.Model):
                         date_trunc('minute', date) as date,
                         sum(unit_amount) as hours
                     FROM account_analytic_line
-                    WHERE date >= '%(date_start)s'::timestamp AND date <= '%(date_end)s'::timestamp
+                    WHERE date >= '%(date_start)s'::timestamp AND date <= '%(date_end)s'::timestamp AND holiday_id IS NULL AND global_leave_id is NULL
                     GROUP BY employee_id, date
                 ) as timesheets ON timesheets.employee_id = hr_employee.id AND timesheets.date = date_series.date
                 LEFT OUTER JOIN (
