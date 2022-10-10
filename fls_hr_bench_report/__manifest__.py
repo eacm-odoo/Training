@@ -11,7 +11,7 @@ Generate a bench report listing employees' planned, timesheeted, and wasted hour
     'category': "Custom Development",
     'version': "1.0",
     'license': "OPL-1",
-    'depends': ['planning', 'hr_timesheet','project_forecast','project_timesheet_forecast'],
+    'depends': ['planning', 'hr_timesheet','project_forecast','project_timesheet_forecast','project_timesheet_holidays'],
     'data': [
         'security/ir.model.access.csv',
         'wizards/bench_report_date_views.xml',
