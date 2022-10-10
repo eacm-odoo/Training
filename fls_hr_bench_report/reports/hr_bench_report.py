@@ -89,9 +89,9 @@ class ResourceBenchReport(models.Model):
 
     def _calculate_employee_hours(self, date_start, date_end, employees):
         values = []
+        tz = timezone('UTC')
         for employee in employees:
             calendar = employee.resource_id.calendar_id
-            tz = timezone(calendar.tz)
             employee_date_start = tz.localize(datetime.combine(date_start, datetime.min.time()))
             employee_date_end = tz.localize(datetime.combine(date_end, datetime.min.time()))
             day_totals = calendar._get_resources_work_day_total(employee_date_start, employee_date_end, employee.resource_id)

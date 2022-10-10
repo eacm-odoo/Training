@@ -7,11 +7,17 @@
             <form string="Generate Timesheets">
                 <sheet>
                     <group>
-                        <label for="start_date" string="Date Range" />
+                        <!-- <label for="start_date" string="Date Range" />
                         <div class="o_row">
                             <field name="start_date" />
                             <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow" />
                             <field name="end_date" />
+                        </div> -->
+                        <label for="start_date" string="Date Range" />
+                        <div class="o_row">
+                            <field name="start_date" widget="daterange" options='{"related_end_date": "end_date"}' />
+                            <i class="fa fa-long-arrow-right mx-2 oe_edit_only" aria-label="Arrow icon" title="Arrow" />
+                            <field name="end_date" widget="daterange" options='{"related_start_date": "start_date"}' />
                         </div>
                     </group>
                     <field name="slot_ids" />
