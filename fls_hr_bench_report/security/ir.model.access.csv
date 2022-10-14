@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_bench_report_user,fls_hr_bench_report.hr.bench.report,model_hr_bench_report,planning.group_planning_manager,1,1,1,1
+access_hr_bench_report_date_user,fls_hr_bench_report.hr.bench.report.date,model_hr_bench_report_date,planning.group_planning_manager,1,1,1,1
