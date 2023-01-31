@@ -1,4 +1,18 @@
 <odoo>
+    <record id="view_project_project_pivot" model="ir.ui.view">
+        <field name="name">project.project.pivot</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <pivot string="Projects" sample="1">
+                <field name="name" type="row"/>
+                <field name="company_id" type="row"/>
+                <field name="partner_id" type="row"/>
+                <field name="user_id" type="row"/>
+                <field name="sale_order_id" type="row"/>
+            </pivot>
+        </field>
+    </record>
+
     <record id="project.open_view_project_all" model="ir.actions.act_window">
         <field name="name">Projects</field>
         <field name="res_model">project.project</field>
@@ -17,21 +31,6 @@
             <p>
                 Create projects to organize your tasks. Define a different workflow for each project.
             </p>
-        </field>
-    </record>
-
-    <record id="view_project_project_pivot" model="ir.ui.view">
-        <field name="name">project.project.pivot</field>
-        <field name="model">project.project</field>
-        <field name="arch" type="xml">
-            <pivot string="Projects" sample="1">
-                <field name="name" type="row"/>
-                <field name="company_id" type="row"/>
-                <field name="partner_id" type="row"/>
-                <field name="user_id" type="row"/>
-                <field name="sale_order_id" type="row"/>
-                <!-- <field name="amount_total" type="measure"/> -->
-            </pivot>
         </field>
     </record>
 </odoo>
