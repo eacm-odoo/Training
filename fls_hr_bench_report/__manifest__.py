@@ -19,11 +19,10 @@ Generate a bench report listing employees' planned, timesheeted, and wasted hour
     ],
     'assets': {
         'web.assets_backend': [
-            'fls_hr_bench_report/static/src/**/*.js',
-        ],
-        'web.assets_qweb': [
-            'fls_hr_bench_report/static/src/**/*.xml',
-        ],
+            'fls_hr_bench_report/static/src/bench_report_list/bench_report.xml',
+            'fls_hr_bench_report/static/src/bench_report_list/bench_report_list_controller.js',
+            'fls_hr_bench_report/static/src/bench_report_list/bench_report_list_view.js',
+        ]
     },
     'application': False,
     'auto_install': False,

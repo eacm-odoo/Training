@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates id="template" xml:space="preserve">
-
-    <t t-extend="ListView.buttons" t-name="BenchReport.Buttons">
-        <t t-jquery="button.o_list_button_discard" t-operation="after">
-            <button class="btn btn-primary o_button_at_date mr-2" type="button">
-            Adjust Date Range
-        </button>
+    <t t-extend="web.ListView.Buttons" t-name="BenchReport.Buttons" owl="1">
+        <t t-jquery="div.o_list_buttons" t-operation="replace">
+            <div class="o_list_buttons d-flex" role="toolbar" aria-label="Main actions">
+                <button class="btn btn-primary o_button_at_date mr-2" type="button">
+                    Adjust Date Range
+                </button>
+                <t t-if="activeActions.exportXlsx and isExportEnable and !env.isSmall">
+                        <button type="button" 
+                                class="btn btn-secondary fa fa-download o_list_export_xlsx" 
+                                data-tooltip="Export All" 
+                                aria-label="Export All" 
+                                t-on-click="onDirectExportData" />
+                </t>
+            </div>
         </t>
     </t>
-
 </templates>
