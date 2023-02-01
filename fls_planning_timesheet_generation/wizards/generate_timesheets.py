@@ -25,15 +25,19 @@ class PlanningGenerateTimesheets(models.TransientModel):
         default=_default_slot_ids,
         domain="['|',('timesheets_generated','=',False),('generated_timesheet_ids','=',False), ('resource_type','=','user'), ('state','=','published'), ('employee_id.employee_type','=','employee'), ('project_id','!=', False)]",
     )
-    start_date = fields.Date(string="Start Date", default=fields.Date.today().replace(day=1) - relativedelta(months=1))
-    end_date = fields.Date(string="End Date", default=fields.Date.today().replace(day=1) - relativedelta(days=1))
+    start_date = fields.Datetime(
+        string="Start Date", 
+        default=datetime.datetime.combine(fields.Date.today().replace(day=1) - relativedelta(months=1), datetime.time(0, 0, 0))
+    )
+    end_date = fields.Datetime(
+        string="End Date", 
+        default=datetime.datetime.combine(fields.Date.today().replace(day=1) - relativedelta(days=1), datetime.time(23, 59, 59))
+    )
 
     def action_confirm(self):
         self.ensure_one()
-        selected_start_date = datetime.datetime.combine(self.start_date, datetime.time.min)
-        selected_end_date = datetime.datetime.combine(self.start_date, datetime.time.max)
-        start_datetime = timezone(self.env.user.tz or 'UTC').localize(selected_start_date).astimezone(utc).replace(tzinfo=None)
-        end_datetime = timezone(self.env.user.tz or 'UTC').localize(selected_end_date + relativedelta(days=1)).astimezone(utc).replace(tzinfo=None)
+        start_datetime = timezone(self.env.user.tz or 'UTC').localize(self.start_date).astimezone(utc).replace(tzinfo=None)
+        end_datetime = timezone(self.env.user.tz or 'UTC').localize(self.end_date + relativedelta(days=1)).astimezone(utc).replace(tzinfo=None)
         to_process, _ = self.slot_ids.filtered(lambda s: s.start_datetime < end_datetime and s.end_datetime > start_datetime and not (s.timesheets_generated and s.generated_timesheet_ids))._split_by_time(start_datetime, end_datetime)
         tz = timezone('UTC')
         for slot in to_process:

@@ -21,7 +21,7 @@ class PlanningSlot(models.Model):
         for slot in self:
             slot.timesheeted_hours = sum(slot.generated_timesheet_ids.mapped('unit_amount'))
     
-    def new_action_generate_timesheets(self):
+    def custom_action_generate_timesheets(self):
         return {
             'name': _("Generate Timesheets"),
             'res_model': 'planning.generate.timesheets',
