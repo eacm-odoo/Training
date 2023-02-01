@@ -7,7 +7,7 @@ class HrEmployee(models.Model):
 
     full_cost = fields.Float(string="Full Cost in USD", compute="_compute_full_cost", store=True)
 
-    @api.depends('contract_ids', 'address_home_id')
+    @api.depends('contract_ids','contract_ids.burden_wage_hourly','contract_ids.state','address_home_id')
     def _compute_full_cost(self):
         done = []
         usd_currency = self.env['res.currency'].search([('name','=','USD')])
