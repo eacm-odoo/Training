@@ -14,7 +14,6 @@ Select slot from the planning app to generate timesheets automatically based on 
     'depends': ['planning', 'hr_timesheet','project_forecast','project_timesheet_forecast'],
     'data': [
         'security/ir.model.access.csv',
-        'data/ir_actions_server.xml',
         'wizards/generate_timesheets_views.xml',
         'views/planning_slot_views.xml',
     ],

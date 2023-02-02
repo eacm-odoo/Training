@@ -21,7 +21,7 @@ class PlanningSlot(models.Model):
         for slot in self:
             slot.timesheeted_hours = sum(slot.generated_timesheet_ids.mapped('unit_amount'))
     
-    def action_generate_timesheets(self):
+    def custom_action_generate_timesheets(self):
         return {
             'name': _("Generate Timesheets"),
             'res_model': 'planning.generate.timesheets',
@@ -47,7 +47,7 @@ class PlanningSlot(models.Model):
                 'name': '/',
                 'shift_id': slot.id,
                 'project_id': slot.project_id.id,
-                'task_id': slot.task_id.id,
+                'task_id': slot.sale_line_id.task_id.id,
                 'employee_id': slot.employee_id.id,
                 'unit_amount': (end - start)/timedelta(hours=1) * slot.resource_id.time_efficiency / 100 * slot.allocated_percentage / 100,
                 'date': start.date(),

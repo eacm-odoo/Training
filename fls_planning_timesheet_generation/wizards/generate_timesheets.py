@@ -1,5 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from pytz import timezone, utc
+import datetime
+
 from odoo import fields, models
 
 
@@ -23,8 +25,14 @@ class PlanningGenerateTimesheets(models.TransientModel):
         default=_default_slot_ids,
         domain="['|',('timesheets_generated','=',False),('generated_timesheet_ids','=',False), ('resource_type','=','user'), ('state','=','published'), ('employee_id.employee_type','=','employee'), ('project_id','!=', False)]",
     )
-    start_date = fields.Date(string="Start Date", default=fields.Date.today().replace(day=1) - relativedelta(months=1))
-    end_date = fields.Date(string="End Date", default=fields.Date.today().replace(day=1) - relativedelta(days=1))
+    start_date = fields.Datetime(
+        string="Start Date", 
+        default=datetime.datetime.combine(fields.Date.today().replace(day=1) - relativedelta(months=1), datetime.time(0, 0, 0))
+    )
+    end_date = fields.Datetime(
+        string="End Date", 
+        default=datetime.datetime.combine(fields.Date.today().replace(day=1) - relativedelta(days=1), datetime.time(23, 59, 59))
+    )
 
     def action_confirm(self):
         self.ensure_one()

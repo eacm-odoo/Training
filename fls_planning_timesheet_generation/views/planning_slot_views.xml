@@ -21,7 +21,7 @@
         <field name="arch" type="xml">
             <xpath expr="//tree" position="inside">
                 <header>
-                    <button name="action_generate_timesheets" type="object" class="btn btn-primary" string="Generate Timesheets"/>
+                    <button name="custom_action_generate_timesheets" type="object" class="btn btn-primary" string="Generate Timesheets" groups="hr_timesheet.group_timesheet_manager"/>
                 </header>
             </xpath>
         </field>
