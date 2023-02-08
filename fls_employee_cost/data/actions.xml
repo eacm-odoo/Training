@@ -5,7 +5,7 @@
         <field name="binding_model_id" ref="project.model_project_project"/>
         <field name="binding_view_types">form,tree</field>
         <field name="state">code</field>
-        <field name="code">for rec in records: rec._compute_profitability</field>
+        <field name="code">for rec in records: rec._compute_profitability()</field>
     </record>
 
     <record id="model_employee_compute_full_cost" model="ir.actions.server">
@@ -14,6 +14,6 @@
         <field name="binding_model_id" ref="hr.model_hr_employee"/>
         <field name="binding_view_types">form,tree</field>
         <field name="state">code</field>
-        <field name="code">for rec in records: rec._compute_full_cost</field>
+        <field name="code">for rec in records: rec._compute_full_cost()</field>
     </record>
 </odoo>
