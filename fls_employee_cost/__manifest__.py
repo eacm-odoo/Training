@@ -27,6 +27,7 @@ for the accounting part of the system it’s 8-2 hours which is 6, so invoices w
     """,
     'depends': ['hr', 'hr_contract', 'hr_payroll', 'project', 'sale_project', 'timesheet_grid'],
     'data': [
+        'security/groups.xml',
         'data/actions.xml',
         'views/hr_contract_views.xml',
         'views/hr_views.xml',
