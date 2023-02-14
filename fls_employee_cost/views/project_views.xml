@@ -5,10 +5,18 @@
         <field name="arch" type="xml">
             <pivot string="Projects" sample="1">
                 <field name="name" type="row"/>
-                <field name="company_id" type="row"/>
-                <field name="partner_id" type="row"/>
-                <field name="user_id" type="row"/>
-                <field name="sale_order_id" type="row"/>
+                <field name="billed_cost" type="measure"/>
+                <field name="invoiced_revenue" type="measure"/>
+                <field name="current_margin" type="measure"/>
+                <field name="current_margin_percentage" type="measure" widget="percentage"/>
+                <field name="to_bill_cost" type="measure"/>
+                <field name="to_invoice_revenue" type="measure"/>
+                <field name="future_margin" type="measure"/>
+                <field name="future_margin_percentage" type="measure" widget="percentage"/>
+                <field name="expected_cost" type="measure"/>
+                <field name="expected_revenue" type="measure"/>
+                <field name="expected_margin" type="measure"/>
+                <field name="expected_margin_percentage" type="measure" widget="percentage"/>
             </pivot>
         </field>
     </record>
