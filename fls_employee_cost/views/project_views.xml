@@ -1,0 +1,44 @@
+<odoo>
+    <record id="view_project_project_pivot" model="ir.ui.view">
+        <field name="name">project.project.pivot</field>
+        <field name="model">project.project</field>
+        <field name="arch" type="xml">
+            <pivot string="Projects" sample="1">
+                <field name="name" type="row"/>
+                <field name="billed_cost" type="measure"/>
+                <field name="invoiced_revenue" type="measure"/>
+                <field name="current_margin" type="measure"/>
+                <field name="current_margin_percentage" type="measure" widget="percentage"/>
+                <field name="to_bill_cost" type="measure"/>
+                <field name="to_invoice_revenue" type="measure"/>
+                <field name="future_margin" type="measure"/>
+                <field name="future_margin_percentage" type="measure" widget="percentage"/>
+                <field name="expected_cost" type="measure"/>
+                <field name="expected_revenue" type="measure"/>
+                <field name="expected_margin" type="measure"/>
+                <field name="expected_margin_percentage" type="measure" widget="percentage"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="project.open_view_project_all" model="ir.actions.act_window">
+        <field name="name">Projects</field>
+        <field name="res_model">project.project</field>
+        <field name="domain">[]</field>
+        <field name="view_mode">kanban,tree,pivot,form</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'kanban', 'view_id': ref('project.view_project_config_kanban')}),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('project.view_project')}),
+                (0, 0, {'view_mode': 'pivot', 'view_id': ref('view_project_project_pivot')})]"/>
+        <field name="search_view_id" ref="project.view_project_project_filter"/>
+        <field name="target">main</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No projects found. Let's create one!
+            </p>
+            <p>
+                Create projects to organize your tasks. Define a different workflow for each project.
+            </p>
+        </field>
+    </record>
+</odoo>
