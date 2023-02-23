@@ -6,7 +6,7 @@ class MailThread(models.AbstractModel):
     _inherit = "mail.thread"
 
     def _get_mail_thread_data(self, request_list):
-        res = {'hasWriteAccess': True, 'hasReadAccess': True}
+        res = {'hasWriteAccess': self.env.user.has_group('fls_employee_cost.group_chatter_access'), 'hasReadAccess': True}
         if not self:
             res['hasReadAccess'] = False
             return res
@@ -15,6 +15,7 @@ class MailThread(models.AbstractModel):
         try:
             self.check_access_rights("write")
             self.check_access_rule("write")
+            res['hasWriteAccess'] = True
         except AccessError:
             pass
         if 'activities' in request_list:
