@@ -10,9 +10,14 @@ class HrEmployee(models.Model):
 
     @api.depends('contract_ids','contract_ids.burden_wage_hourly','contract_ids.state')
     def _compute_full_cost(self):
+        usd_currency = self.env['res.currency'].search([('name','=','USD')])
         for employee in self:
             employee.full_cost = 0
+            currency_conversion_rate = 1
             for contract in employee.contract_ids:
                 if contract.state == 'open':
                     employee.full_cost += contract.burden_wage_hourly
-            employee.hourly_cost = employee.full_cost
+            currency_conversion_rate = 1
+            if employee.currency_id != usd_currency:
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(usd_currency,employee.currency_id,employee.company_id,date.today().strftime("%m/%d/%y"))
+            employee.hourly_cost = employee.full_cost*currency_conversion_rate
