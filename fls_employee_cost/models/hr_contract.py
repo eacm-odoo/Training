@@ -24,3 +24,4 @@ class HrContract(models.Model):
             if annual_contract_hours > 0:
                 usd_conversion_rate = self.env['res.currency']._get_conversion_rate(contract.company_id.currency_id,usd_currency,contract.company_id,date.today().strftime("%m/%d/%y"))
                 contract.burden_wage_hourly = contract.burden_wage*12/annual_contract_hours*usd_conversion_rate
+                
