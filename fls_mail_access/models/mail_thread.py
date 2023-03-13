@@ -6,7 +6,7 @@ class MailThread(models.AbstractModel):
     _inherit = "mail.thread"
 
     def _get_mail_thread_data(self, request_list):
-        res = {'hasWriteAccess': self.env.user.has_group('fls_employee_cost.group_chatter_access'), 'hasReadAccess': True}
+        res = {'hasWriteAccess': self.env.user.has_group('fls_mail_access.group_chatter_access'), 'hasReadAccess': True}
         if not self:
             res['hasReadAccess'] = False
             return res
@@ -46,7 +46,7 @@ class MailThread(models.AbstractModel):
         if set(partner_ids) == set([self.env.user.partner_id.id]):
             self.check_access_rights('read')
             self.check_access_rule('read')
-        elif self.env.user.has_group('fls_employee_cost.group_chatter_access'):
+        elif self.env.user.has_group('fls_mail_access.group_chatter_access'):
             pass
         else:
             self.check_access_rights('write')
@@ -73,7 +73,7 @@ class MailThread(models.AbstractModel):
                 self.check_access_rule('read')
             except exceptions.AccessError:
                 return False
-        elif self.env.user.has_group('fls_employee_cost.group_chatter_access'):
+        elif self.env.user.has_group('fls_mail_access.group_chatter_access'):
             pass
         else:
             self.check_access_rights('write')
