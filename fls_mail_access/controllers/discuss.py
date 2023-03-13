@@ -2,6 +2,8 @@ from odoo import http
 from odoo.http import request
 from odoo.tools.translate import _
 from odoo.addons.mail.controllers.discuss import DiscussController
+from odoo.tools import consteq
+from werkzeug.exceptions import NotFound
 
 
 class DiscussControllerFLS(DiscussController):
@@ -49,7 +51,7 @@ class DiscussControllerFLS(DiscussController):
             return
         if not request.env.user.share:
             # Check through standard access rights/rules for internal users.
-            if request.env.user.has_group('fls_employee_cost.group_chatter_access'):
+            if request.env.user.has_group('fls_mail_access.group_chatter_access'):
                 attachment_sudo.sudo()._delete_and_notify()
                 return
             else:
