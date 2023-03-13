@@ -12,3 +12,4 @@ class ResourceCalendar(models.Model):
             calendar.week_hours = 0
             for line in calendar.attendance_ids:
                 calendar.week_hours += line.hour_to - line.hour_from
+                

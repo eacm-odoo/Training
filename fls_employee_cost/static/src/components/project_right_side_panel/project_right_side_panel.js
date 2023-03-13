@@ -8,12 +8,6 @@ import { ProjectRightSidePanel } from '@project/components/project_right_side_pa
 const { onWillStart } = owl;
 
 patch(ProjectRightSidePanel.prototype, "formatMonetary", {
-    setup() {
-        this._super(...arguments);
-        onWillStart(async () => {
-            this.conversion_rate = await this.get_conversion_rate();
-        });
-    },
     formatMonetary(value, options = {}) {
         const currency = session.currencies[2];
         const valueFormatted = formatFloat(value*this.conversion_rate, {
@@ -30,12 +24,23 @@ patch(ProjectRightSidePanel.prototype, "formatMonetary", {
             return `${currency.symbol}\u00A0${valueFormatted}`;
         }
     },
-    async get_conversion_rate() {
+    async loadData() {
+        if (!this.projectId) { // If this is called from notif, multiples updates but no specific project
+            return {};
+        }
+        const data = await this.orm.call(
+            'project.project',
+            'get_panel_data',
+            [[this.projectId]],
+            { context: this.context },
+        );
+        this.state.data = data;
         const conversion_rate = await this.orm.call(
             'res.currency',
             'get_conversion_rate',
-            [this.projectId],
+            [this.projectId, this.state.data.currency_id],
         );
-        return conversion_rate
-    }
+        this.conversion_rate = conversion_rate
+        return data;
+    },
 });

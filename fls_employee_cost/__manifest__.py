@@ -25,9 +25,8 @@ the ootb download to excel feature needs to be there
 For example, employee logs 8 hours of timesheet with Adjusted=False, his manager logs ‘-2’ hours with Adjusted=True, 
 for the accounting part of the system it’s 8-2 hours which is 6, so invoices will be created only for 6 hours.
     """,
-    'depends': ['hr', 'hr_contract', 'hr_payroll', 'project', 'sale_project', 'timesheet_grid'],
+    'depends': ['hr', 'hr_contract', 'hr_payroll', 'project', 'sale_project', 'timesheet_grid', 'sale_timesheet', 'account', 'fls_planning_timesheet_generation'],
     'data': [
-        'security/groups.xml',
         'data/actions.xml',
         'views/hr_contract_views.xml',
         'views/hr_views.xml',
