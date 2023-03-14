@@ -29,6 +29,7 @@ class DiscussControllerFLS(DiscussController):
         if channel_member.env.user.share:
             # Only generate the access token if absolutely necessary (= not for internal user).
             vals['access_token'] = channel_member.env['ir.attachment']._generate_access_token()
+        ##### CUSTOM CODE START #####
         attachment = channel_member.env['ir.attachment'].sudo().create(vals)
         attachment.sudo()._post_add_create()
         attachmentData = {
@@ -40,6 +41,7 @@ class DiscussControllerFLS(DiscussController):
         }
         if attachment.access_token:
             attachmentData['accessToken'] = attachment.access_token
+        #####  CUSTOM CODE END  #####
         return request.make_json_response(attachmentData)
 
     @http.route('/mail/attachment/delete', methods=['POST'], type='json', auth='public')
@@ -51,10 +53,12 @@ class DiscussControllerFLS(DiscussController):
             return
         if not request.env.user.share:
             # Check through standard access rights/rules for internal users.
+            ##### CUSTOM CODE START #####
             if request.env.user.has_group('fls_mail_access.group_chatter_access'):
                 attachment_sudo.sudo()._delete_and_notify()
                 return
             else:
+            #####  CUSTOM CODE END  #####
                 attachment_sudo.sudo(False)._delete_and_notify()
                 return
         # For non-internal users 2 cases are supported:
