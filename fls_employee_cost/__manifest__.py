@@ -7,7 +7,7 @@
     'version': '16.0',
     'author': 'Odoo Inc',
     'description': """
-Task ID: 3132682
+Task ID: 3132682, 3224218
 1) Calculate Employee cost
 1.1) Add a new field ‘Salary Burden Rate’ under contract (hr.contract) which is going to be float and required field with 1.00 as the default value.
 1.2) Add a new field ‘Full Cost in USD’ under the ootb ‘Cost’ field in the employee form.
