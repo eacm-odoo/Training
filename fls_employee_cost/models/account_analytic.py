@@ -1,6 +1,7 @@
 from odoo import fields, models, _, api
 from datetime import date
-
+from odoo.osv import expression
+from odoo.exceptions import AccessError
 
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
@@ -27,4 +28,14 @@ class AccountAnalyticLine(models.Model):
                     'amount': amount_converted,
                 })
         return result
+
+    def _get_domain_for_validation_timesheets(self, validated=False):
+        domain = [('is_timesheet', '=', True), ('validated', '=', validated)]
+        if not self.user_has_groups('hr_timesheet.group_timesheet_manager'):
+            ##### CUSTOM CODE START #####
+            return expression.AND([domain, ['|', ('employee_id.timesheet_manager_id', '=', self.env.user.id),
+                      '|', ('employee_id', 'in', self.env.user.employee_id.subordinate_ids.ids), 
+                      ('employee_id.parent_id.user_id', '=', self.env.user.id)]])
+            #####  CUSTOM CODE END  #####
+        return domain
     

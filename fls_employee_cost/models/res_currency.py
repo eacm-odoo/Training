@@ -1,6 +1,7 @@
 from odoo import models, api
 from datetime import date
 
+
 class ResCurrency(models.Model):
     _inherit = 'res.currency'
 

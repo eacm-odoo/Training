@@ -5,12 +5,11 @@ import { formatFloat } from '@web/views/fields/formatters';
 import { session } from '@web/session';
 import { ProjectRightSidePanel } from '@project/components/project_right_side_panel/project_right_side_panel';
 
-const { onWillStart } = owl;
 
 patch(ProjectRightSidePanel.prototype, "formatMonetary", {
     formatMonetary(value, options = {}) {
         const currency = session.currencies[2];
-        const valueFormatted = formatFloat(value*this.conversion_rate, {
+        const valueFormatted = formatFloat(value, {
             ...options,
             'digits': [false, 0],
             'noSymbol': true,
@@ -35,12 +34,12 @@ patch(ProjectRightSidePanel.prototype, "formatMonetary", {
             { context: this.context },
         );
         this.state.data = data;
-        const conversion_rate = await this.orm.call(
-            'res.currency',
-            'get_conversion_rate',
-            [this.projectId, this.state.data.currency_id],
-        );
-        this.conversion_rate = conversion_rate
+        // const conversion_rate = await this.orm.call(
+        //     'res.currency',
+        //     'get_conversion_rate',
+        //     [this.projectId, this.state.data.currency_id],
+        // );
+        // this.conversion_rate = conversion_rate
         return data;
     },
 });
