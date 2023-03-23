@@ -10,7 +10,7 @@
 Task ID: 3187765
 Users of the new user group should also have access to chatter to be able to send message, log note, schedule activities , add/ remove followers, add upload attachment.
     """,
-    'depends': ['mail'],
+    'depends': ['mail', 'hr'],
     'data': [
         'security/groups.xml',
     ],
