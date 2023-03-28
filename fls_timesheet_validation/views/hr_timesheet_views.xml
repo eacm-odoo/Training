@@ -1,0 +1,13 @@
+<odoo>
+    <record id="timesheet_view_tree_user_inherit_fls_first_approval" model="ir.ui.view">
+        <field name="name">account.analytic.line.view.tree.with.user.inherit.fls.first.approval</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.timesheet_view_tree_user"/>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="before">
+                <field name="is_approved"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
