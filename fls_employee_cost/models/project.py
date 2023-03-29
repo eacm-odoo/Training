@@ -68,6 +68,82 @@ class Project(models.Model):
             else:
                 project.expected_margin_percentage = project.expected_margin / project.expected_revenue
 
+    def _get_revenues_items_from_sol(self, domain=None, with_action=True):
+        ##### CUSTOM CODE START #####
+        usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
+        sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
+            self._get_profitability_sale_order_items_domain(domain),
+            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced'],
+            ['product_id'],
+        )
+        #####  CUSTOM CODE END  #####
+        display_sol_action = with_action and len(self) == 1 and self.user_has_groups('sales_team.group_sale_salesman')
+        revenues_dict = {}
+        total_to_invoice = total_invoiced = 0.0
+        if sale_line_read_group:
+            sols_per_product = {}
+            ##### CUSTOM CODE START #####
+            for res in sale_line_read_group:
+                from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
+                to_invoice = res['untaxed_amount_to_invoice']*currency_conversion_rate
+                if res['qty_delivered'] == res['qty_invoiced']:
+                    to_invoice = 0
+                sols_per_product[res['product_id'][0]] = (
+                    to_invoice,
+                    res['invoiced_usd'],
+                    res['ids'],
+                )
+            #####  CUSTOM CODE END  #####
+            product_read_group = self.env['product.product'].sudo()._read_group(
+                [('id', 'in', list(sols_per_product)), ('expense_policy', '=', 'no')],
+                ['invoice_policy', 'service_type', 'type', 'ids:array_agg(id)'],
+                ['invoice_policy', 'service_type', 'type'],
+                lazy=False,
+            )
+            service_policy_to_invoice_type = self._get_service_policy_to_invoice_type()
+            general_to_service_map = self.env['product.template']._get_general_to_service_map()
+            for res in product_read_group:
+                product_ids = res['ids']
+                service_policy = None
+                if res['type'] == 'service':
+                    service_policy = general_to_service_map.get(
+                        (res['invoice_policy'], res['service_type']),
+                        'ordered_prepaid')
+                for product_id, (amount_to_invoice, amount_invoiced, sol_ids) in sols_per_product.items():
+                    if product_id in product_ids:
+                        invoice_type = service_policy_to_invoice_type.get(service_policy, 'other_revenues')
+                        revenue = revenues_dict.setdefault(invoice_type, {'invoiced': 0.0, 'to_invoice': 0.0})
+                        revenue['to_invoice'] += amount_to_invoice
+                        total_to_invoice += amount_to_invoice
+                        revenue['invoiced'] += amount_invoiced
+                        total_invoiced += amount_invoiced
+                        if display_sol_action and invoice_type in ['service_revenues', 'other_revenues']:
+                            revenue.setdefault('record_ids', []).extend(sol_ids)
+
+            if display_sol_action:
+                section_name = 'other_revenues'
+                other_revenues = revenues_dict.get(section_name, {})
+                sale_order_items = self.env['sale.order.line'] \
+                    .browse(other_revenues.pop('record_ids', [])) \
+                    ._filter_access_rules_python('read')
+                if sale_order_items:
+                    if sale_order_items:
+                        args = [section_name, [('id', 'in', sale_order_items.ids)]]
+                        if len(sale_order_items) == 1:
+                            args.append(sale_order_items.id)
+                        action_params = {
+                            'name': 'action_profitability_items',
+                            'type': 'object',
+                            'args': json.dumps(args),
+                        }
+                        other_revenues['action'] = action_params
+        sequence_per_invoice_type = self._get_profitability_sequence_per_invoice_type()
+        return {
+            'data': [{'id': invoice_type, 'sequence': sequence_per_invoice_type[invoice_type], **vals} for invoice_type, vals in revenues_dict.items()],
+            'total': {'to_invoice': total_to_invoice, 'invoiced': total_invoiced},
+        }
+
     def _get_profitability_items_from_aal(self, profitability_items, with_action=True):
         if not self.allow_timesheets:
             total_invoiced = total_to_invoice = 0.0
@@ -85,7 +161,7 @@ class Project(models.Model):
             return profitability_items
         aa_line_read_group = self.env['account.analytic.line'].sudo()._read_group(
             self.sudo()._get_profitability_aal_domain(),
-            ['timesheet_invoice_type', 'timesheet_invoice_id', 'unit_amount', 'amount', 'ids:array_agg(id)'],
+            ['timesheet_invoice_type', 'timesheet_invoice_id', 'unit_amount', 'amount', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)'],
             ['timesheet_invoice_type', 'timesheet_invoice_id'],
             lazy=False)
         can_see_timesheets = with_action and len(self) == 1 and self.user_has_groups('hr_timesheet.group_hr_timesheet_approver')
@@ -93,8 +169,13 @@ class Project(models.Model):
         costs_dict = {}
         total_revenues = {'invoiced': 0.0, 'to_invoice': 0.0}
         total_costs = {'billed': 0.0, 'to_bill': 0.0}
+        usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
+        ##### CUSTOM CODE START #####
         for res in aa_line_read_group:
-            amount = res['amount']
+            from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
+            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
+            amount = res['amount']*currency_conversion_rate
+            #####  CUSTOM CODE END  #####
             invoice_type = res['timesheet_invoice_type']
             cost = costs_dict.setdefault(invoice_type, {'billed': 0.0, 'to_bill': 0.0})
             revenue = revenues_dict.setdefault(invoice_type, {'invoiced': 0.0, 'to_invoice': 0.0})
@@ -171,134 +252,4 @@ class Project(models.Model):
             {'data': convert_dict_into_profitability_data(costs_dict), 'total': total_costs},
         )
         return profitability_items
-        
-    def _get_revenues_items_from_sol(self, domain=None, with_action=True):
-        ##### CUSTOM CODE START #####
-        usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
-        sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
-            self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd'],
-            ['product_id'],
-        )
-        #####  CUSTOM CODE END  #####
-        display_sol_action = with_action and len(self) == 1 and self.user_has_groups('sales_team.group_sale_salesman')
-        revenues_dict = {}
-        total_to_invoice = total_invoiced = 0.0
-        if sale_line_read_group:
-            sols_per_product = {}
-            ##### CUSTOM CODE START #####
-            for res in sale_line_read_group:
-                from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
-                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
-                sols_per_product[res['product_id'][0]] = (
-                    res['untaxed_amount_to_invoice']*currency_conversion_rate,
-                    res['invoiced_usd'],
-                    res['ids'],
-                )
-            #####  CUSTOM CODE END  #####
-            product_read_group = self.env['product.product'].sudo()._read_group(
-                [('id', 'in', list(sols_per_product)), ('expense_policy', '=', 'no')],
-                ['invoice_policy', 'service_type', 'type', 'ids:array_agg(id)'],
-                ['invoice_policy', 'service_type', 'type'],
-                lazy=False,
-            )
-            service_policy_to_invoice_type = self._get_service_policy_to_invoice_type()
-            general_to_service_map = self.env['product.template']._get_general_to_service_map()
-            for res in product_read_group:
-                product_ids = res['ids']
-                service_policy = None
-                if res['type'] == 'service':
-                    service_policy = general_to_service_map.get(
-                        (res['invoice_policy'], res['service_type']),
-                        'ordered_prepaid')
-                for product_id, (amount_to_invoice, amount_invoiced, sol_ids) in sols_per_product.items():
-                    if product_id in product_ids:
-                        invoice_type = service_policy_to_invoice_type.get(service_policy, 'other_revenues')
-                        revenue = revenues_dict.setdefault(invoice_type, {'invoiced': 0.0, 'to_invoice': 0.0})
-                        revenue['to_invoice'] += amount_to_invoice
-                        total_to_invoice += amount_to_invoice
-                        revenue['invoiced'] += amount_invoiced
-                        total_invoiced += amount_invoiced
-                        if display_sol_action and invoice_type in ['service_revenues', 'other_revenues']:
-                            revenue.setdefault('record_ids', []).extend(sol_ids)
-
-            if display_sol_action:
-                section_name = 'other_revenues'
-                other_revenues = revenues_dict.get(section_name, {})
-                sale_order_items = self.env['sale.order.line'] \
-                    .browse(other_revenues.pop('record_ids', [])) \
-                    ._filter_access_rules_python('read')
-                if sale_order_items:
-                    if sale_order_items:
-                        args = [section_name, [('id', 'in', sale_order_items.ids)]]
-                        if len(sale_order_items) == 1:
-                            args.append(sale_order_items.id)
-                        action_params = {
-                            'name': 'action_profitability_items',
-                            'type': 'object',
-                            'args': json.dumps(args),
-                        }
-                        other_revenues['action'] = action_params
-        sequence_per_invoice_type = self._get_profitability_sequence_per_invoice_type()
-        return {
-            'data': [{'id': invoice_type, 'sequence': sequence_per_invoice_type[invoice_type], **vals} for invoice_type, vals in revenues_dict.items()],
-            'total': {'to_invoice': total_to_invoice, 'invoiced': total_invoiced},
-        }
-
-    def _get_revenues_items_from_invoices(self, excluded_move_line_ids=None):
-        """
-        Get all revenues items from invoices, and put them into their own
-        "other_invoice_revenues" section.
-        If the final total is 0 for either to_invoice or invoiced (ex: invoice -> credit note),
-        we don't output a new section
-
-        :param excluded_move_line_ids a list of 'account.move.line' to ignore
-        when fetching the move lines, for example a list of invoices that were
-        generated from a sales order
-        """
-        if excluded_move_line_ids is None:
-            excluded_move_line_ids = []
-        query = self.env['account.move.line'].sudo()._search([
-            ('move_id.move_type', 'in', ['out_invoice', 'out_refund']),
-            ('parent_state', 'in', ['draft', 'posted']),
-            ('price_subtotal', '>', 0),
-            ('id', 'not in', excluded_move_line_ids),
-        ])
-        query.add_where('account_move_line.analytic_distribution ? %s', [str(self.analytic_account_id.id)])
-        # account_move_line__move_id is the alias of the joined table account_move in the query
-        # we can use it, because of the "move_id.move_type" clause in the domain of the query, which generates the join
-        # this is faster than a search_read followed by a browse on the move_id to retrieve the move_type of each account.move.line
-        query_string, query_param = query.select('price_subtotal', 'parent_state', 'account_move_line__move_id.move_type', 'account_move_line.currency_id')
-        self._cr.execute(query_string, query_param)
-        invoices_move_line_read = self._cr.dictfetchall()
-        if invoices_move_line_read:
-            amount_invoiced = amount_to_invoice = 0.0
-            for moves_read in invoices_move_line_read:
-                if moves_read['parent_state'] == 'draft':
-                    if moves_read['move_type'] == 'out_invoice':
-                        amount_to_invoice += moves_read['price_subtotal']
-                    else:  # moves_read['move_type'] == 'out_refund'
-                        amount_to_invoice -= moves_read['price_subtotal']
-                else:  # moves_read['parent_state'] == 'posted'
-                    if moves_read['move_type'] == 'out_invoice':
-                        amount_invoiced += moves_read['price_subtotal']
-                    else:  # moves_read['move_type'] == 'out_refund'
-                        amount_invoiced -= moves_read['price_subtotal']
-            # don't display the section if the final values are both 0 (invoice -> credit note)
-            if amount_invoiced != 0 or amount_to_invoice != 0:
-                section_id = 'other_invoice_revenues'
-                invoices_revenues = {
-                    'id': section_id,
-                    'sequence': self._get_profitability_sequence_per_invoice_type()[section_id],
-                    'invoiced': amount_invoiced,
-                    'to_invoice': amount_to_invoice,
-                }
-                return {
-                    'data': [invoices_revenues],
-                    'total': {
-                        'invoiced': amount_invoiced,
-                        'to_invoice': amount_to_invoice,
-                    },
-                }
-        return {'data': [], 'total': {'invoiced': 0.0, 'to_invoice': 0.0}}
     
