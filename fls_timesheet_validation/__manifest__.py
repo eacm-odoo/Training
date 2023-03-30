@@ -12,6 +12,7 @@ Project managers are responsible for getting right hours spent by their team mem
     """,
     'depends': ['timesheet_grid'],
     'data': [
+        'security/timesheet_security.xml',
         'data/actions.xml',
         'views/hr_employee_views.xml',
         'views/hr_timesheet_views.xml',

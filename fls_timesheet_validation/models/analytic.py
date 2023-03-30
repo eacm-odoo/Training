@@ -11,6 +11,12 @@ class AccountAnalyticLine(models.Model):
     timesheet_manager_id = fields.Many2one('res.users', string='Resource Manager', related='employee_id.timesheet_manager_id', store=True)
     employee_user_id = fields.Many2one('res.users', string='Employee User', related='employee_id.user_id', store=True)
 
+    @api.constrains('is_approved')
+    def _check_approval(self):
+        for line in self:
+            if self.env.user.id != line.timesheet_manager_id.id and self.env.user.id != line.project_manager_id.id and line.is_approved:
+                raise AccessError("You cannot approve unless you're Project Manager, Resource Manager, or Admin!")
+
     @api.depends_context('uid')
     def _compute_can_validate(self):
         is_manager = self.user_has_groups('hr_timesheet.group_timesheet_manager')
@@ -27,7 +33,7 @@ class AccountAnalyticLine(models.Model):
         freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day'))
         freeze_date = date.today().replace(day=freeze_day)
         expected_date = date.today().replace(year=2000)
-        if date in vals_list:
+        if 'date' in vals_list:
             expected_date = vals_list['date']
         if self.is_timesheet and freeze and expected_date < freeze_date:
             raise AccessError("Cannot create a new record before this date: {}".format(freeze_date))
@@ -37,9 +43,10 @@ class AccountAnalyticLine(models.Model):
         freeze = self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_timesheets')
         freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day'))
         freeze_date = date.today().replace(day=freeze_day)
-        expected_date = self.date
-        if date in vals:
-            expected_date = vals['date']
-        if self.is_timesheet and freeze and (self.date < freeze_date or expected_date < freeze_date):
-            raise AccessError("Cannot create a new record before this date: {}".format(freeze_date))
+        for line in self:
+            expected_date = line.date
+            if 'date' in vals:
+                expected_date = vals['date']
+            if line.is_timesheet and freeze and (line.date < freeze_date or expected_date < freeze_date):
+                raise AccessError("Cannot create a new record before this date: {}".format(freeze_date))
         return super(AccountAnalyticLine, self).write(vals)
