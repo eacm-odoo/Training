@@ -31,7 +31,7 @@
             ('timesheet_manager_id', '=', user.id), 
             '&amp;',
             ('project_manager_id', '=', user.id), 
-            ('validate', '=', False)
+            ('validated', '=', False)
         ]</field>
         <field name="groups" eval="[(4, ref('hr_timesheet.group_hr_timesheet_approver'))]"/>
         <field name="perm_create" eval="1"/>
