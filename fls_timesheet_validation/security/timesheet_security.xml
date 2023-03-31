@@ -23,6 +23,23 @@
         <field name="perm_read" eval="1"/>
     </record>
 
+    <record id="timesheet_line_rule_user_types_write" model="ir.rule">
+        <field name="name">account.analytic.line.timesheet.user.types.write</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="domain_force">[
+            '|', 
+            ('timesheet_manager_id', '=', user.id), 
+            '&amp;',
+            ('project_manager_id', '=', user.id), 
+            ('validate', '=', False)
+        ]</field>
+        <field name="groups" eval="[(4, ref('hr_timesheet.group_hr_timesheet_approver'))]"/>
+        <field name="perm_create" eval="1"/>
+        <field name="perm_write" eval="1"/>
+        <field name="perm_unlink" eval="1"/>
+        <field name="perm_read" eval="1"/>
+    </record>
+
     <record id="hr_timesheet.timesheet_line_rule_approver" model="ir.rule">
         <field name="name">account.analytic.line.timesheet.approver</field>
         <field name="model_id" ref="analytic.model_account_analytic_line" />
