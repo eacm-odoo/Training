@@ -1,9 +1,8 @@
 from odoo import fields, models, api
 from datetime import date
-import json
-import logging
 
-logger = logging.getLogger(__name__)
+import json
+
 
 class Project(models.Model):
     _inherit = 'project.project'
@@ -104,9 +103,6 @@ class Project(models.Model):
             ##### CUSTOM CODE START #####
             for res in sale_line_read_group:
                 from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
-                logger.info("\n")
-                logger.info(res['write_date'])
-                logger.info("\n")
                 currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,res['write_date'].strftime("%m/%d/%y"))
                 to_invoice = res['untaxed_amount_to_invoice']*currency_conversion_rate
                 if res['qty_delivered'] == res['qty_invoiced']:
