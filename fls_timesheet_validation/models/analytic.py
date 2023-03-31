@@ -30,7 +30,7 @@ class AccountAnalyticLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         freeze = self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_timesheets')
-        freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day'))
+        freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day') or 1)
         freeze_date = date.today().replace(day=freeze_day)
         expected_date = date.today().replace(year=2000)
         if 'date' in vals_list:
@@ -41,7 +41,7 @@ class AccountAnalyticLine(models.Model):
 
     def write(self, vals):
         freeze = self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_timesheets')
-        freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day'))
+        freeze_day = int(self.env['ir.config_parameter'].sudo().get_param('fls_timesheet_validation.freeze_day') or 1)
         freeze_date = date.today().replace(day=freeze_day)
         for line in self:
             expected_date = line.date

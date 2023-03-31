@@ -12,7 +12,6 @@
                     </div>
                     <div class="o_setting_right_pane" id="user_freeze_control">
                         <label for="freeze_timesheets"/>
-                        <span class="fa fa-lg fa-building-o " title="Values set here are company-specific."/>
                         <div class="text-muted">
                             Freeze Timesheets before the day below
                         </div>
