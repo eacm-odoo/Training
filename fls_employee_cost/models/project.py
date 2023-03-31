@@ -1,7 +1,9 @@
 from odoo import fields, models, api
 from datetime import date
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Project(models.Model):
     _inherit = 'project.project'
@@ -27,15 +29,32 @@ class Project(models.Model):
         project_id = self.env['project.project'].browse([projectId])
         conversion_rate = self.env['res.currency']._get_conversion_rate(origin_currency,usd_currency,project_id.company_id,date.today().strftime("%m/%d/%y"))
 
+    @api.model  
+    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+        res = super(Project, self).read_group(domain, fields, groupby, offset, limit, orderby, lazy)
+        for row in res:
+            try:
+                row['current_margin_percentage'] = row['current_margin']/row['invoiced_revenue']
+            except:
+                row['current_margin_percentage'] = 0
+            try:
+                row['future_margin_percentage'] = row['future_margin']/row['to_invoice_revenue']
+            except:
+                row['future_margin_percentage'] = 0
+            try:
+                row['expected_margin_percentage'] = row['expected_margin']/row['expected_revenue']
+            except:
+                row['expected_margin_percentage'] = 0
+        return res
+
     def _compute_profitability(self):
         for project in self:
             items = project._get_profitability_items()
             from_currency_id = 2
             if project.sale_order_id:
                 from_currency_id = project.sale_order_id.pricelist_id.currency_id.id
-            usd_conversion_rate = self.env['res.currency'].get_conversion_rate(project.id, from_currency_id)
-            project.invoiced_revenue = items['revenues']['total']['invoiced']*usd_conversion_rate
-            project.billed_cost = items['costs']['total']['billed']*usd_conversion_rate
+            project.invoiced_revenue = items['revenues']['total']['invoiced']
+            project.billed_cost = items['costs']['total']['billed']
             project.current_margin = project.invoiced_revenue + project.billed_cost
             if project.invoiced_revenue == 0 and project.current_margin == 0:
                 project.current_margin_percentage = 1
@@ -43,8 +62,8 @@ class Project(models.Model):
                 project.current_margin_percentage = 0
             else:
                 project.current_margin / project.invoiced_revenue
-            project.to_invoice_revenue = items['revenues']['total']['to_invoice']*usd_conversion_rate
-            project.to_bill_cost = items['costs']['total']['to_bill']*usd_conversion_rate
+            project.to_invoice_revenue = items['revenues']['total']['to_invoice']
+            project.to_bill_cost = items['costs']['total']['to_bill']
             project.future_margin = project.to_invoice_revenue + project.to_bill_cost
             if project.invoiced_revenue == 0 and project.current_margin == 0:
                 project.current_margin_percentage = 1
@@ -73,7 +92,7 @@ class Project(models.Model):
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
             self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced'],
+            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced', 'write_date:max'],
             ['product_id'],
         )
         #####  CUSTOM CODE END  #####
@@ -85,7 +104,10 @@ class Project(models.Model):
             ##### CUSTOM CODE START #####
             for res in sale_line_read_group:
                 from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
-                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
+                logger.info("\n")
+                logger.info(res['write_date'])
+                logger.info("\n")
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,res['write_date'].strftime("%m/%d/%y"))
                 to_invoice = res['untaxed_amount_to_invoice']*currency_conversion_rate
                 if res['qty_delivered'] == res['qty_invoiced']:
                     to_invoice = 0

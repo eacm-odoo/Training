@@ -41,6 +41,7 @@ class SaleOrderLine(models.Model):
             Note: Draft invoice are ignored on purpose, the 'to invoice' amount should
             come only from the SO lines.
         """
+        usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         for line in self:
             amount_to_invoice = 0.0
             if line.state in ['sale', 'done']:
