@@ -195,7 +195,6 @@ class Project(models.Model):
             for i, amt in enumerate(res['tamount']):
                 currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,res['date'][i].strftime("%m/%d/%y"))
                 total += float(amt) * currency_conversion_rate
-            # currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
             amount = total
             #####  CUSTOM CODE END  #####
             invoice_type = res['timesheet_invoice_type']
