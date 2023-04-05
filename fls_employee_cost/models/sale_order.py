@@ -4,7 +4,7 @@ from datetime import date
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
-
+    
     invoiced_usd = fields.Float(string="Amount Invoiced USD", compute="_compute_untaxed_amount_invoiced", store=True)
 
     @api.depends('invoice_lines', 'invoice_lines.price_total', 'invoice_lines.move_id.state', 'invoice_lines.move_id.move_type')
