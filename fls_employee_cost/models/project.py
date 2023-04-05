@@ -91,7 +91,7 @@ class Project(models.Model):
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
             self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'service_policy:array_agg(service_policy)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced'],
+            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced'],
             ['product_id'],
         )
         #####  CUSTOM CODE END  #####
