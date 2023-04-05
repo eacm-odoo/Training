@@ -5,7 +5,19 @@ from datetime import date
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    @api.model
+    def _selection_service_policy(self):
+        service_policies = [
+            # (service_policy, string)
+            ('ordered_prepaid', _('Prepaid/Fixed Price')),
+            ('delivered_manual', _('Based on Delivered Quantity (Manual)')),
+        ]
+        if self.user_has_groups('project.group_project_milestone'):
+            service_policies.insert(1, ('delivered_milestones', _('Based on Milestones')))
+        return service_policies
+    
     invoiced_usd = fields.Float(string="Amount Invoiced USD", compute="_compute_untaxed_amount_invoiced", store=True)
+    service_policy = fields.Selection('_selection_service_policy', string="Invoicing Policy", related="product_template_id.service_policy", store=True)
 
     @api.depends('invoice_lines', 'invoice_lines.price_total', 'invoice_lines.move_id.state', 'invoice_lines.move_id.move_type')
     def _compute_untaxed_amount_invoiced(self):
