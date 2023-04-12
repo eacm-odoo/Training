@@ -2,6 +2,9 @@ from odoo import fields, models, api
 from datetime import date
 
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Project(models.Model):
@@ -91,7 +94,7 @@ class Project(models.Model):
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
             self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','invoiced_usd', 'qty_delivered', 'qty_invoiced'],
+            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','untaxed_amounts_to_invoice:array_agg(untaxed_amount_to_invoice)', 'amounts_invoiced_usd:array_agg(invoiced_usd)', 'invoiced_usd', 'qty_delivered', 'qty_invoiced'],
             ['product_id'],
         )
         #####  CUSTOM CODE END  #####
@@ -102,12 +105,16 @@ class Project(models.Model):
             sols_per_product = {}
             ##### CUSTOM CODE START #####
             for res in sale_line_read_group:
-                from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
-                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
-                to_invoice = res['untaxed_amount_to_invoice']*currency_conversion_rate
+                to_invoice = 0
+                invoiced = 0
+                for i, invoice_amount in enumerate(res['amounts_invoiced_usd']):
+                    from_currency = self.env['res.currency'].browse([res['currency_id'][i]])
+                    currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
+                    to_invoice += float(res['untaxed_amounts_to_invoice'][i])*currency_conversion_rate
+                    invoiced += float(invoice_amount)
                 sols_per_product[res['product_id'][0]] = (
                     to_invoice,
-                    res['invoiced_usd'],
+                    invoiced,
                     res['ids'],
                 )
             #####  CUSTOM CODE END  #####
