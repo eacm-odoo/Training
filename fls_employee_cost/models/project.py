@@ -2,9 +2,6 @@ from odoo import fields, models, api
 from datetime import date
 
 import json
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class Project(models.Model):
@@ -107,14 +104,13 @@ class Project(models.Model):
             for res in sale_line_read_group:
                 to_invoice = 0
                 invoiced = 0
-                for i, invoice_amount in enumerate(res['amounts_invoiced_usd']):
+                for i, amount_to_invoice in enumerate(res['untaxed_amounts_to_invoice']):
                     from_currency = self.env['res.currency'].browse([res['currency_id'][i]])
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
-                    to_invoice += float(res['untaxed_amounts_to_invoice'][i])*currency_conversion_rate
-                    invoiced += float(invoice_amount)
+                    to_invoice += float(amount_to_invoice)*currency_conversion_rate
                 sols_per_product[res['product_id'][0]] = (
                     to_invoice,
-                    invoiced,
+                    float(res['invoiced_usd']),
                     res['ids'],
                 )
             #####  CUSTOM CODE END  #####
