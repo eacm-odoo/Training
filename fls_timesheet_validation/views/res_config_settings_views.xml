@@ -13,11 +13,12 @@
                     <div class="o_setting_right_pane" id="user_freeze_control">
                         <label for="freeze_timesheets"/>
                         <div class="text-muted">
-                            Freeze Timesheets before the day below
+                            Freeze all timesheets before the date below
                         </div>
                         <div class="mt16" id="user_freeze_control">
-                            <label for="freeze_day" string="Day "/>
-                            <field name="freeze_day" class="w-25 text-center"/> of the month
+                            <field name="freeze_month" class="w-25"/>
+                            <field name="freeze_day" class="w-25"/>
+                            <field name="freeze_year" class="w-25"/>
                         </div>
                     </div>
                 </div>
