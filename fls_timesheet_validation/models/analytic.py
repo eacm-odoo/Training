@@ -1,5 +1,6 @@
-from odoo import models, fields, api
 from datetime import date, datetime
+
+from odoo import models, fields, api
 from odoo.exceptions import AccessError
 
 

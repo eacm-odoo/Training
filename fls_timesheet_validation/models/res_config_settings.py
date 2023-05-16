@@ -1,6 +1,7 @@
+from datetime import date
+
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
-from datetime import date
 
 
 class ResConfigSettings(models.TransientModel):
