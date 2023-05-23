@@ -6,7 +6,6 @@ class Employee(models.Model):
 
     is_resource_manager = fields.Boolean(string="Is Resource Manager")    
     
-    
     @api.depends('parent_id')
     def _compute_timesheet_manager(self):
         for employee in self:

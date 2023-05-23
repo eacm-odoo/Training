@@ -6,7 +6,16 @@
         <field name="priority">10</field>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='employee_id']" position="before">
-                <field name="is_approved"/>
+                <field name="is_approved" attrs="{'readonly': [('validated', '=', True)]}"/>
+            </xpath>
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('validated', '=', True)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="attrs">{'readonly': [('validated', '=', True)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='unit_amount']" position="after">
+                <field name="amount" attrs="{'readonly': [('validated', '=', True)]}"/>
             </xpath>
         </field>
     </record>

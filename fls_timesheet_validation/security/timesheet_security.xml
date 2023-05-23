@@ -27,11 +27,11 @@
         <field name="name">account.analytic.line.timesheet.user.types.write</field>
         <field name="model_id" ref="analytic.model_account_analytic_line"/>
         <field name="domain_force">[
-            '|', 
-            ('timesheet_manager_id', '=', user.id), 
-            '&amp;',
+            '&amp;', 
+            ('validated', '=', False),
+            '|',
             ('project_manager_id', '=', user.id), 
-            ('validated', '=', False)
+            ('timesheet_manager_id', '=', user.id), 
         ]</field>
         <field name="groups" eval="[(4, ref('hr_timesheet.group_hr_timesheet_approver'))]"/>
         <field name="perm_create" eval="1"/>
