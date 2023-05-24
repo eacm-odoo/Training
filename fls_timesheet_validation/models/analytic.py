@@ -8,9 +8,9 @@ class AccountAnalyticLine(models.Model):
     _inherit = "account.analytic.line"
 
     is_approved = fields.Boolean(string="Is Approved", readonly=False)
-    project_manager_id = fields.Many2one('res.users', string='Project Manager', related='project_id.user_id', store=True)
-    timesheet_manager_id = fields.Many2one('res.users', string='Resource Manager', related='employee_id.timesheet_manager_id', store=True)
-    employee_user_id = fields.Many2one('res.users', string='Employee User', related='employee_id.user_id', store=True)
+    project_manager_id = fields.Many2one("res.users", string="Project Manager", related="project_id.user_id", store=True)
+    timesheet_manager_id = fields.Many2one("res.users", string="Resource Manager", related="employee_id.timesheet_manager_id", store=True)
+    employee_user_id = fields.Many2one("res.users", string="Employee User", related="employee_id.user_id", store=True)
 
     @api.constrains('is_approved')
     def _check_approval(self):

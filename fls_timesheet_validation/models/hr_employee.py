@@ -2,7 +2,7 @@ from odoo import api, fields, models
 
 
 class Employee(models.Model):
-    _inherit = 'hr.employee'
+    _inherit = "hr.employee"
 
     is_resource_manager = fields.Boolean(string="Is Resource Manager")    
     
