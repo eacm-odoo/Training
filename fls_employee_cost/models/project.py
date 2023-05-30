@@ -111,7 +111,7 @@ class Project(models.Model):
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
                     to_invoice += float(amount_to_invoice)*currency_conversion_rate
                     if res['discount']>0:
-                        to_invoice+=(res['untaxed_amount_invoiced']*100)/(100-res['discount'])-res['untaxed_amount_invoiced']
+                        to_invoice+=(res['untaxed_amount_invoiced']*currency_conversion_rate*100)/(100-res['discount'])-(res['untaxed_amount_invoiced']*currency_conversion_rate)
                 sols_per_product[res['product_id'][0]] = (
                     to_invoice,
                     float(res['invoiced_usd']),
