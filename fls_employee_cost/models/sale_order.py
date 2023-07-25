@@ -16,28 +16,21 @@ class SaleOrderLine(models.Model):
                 `inv_line` is a customer invoice line linked to the SO line
                 `ref_line` is a customer credit note (refund) line linked to the SO line
         """
-        usd_currency = self.env['res.currency'].search([('name','=','USD')])
-
+        usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         for line in self:
             amount_invoiced = 0.0
             amount_invoiced_usd = 0.0
             for invoice_line in line._get_invoice_lines():
                 if invoice_line.move_id.state == 'posted':
                     invoice_date = invoice_line.move_id.invoice_date or fields.Date.today()
-                    # check if the invoicing policy is based on delivered quantity (manual) for correction item line
-                    if invoice_line.product_id.invoice_policy == 'delivery':
-                        conversion_rate = self.env['res.currency']._get_conversion_rate(invoice_line.currency_id, usd_currency, line.company_id, invoice_date)
-                        amount_invoiced_usd += invoice_line.price_subtotal * conversion_rate
-                    else:
-                        if invoice_line.move_id.move_type == 'out_invoice':
-                            amount_invoiced += invoice_line.currency_id._convert(invoice_line.price_subtotal, line.currency_id, line.company_id, invoice_date)
-                            amount_invoiced_usd += invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
-                        elif invoice_line.move_id.move_type == 'out_refund':
-                            amount_invoiced -= invoice_line.currency_id._convert(invoice_line.price_subtotal, line.currency_id, line.company_id, invoice_date)
-                            amount_invoiced_usd -= invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
+                    if invoice_line.move_id.move_type == 'out_invoice':
+                        amount_invoiced += invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
+                        amount_invoiced_usd += invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
+                    elif invoice_line.move_id.move_type == 'out_refund':
+                        amount_invoiced -= invoice_line.currency_id._convert(invoice_line.price_subtotal, line.currency_id, line.company_id, invoice_date)
+                        amount_invoiced_usd -= invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
             line.untaxed_amount_invoiced = amount_invoiced
             line.invoiced_usd = amount_invoiced_usd
-            
 
     @api.depends('state', 'price_reduce', 'product_id', 'untaxed_amount_invoiced', 'qty_delivered', 'product_uom_qty')
     def _compute_untaxed_amount_to_invoice(self):
