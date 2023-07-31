@@ -1,0 +1,12 @@
+<odoo>
+    <record model="ir.ui.view" id="account_move_view_form_inherit_fls_employee_cost">
+        <field name="name">account.move.inherit.fls.emloyee.cost</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_payment_term_id']" position="after">
+                <button name="update_currencies" string="Update Currencies" type="object" class="oe_highlight"/>
+            </xpath>
+        </field>
+    </record>
+    
