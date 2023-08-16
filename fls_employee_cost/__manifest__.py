@@ -7,7 +7,7 @@
     'version': '16.0',
     'author': 'Odoo Inc',
     'description': """
-Task ID: 3132682, 3224218
+Task ID: 3132682, 3224218, 3390146
 1) Calculate Employee cost
 1.1) Add a new field ‘Salary Burden Rate’ under contract (hr.contract) which is going to be float and required field with 1.00 as the default value.
 1.2) Add a new field ‘Full Cost in USD’ under the ootb ‘Cost’ field in the employee form.
@@ -37,6 +37,7 @@ for the accounting part of the system it’s 8-2 hours which is 6, so invoices w
     'assets': {
         'web.assets_backend': [
             'fls_employee_cost/static/src/components/**/*',
+            'fls_employee_cost/static/src/search_panel/**/*',
         ],
     },
     'installable': True,
