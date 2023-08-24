@@ -10,11 +10,12 @@
 Task ID: 3176750
 -Added domain to contact
     """,
-    'depends': ['purchase', 'account'],
+    'depends': ['purchase', 'account', 'timesheet_grid'],
     'data': [
         'data/actions.xml',
         'data/mail_template_data.xml',
-        'views/res_partner_views.xml',
+        'views/account_analytic_views.xml',
+        'views/purchase_views.xml',
     ],
     'installable': True,
     'application': False,

@@ -3,16 +3,15 @@
         <record id="fls_purchase.mail_template_purchase_approval" model="mail.template">
             <field name="name">RFQ Approval Reminder</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
-            <field name="subject">A bill from contractor {{ object.type_name }} dated {{ object.date_planned or 'n/a' }} is waiting for your approval.</field>
-            <field name="partner_to">{{ object.timesheet_approver_id.partner_id.id }}</field>
+            <field name="subject">A bill from contractor {{ object.partner_id.name }} dated {{ object.date_planned or 'n/a' }} is waiting for your approval.</field>
+            <field name="partner_to">{{ object.timesheet_approver_id.partner_id.id or False}}</field>
             <field name="description">Sent automatically to users that are required to approve an RFQ.</field>
             <field name="body_html" type="html">
         <div style="margin: 0px; padding: 0px;">
             <p style="margin: 0px; padding: 0px; font-size: 13px;">
-                <t t-set="doc_name" t-value="object.type_name"/>
                 Dear <t t-out="object.timesheet_approver_id.name or ''"/>,
                 <br/><br/>
-                <!-- A bill from contractor <t t-out="object.partner_id.name or ''"/> dated <t t-out="object.date_planned or ''"/> with amount <span style="font-weight:bold;" t-out="format_amount(object.amount_total, object.currency_id) or ''"/> is waiting for your approval in Odoo. For your convenience, here is the link to the bill: <link here>. -->
+                A bill from contractor <t t-out="object.partner_id.name or ''"/> dated <t t-out="object.date_planned or ''"/> with amount <t t-out="format_amount(object.amount_total, object.currency_id) or ''"/> is waiting for your approval in Odoo.
                 <br/><br/>
                 Please do not reply to this message, it has been auto-generated. If you have questions, contact accounts@firstlinesoftware.com instead.
                 <br/><br/>
@@ -23,7 +22,7 @@
             </p>
         </div>
             </field>
-            <field name="lang">{{ object.timesheet_approver_id.partner_id.lang }}</field>
+            <field name="lang">{{ object.timesheet_approver_id.partner_id.lang or object.partner_id.lang }}</field>
             <field name="auto_delete" eval="True"/>
         </record>
     </data>
