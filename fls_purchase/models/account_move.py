@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from datetime import datetime
 
 
 class AccountMove(models.Model):
@@ -6,8 +7,13 @@ class AccountMove(models.Model):
 
     date = fields.Date(compute="_compute_accounting_date", store=True)
 
-    @api.depends("purchase_id.date_planned", "purchase_id")
+    @api.depends("line_ids")
     def _compute_accounting_date(self):
         for mv in self:
-            if mv.move_type == "in_invoice" and mv.date and mv.purchase_id.date_planned:
-                mv.date = mv.purchase_id.date_planned.date()
+            mv.date = datetime.today()
+            for line in mv.line_ids.mapped('purchase_line_id'):
+                purchase_id = line.order_id
+                date_planned = purchase_id.date_planned.date()
+                if mv.move_type == "in_invoice" and purchase_id and date_planned:
+                    mv.date = date_planned
+
