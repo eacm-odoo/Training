@@ -1,0 +1,52 @@
+<odoo>
+    <data noupdate="1">
+        <record id="multi_confirm_po" model="ir.actions.server">
+            <field name="name">Confirm PO</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+<![CDATA[
+records.action_confirm()
+]]>
+            </field>
+        </record>
+
+        <record id="update_account_move_invoice_date" model="base.automation">
+            <field name="name">Update Vendor Bill Date</field>
+            <field name="model_id" ref="model_account_move"/>
+            <field name="state">code</field>
+            <field name="code">
+<![CDATA[
+for rec in records:
+    if rec.move_type == "in_invoice":
+        rec.write({
+        "invoice_date": rec.create_date.date()
+        })
+]]>
+            </field>
+            <field name="trigger">on_create</field>
+        </record>
+
+        <record id="schedule_rfq_activity_email" model="base.automation">
+            <field name="name">Schedule RFQ activity and send out email reminder</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+<![CDATA[
+if record.timesheet_approver_id:
+    env['mail.activity'].create({
+        "summary": "A contractor bill is waiting for your approval",
+        "date_deadline": record.create_date.date() + datetime.timedelta(days = 2),
+        "res_model": "purchase.order",
+        "activity_type_id": int(env.ref("mail.mail_activity_data_todo")),
+        "res_model_id": env.ref("purchase.model_purchase_order").id,
+        "res_id": int(record),
+        "user_id": record.timesheet_approver_id.id,
+    })
+    record._send_rfq_approval_reminder_mail()
+]]>
+            </field>
+            <field name="trigger">on_create</field>
+        </record>
+    </data>
+</odoo>
