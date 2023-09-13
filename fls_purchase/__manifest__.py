@@ -10,7 +10,7 @@
 Task ID: 3176750
 -Added domain to contact
     """,
-    'depends': ['purchase', 'account', 'timesheet_grid'],
+    'depends': ['purchase', 'account', 'timesheet_grid', 'base_automation'],
     'data': [
         'data/actions.xml',
         'data/mail_template_data.xml',
