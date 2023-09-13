@@ -36,7 +36,7 @@ for rec in records:
 if record.timesheet_approver_id:
     env['mail.activity'].create({
         "summary": "A contractor bill is waiting for your approval",
-        "date_deadline": record.date_planned.date() + datetime.timedelta(days = 2),
+        "date_deadline": record.create_date.date() + datetime.timedelta(days = 2),
         "res_model": "purchase.order",
         "activity_type_id": int(env.ref("mail.mail_activity_data_todo")),
         "res_model_id": env.ref("purchase.model_purchase_order").id,
