@@ -9,17 +9,6 @@
             </xpath>
         </field>
     </record>
-    
-    <record model="ir.ui.view" id="hr_employee_public_view_search_inherit_fls_employee_cost">
-        <field name="name">hr.employee.public.search.inherit.fls.emloyee.cost</field>
-        <field name="model">hr.employee.public</field>
-        <field name="inherit_id" ref="hr.hr_employee_public_view_search"/>
-        <field name="arch" type="xml">
-            <xpath expr="//searchpanel" position="attributes">
-                <attribute name="class" add="employee_panel" separator=" "/>
-            </xpath>
-        </field>
-    </record>
 
     <record model="ir.ui.view" id="view_employee_form_inherit_fls_employee_cost">
         <field name="name">hr.employee.form.inherit.fls.emloyee.cost</field>
