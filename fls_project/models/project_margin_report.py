@@ -2,7 +2,6 @@ from odoo import models, fields
 from datetime import date, datetime
 import re
 
-
 class ProjectReport(models.Model):
     _name = "project.margin.report.handler"
     _inherit = ["account.report.custom.handler"]
@@ -100,24 +99,22 @@ class ProjectReport(models.Model):
     def filter_projects_by_column(self, project_data, options):
         projects = {}
         columns = options['columns']
-        end_dates = []
+        date_ranges = []
         for column in columns:
             filters = re.findall("'([^']*)'", column['column_group_key'])
-            for i, filter in enumerate(filters):
-                if filter == 'date_to':
-                    date_to = datetime.strptime(filters[i+1], '%Y-%m-%d')
-                    column['date_to'] = date_to
-                    if date_to not in end_dates:
-                        end_dates.append(date_to)
-        for end_date in end_dates:
+            date_range = (datetime.strptime(filters[3], '%Y-%m-%d'), datetime.strptime(filters[5], '%Y-%m-%d'))
+            column['date_from'] = date_range[0]
+            column['date_to'] = date_range[1]
+            date_ranges.append(date_range)
+        for date_range in date_ranges:
             for project in project_data:
                 if isinstance(project['date'], datetime):
                     project['date'] = project['date'].date()
-                if project['date'] <= end_date.date():
+                if date_range[0].date() <= project['date'] <= date_range[1].date():
                     usd_currency = self.env['res.currency'].search([('name', '=', 'USD')])
-                    from_currency = self.env['res.currency'].browse([project['currency_id']]) 
+                    from_currency = self.env['res.currency'].browse([project['currency_id']])
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.env['res.company'].browse([project['company_id']]),project['date'].strftime("%m/%d/%y"))
-                    id_date = '{}|{}'.format(project['id'],end_date.strftime('%Y-%m-%d'))
+                    id_date = '{}|{}'.format(project['id'],date_range[1].strftime('%Y-%m-%d'))
                     if id_date not in projects.keys():
                         projects[id_date] = {
                             'sale_order_revenue': 0,
@@ -127,6 +124,11 @@ class ProjectReport(models.Model):
                     projects[id_date]['sale_order_revenue'] += project.get('sale_order_qty', 0) * project.get('sale_order_revenue', 0) * currency_conversion_rate
                     projects[id_date]['timesheet_cost'] += project.get('timesheet_cost', 0) * currency_conversion_rate
                     projects[id_date]['invoice_revenue'] += project.get('invoice_qty', 0) * project.get('invoice_revenue', 0) * currency_conversion_rate
+                    project.update({
+                        'sale_order_revenue': 0,
+                        'timesheet_cost': 0,
+                        'invoice_revenue': 0
+                    })
         return projects
 
     
@@ -159,6 +161,16 @@ class ProjectReport(models.Model):
                 columns_values.append({
                     'name': formatted_value,
                     'no_format': value,
+                    'class': 'number',
+                })
+            else:
+                if column['name'] == 'Margin Percentage':
+                    formatted_value = '0.00\xa0%'
+                else:
+                    formatted_value = '$\xa00.00'
+                columns_values.append({
+                    'name': formatted_value,
+                    'no_format': 0,
                     'class': 'number',
                 })
         return columns_values
