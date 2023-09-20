@@ -6,7 +6,7 @@
             <field name="state">code</field>
             <field name="code">
 <![CDATA[
-records.action_confirm()
+records.button_confirm()
 ]]>
             </field>
         </record>
@@ -34,6 +34,9 @@ for rec in records:
             <field name="code">
 <![CDATA[
 if record.timesheet_approver_id:
+    record.write({
+        "user_id": record.timesheet_approver_id.id
+    })
     env['mail.activity'].create({
         "summary": "A contractor bill is waiting for your approval",
         "date_deadline": record.create_date.date() + datetime.timedelta(days = 2),
