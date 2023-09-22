@@ -11,7 +11,7 @@
                     <field name="attachment_limit" class="w-100"/>
                 </div>
                 <div class="o_setting_right_pane">
-                    <label for="attachment_limit" string="Attachment Limit"/>
+                    <label for="attachment_limit" string="File Attachment Size Limit"/>
                     <div class="text-muted">
                         Maximum size of attachment in MB. Set 0 to disable limit.
                     </div>
