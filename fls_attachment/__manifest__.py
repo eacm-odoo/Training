@@ -16,9 +16,10 @@
         'base',
         'base_setup',
         'web',
+        'mail',
     ],
     'assets': {
-        'web.assets_frontend': [
+        'web.assets_backend': [
             'fls_attachment/static/src/js/limit_upload_size.js',
         ],
         # 'mail.assets_messaging': [

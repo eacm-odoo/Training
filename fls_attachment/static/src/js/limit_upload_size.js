@@ -1,9 +1,11 @@
+/** @odoo-module **/
+
 import { registerPatch } from '@mail/model/model_core';
 import { attr } from '@mail/model/model_field';
 import Dialog from 'web.Dialog';
 
-var core = require('web.core');
-var _t = core._t;
+import core from 'web.core';
+const _t = core._t;
 
 registerPatch({
     name: 'FileUploader',
@@ -12,6 +14,7 @@ registerPatch({
         * @override
         */
         async _performUpload({ files }) {
+            console.log('CUSTOM FILE UPLOADER!!!');
 
             const attachmentLimit = await this.async(() => this.env.services.rpc({
                 model: 'ir.config_parameter',
