@@ -12,10 +12,15 @@ The client needs a quick way to visualize its vendors when creating an RFQ. They
 
 During the Purchase workflow, when selecting a vendor, the client also wants to filter the contacts available to select from; only contacts marked as vendors in the previous checkbox will be visible to the user to select.
     """,
-    'depends': ['project', 'account_accountant', 'account_reports'],
+    'depends': ['project', 'account_accountant', 'account_reports', 'hr_expense'],
     'data': [
         'data/margin_report.xml',
     ],
+    'assets': {
+        'mail.assets_core_messaging': [
+            'fls_project/static/src/models/*.js',
+        ],
+    },
     'installable': True,
     'application': False,
     'auto_install': False,

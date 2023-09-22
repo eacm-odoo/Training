@@ -2,6 +2,7 @@ from odoo import models, fields
 from datetime import date, datetime
 import re
 
+
 class ProjectReport(models.Model):
     _name = "project.margin.report.handler"
     _inherit = ["account.report.custom.handler"]
@@ -38,6 +39,7 @@ class ProjectReport(models.Model):
             SELECT
                 project_project.id,
                 project_project.company_id,
+                project_project.analytic_account_id,
                 sale_order_line.currency_id,
                 sale_order.date_order                                                         AS date,
                 sale_order.date_order                                                         AS order_date,
@@ -61,6 +63,7 @@ class ProjectReport(models.Model):
             SELECT
                 project_project.id,
                 project_project.company_id,
+                project_project.analytic_account_id,
                 account_analytic_line.currency_id,
                 account_analytic_line.date                                                    AS date,
                 project_project.name                                                          AS project,
@@ -75,6 +78,7 @@ class ProjectReport(models.Model):
             SELECT
                 project_project.id,
                 project_project.company_id,
+                project_project.analytic_account_id,
                 account_move_line.currency_id,
                 account_move.date                                                             AS date,
                 project_project.name                                                          AS project,
@@ -93,10 +97,30 @@ class ProjectReport(models.Model):
             GROUP BY project_project.id, account_move_line.currency_id, account_move.date, invoice_qty
         """)
         project_data += self._cr.dictfetchall()
-        projects = self.filter_projects_by_column(project_data, options)
+        self._cr.execute(f"""
+            SELECT
+                hr_expense.id,
+                hr_expense.company_id,
+                hr_expense.currency_id,
+                hr_expense.analytic_distribution,
+                hr_expense.date                                                               AS date,
+                SUM(hr_expense.total_amount)                                                  AS expense_amount
+            FROM hr_expense
+            WHERE hr_expense.state IN ('approved','done')
+            GROUP BY hr_expense.id, hr_expense.currency_id, hr_expense.company_id, hr_expense.analytic_distribution, date
+        """)
+        expenses_data = self._cr.dictfetchall()
+        expenses_by_id = {}
+        for expense_data in expenses_data:
+            distribution = expense_data.get('analytic_distribution', {})
+            for analytic_id in distribution.keys():
+                expense_list = expenses_by_id.get(int(analytic_id), [])
+                expense_list.append(expense_data)
+                expenses_by_id[int(analytic_id)] = expense_list
+        projects = self.filter_projects_by_column(project_data, options, expenses_by_id)
         return projects
     
-    def filter_projects_by_column(self, project_data, options):
+    def filter_projects_by_column(self, project_data, options, expenses_by_id):
         projects = {}
         columns = options['columns']
         date_ranges = []
@@ -117,13 +141,19 @@ class ProjectReport(models.Model):
                     id_date = '{}|{}'.format(project['id'],date_range[1].strftime('%Y-%m-%d'))
                     if id_date not in projects.keys():
                         projects[id_date] = {
-                            'sale_order_revenue': 0,
-                            'timesheet_cost': 0,
-                            'invoice_revenue': 0,
+                            'revenue': 0,
+                            'cost': 0
                         }
-                    projects[id_date]['sale_order_revenue'] += project.get('sale_order_qty', 0) * project.get('sale_order_revenue', 0) * currency_conversion_rate
-                    projects[id_date]['timesheet_cost'] += project.get('timesheet_cost', 0) * currency_conversion_rate
-                    projects[id_date]['invoice_revenue'] += project.get('invoice_qty', 0) * project.get('invoice_revenue', 0) * currency_conversion_rate
+                    projects[id_date]['revenue'] += project.get('sale_order_qty', 0) * project.get('sale_order_revenue', 0) * currency_conversion_rate
+                    projects[id_date]['revenue'] += project.get('invoice_qty', 0) * project.get('invoice_revenue', 0) * currency_conversion_rate
+                    projects[id_date]['cost'] += project.get('timesheet_cost', 0) * currency_conversion_rate
+                    for expense in expenses_by_id.get(project.get('analytic_account_id', False), []):
+                        if date_range[0].date() <= expense['date'] <= date_range[1].date() and not expense.get('is_added', False):
+                            usd_currency = self.env['res.currency'].search([('name', '=', 'USD')])
+                            from_currency = self.env['res.currency'].browse([expense['currency_id']])
+                            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.env['res.company'].browse([expense['company_id']]),expense['date'].strftime("%m/%d/%y"))
+                            projects[id_date]['cost'] -= expense['expense_amount']*currency_conversion_rate
+                            expense['is_added'] = True
                     project.update({
                         'sale_order_revenue': 0,
                         'timesheet_cost': 0,
@@ -140,8 +170,8 @@ class ProjectReport(models.Model):
             if projects.get(id_date, False):
                 project = projects[id_date]
                 formatted_value = value = 0
-                cost = project['timesheet_cost']
-                revenue = project['sale_order_revenue'] + project['invoice_revenue']
+                cost = project['cost']
+                revenue = project['revenue']
                 margin = revenue + cost
                 margin_percentage = 0
                 if column['name'] == 'Cost':
@@ -174,3 +204,4 @@ class ProjectReport(models.Model):
                     'class': 'number',
                 })
         return columns_values
+    
