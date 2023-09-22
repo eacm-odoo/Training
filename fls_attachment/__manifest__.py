@@ -1,10 +1,9 @@
 {
     'name': 'FLS Attachment Limit',
-    'summary': '''''',
-    'description': '''''',
+    'summary': '''Restricts the file attachment upload size to the specified attachment limit config parameter.''',
     'author': 'Odoo Inc',
     'developers': ['Lars Gartenberg (laga)'],
-    'task_ids': ['',],
+    'task_ids': ['3434931',],
     'website': 'https://www.odoo.com/',
     'category': 'Custom Development',
     'version': '1.0',
@@ -22,10 +21,6 @@
         'web.assets_backend': [
             'fls_attachment/static/src/js/limit_upload_size.js',
         ],
-        # 'mail.assets_messaging': [
-        #     #('include', 'mail.assets_core_messaging'),
-        #     'fls_attachment/static/src/js/limit_upload_size.js',
-        # ],
     },
     'application': False,
     'auto_install': False,
