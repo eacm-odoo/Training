@@ -21,9 +21,9 @@ registerPatch({
 			});
 
 			const limit = parseFloat(attachmentLimit) * 1024 ** 2; // converting to bytes
-			let filesWithinLimit = [];
+			const filesWithinLimit = [];
+            const totalFilesCount = files.length;
 			let exceededFilesCount = 0;
-			let totalFilesCount = files.length;
 
 			for (const file of files) {
 				if (limit && file.size > limit) {
