@@ -10,7 +10,7 @@ class BaseModel(models.AbstractModel):
             if field and field.type == 'binary' and field_value:
                 file_size = len(field_value)
                 attachment_limit = self.env['ir.config_parameter'].sudo().get_param('fls_attachment.attachment_limit')
-                if file_size > float(attachment_limit) * 1024 ** 2:  # converting to bytes
+                if file_size > float(attachment_limit) * 1024 ** 2:  # convert to bytes
                     raise exceptions.UserError(f"The file size exceeds the maximum limit of {attachment_limit} MB.")
 
     @api.model

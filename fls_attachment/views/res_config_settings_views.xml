@@ -6,9 +6,9 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
         <xpath expr="//div[@id='user_default_rights']" position="inside">
-            <div class="col-12 col-lg-6 o_setting_box">
-                <div class="o_setting_left_pane">
-                    <field name="attachment_limit" class="w-100"/>
+            <div class="o_setting_box">
+                <div class="o_setting_left_pane o_setting_left_pane_margin">
+                    <field name="attachment_limit"/>
                 </div>
                 <div class="o_setting_right_pane">
                     <label for="attachment_limit" string="File Attachment Size Limit"/>
