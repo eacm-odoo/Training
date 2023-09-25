@@ -20,6 +20,7 @@
     'assets': {
         'web.assets_backend': [
             'fls_attachment/static/src/js/limit_upload_size.js',
+            'fls_attachment/static/src/scss/attachment_limit.scss',
         ],
     },
     'application': False,
