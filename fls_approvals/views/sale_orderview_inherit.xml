@@ -25,12 +25,12 @@
                 <attribute name="attrs">{'invisible': [('state', '!=', 'approved')]}</attribute>
             </xpath>
 
-            <xpath expr="//button[@name='action_confirm']" invisible="1" position="after">
-                <field name="current_approver_id" ></field>
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <field name="current_approver_id" invisible="1"  ></field>
             </xpath>
 
-            <xpath expr="//button[@name='action_confirm']" invisible="1" position="after">
-                <field name="loggedin_user_id" ></field>
+            <xpath expr="//button[@name='action_confirm']" position="after">
+                <field name="loggedin_user_id" invisible="1" ></field>
             </xpath>
 
             <xpath expr="//button[@name='action_confirm']" position="after">
