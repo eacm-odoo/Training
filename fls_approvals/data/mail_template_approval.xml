@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="email_template_validate_so" model="mail.template">
+        <field name="name">Validate Sales Order Email</field>
+        <field name="subject">A Sale Order from {{object.user_id.name}}  dated {{object.date_order}} is waiting for your approval Sale Order :{{ object.name }}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.current_approver.email_formatted }}</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
+            <p>A Sale Order from user <t t-out="object.user_id.name or ''"/> dated <t t-out="object.date_order or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_total or ''"/> is waiting for your approval in Odoo.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=sale.order&view_type=form'" target="_blank">Click Here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+        ]]></field>
+    </record>
+
+    <record id="email_template_validate_po" model="mail.template">
+        <field name="name">Validate Purchase Order Email</field>
+        <field name="subject">A Purchase Order from {{object.user_id.name}}  dated {{object.date_order}} is waiting for your approval Purchase Order :{{ object.name }}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.current_approver.email_formatted }}</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
+            <p>A Purchase Order from user <t t-out="object.user_id.name or ''"/> dated <t t-out="object.date_order or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.price_total or ''"/> is waiting for your approval in Odoo.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+        ]]></field>
+    </record>
+
+    <record id="email_template_validate_je" model="mail.template">
+        <field name="name">Validate Journal Entry Email</field>
+        <field name="subject">A Journal Entry from {{object.invoice_user_id.name}}  dated {{object.invoice_date}} is waiting for your approval JE :{{ object.ref }}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.current_approver.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
+            <p>A Journal Entry from user <t t-out="object.invoice_user_id.name or ''"/> dated <t t-out="object.invoice_date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_residual or ''"/> is waiting for your approval in Odoo. </p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+</odoo>
