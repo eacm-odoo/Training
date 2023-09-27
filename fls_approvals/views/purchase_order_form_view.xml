@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="fls_purchase_order_view_form" model="ir.ui.view">
+        <field name="name">fls.purchase.order.view.form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <page name="products" position="after">
+                <page name="approvers" String="Approvers">
+                    <field name="approver_ids" widget="one2many_list"/>
+                </page>
+            </page>
+
+            <xpath expr="//button[@name='button_confirm'][1]" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
+                <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm']" position="after">
+                <field name="current_approver_id" invisible="1"></field>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm']" position="after">
+                <field name="loggedin_user_id" invisible="1"></field>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm']" position="after">
+                <button string="Validate Quotation"
+                        type="object"
+                        name="action_send_validate_po_email"
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', 'not in', ['draft','sent'])]}"
+                />
+            </xpath>
+
+            <xpath expr="//button[@name='action_send_validate_po_email']" position="after">
+                <button string="Validate"
+                        type="object"
+                        name="action_approve"
+                        class="oe_highlight"
+                        attrs="{'invisible': [('current_approver_id', '!=', 'loggedin_user_id'),('state', 'not in', ['to_approve'])]}"
+                />
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="widget">statusbar</attribute>
+                <attribute name="statusbar_visible">draft,sent,to_approve,approved,purchase</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
