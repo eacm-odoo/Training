@@ -33,6 +33,8 @@ class SaleOrder(models.Model):
         if self.approver_ids:
             self.current_approver = self.approver_ids.ids[0]
             self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_so').id]).send_mail(self.id, force_send=True)
+        else:
+            self.state = 'approved'
     
     def action_approve(self):
         if self.current_approver_id!= self.loggedin_user_id:
