@@ -175,18 +175,18 @@ class ProjectReport(models.Model):
                 margin = revenue + cost
                 margin_percentage = 0
                 if column['name'] == 'Cost':
-                    formatted_value = '$\xa0{0:.2f}'.format(cost)
+                    formatted_value = '$\xa0{0:,.2f}'.format(cost)
                     value = cost
                 elif column['name'] == 'Revenue':
-                    formatted_value = '$\xa0{0:.2f}'.format(revenue)
+                    formatted_value = '$\xa0{0:,.2f}'.format(revenue)
                     value = revenue
                 elif column['name'] == 'Margin':
-                    formatted_value = '$\xa0{0:.2f}'.format(margin)
+                    formatted_value = '$\xa0{0:,.2f}'.format(margin)
                     value = margin
                 elif column['name'] == 'Margin Percentage':
                     if revenue != 0:
                         margin_percentage = margin/revenue*100
-                    formatted_value = '{0:.2f}\xa0%'.format(margin_percentage)
+                    formatted_value = '{0:,.2f}\xa0%'.format(margin_percentage)
                     value = margin_percentage
                 columns_values.append({
                     'name': formatted_value,

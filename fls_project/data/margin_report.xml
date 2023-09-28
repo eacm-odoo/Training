@@ -11,14 +11,14 @@
         <field name="search_bar" eval="True"/>
         <field name="custom_handler_model_id" ref="model_project_margin_report_handler"/>
         <field name="column_ids">
-            <record id="project_margin_cost" model="account.report.column">
-                <field name="name">Cost</field>
-                <field name="expression_label">cost</field>
-                <field name="figure_type">monetary</field>
-            </record>
             <record id="project_margin_revenue" model="account.report.column">
                 <field name="name">Revenue</field>
                 <field name="expression_label">revenue</field>
+                <field name="figure_type">monetary</field>
+            </record>
+            <record id="project_margin_cost" model="account.report.column">
+                <field name="name">Cost</field>
+                <field name="expression_label">cost</field>
                 <field name="figure_type">monetary</field>
             </record>
             <record id="project_margin" model="account.report.column">
@@ -27,7 +27,7 @@
                 <field name="figure_type">monetary</field>
             </record>
             <record id="project_margin_percentage" model="account.report.column">
-                <field name="name">Margin Percentage</field>
+                <field name="name">Margin %</field>
                 <field name="expression_label">margin_percentage</field>
                 <field name="figure_type">float</field>
             </record>
