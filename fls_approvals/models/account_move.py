@@ -8,11 +8,18 @@ class AccountMove(models.Model):
     current_approver = fields.Many2one('res.users',string = 'Current Approver')
     current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id')
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
+    department_id = fields.Many2one('hr.department', string='Department')
+
     state = fields.Selection(selection_add=[
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
         ('posted', 'Posted'),
     ], ondelete={'to_approve': lambda sor: sor.write({'state': 'draft'}),'approved': lambda sor: sor.write({'state': 'draft'})})
+
+    def _send_approval_reminder_mail(self):
+        template = self.env.ref('fls_approvals.email_template_validate_je', raise_if_not_found=False)
+        if template:
+            self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
     @api.depends('current_approver')
     def _compute_approver_id(self):
@@ -28,44 +35,44 @@ class AccountMove(models.Model):
         if not self.invoice_filter_type_domain:
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','journal.entry')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.project_manager and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+                if rule.project_manager and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
                     project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                     if project:
                         self.approver_ids = [Command.link(project.user_id.id)]
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount:
+                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
-                self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_je').id]).send_mail(self.id, force_send=True)
+                self._send_approval_reminder_mail()
             else:
                 self.state = 'approved'
         if self.invoice_filter_type_domain == 'purchase':
             po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','vendor.bill')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount:
+                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+                if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(po.user_id.id)]
                 
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
-                self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_je').id]).send_mail(self.id, force_send=True)
+                self._send_approval_reminder_mail()
             else:
                 self.state = 'approved'
         if self.invoice_filter_type_domain == 'sale':
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount:
+                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.delivery_director and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+                if rule.delivery_director and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
-                if rule.salesperson and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+                if rule.salesperson and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
                     self.approver_ids = [Command.link(so.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
-                self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_je').id]).send_mail(self.id, force_send=True)
+                self._send_approval_reminder_mail()
             else:
                 self.state = 'approved'
 
@@ -82,4 +89,9 @@ class AccountMove(models.Model):
             self.state = 'approved'
         else:
             self.current_approver = approvers[current_approver_index+1]
-            self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_je').id]).send_mail(self.id, force_send=True)
+            self._send_approval_reminder_mail()
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        am = super().copy(default)
+        am.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None})
+        return am

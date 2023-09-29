@@ -31,7 +31,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Purchase Order from user <t t-out="object.user_id.name or ''"/> dated <t t-out="object.date_order or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.price_total or ''"/> is waiting for your approval in Odoo.</p>
+            <p>A Purchase Order from user <t t-out="object.user_id.name or ''"/> dated <t t-out="object.date_order or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_total or ''"/> is waiting for your approval in Odoo.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
