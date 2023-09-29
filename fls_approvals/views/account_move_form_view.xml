@@ -6,6 +6,12 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
+            <page name="aml_tab" position="before">
+                <page name="Approvers" String="Approvers">
+                    <field name="approver_ids" widget="one2many_list" readonly="1"/>
+                </page>
+            </page>
+
             <xpath expr="//button[@name='action_post'][1]" position="attributes">
                 <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
             </xpath>
@@ -15,11 +21,11 @@
             </xpath>
 
             <xpath expr="//button[@name='action_post'][1]" position="before">
-                <field name="current_approver_id" ></field>
+                <field name="current_approver_id" invisible='1'/>
             </xpath>
 
             <xpath expr="//button[@name='action_post'][1]" position="before">
-                <field name="loggedin_user_id" ></field>
+                <field name="loggedin_user_id" invisible='1'/>
             </xpath>
 
             <xpath expr="//button[@name='action_post']" position="after">
@@ -42,6 +48,10 @@
             </xpath>
             <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" widget="statusbar" statusbar_visible="draft,to_approve,approved,posted"/>
+            </xpath>
+
+            <xpath expr="//field[@name='invoice_incoterm_id']" position="before">
+                <field name="department_id" ></field>
             </xpath>
         </field>
     </record>

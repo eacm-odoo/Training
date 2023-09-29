@@ -11,9 +11,10 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            
             <page name="order_lines" position="after">
                 <page name="approvers" string="Approvers">
-                    <field name="approver_ids" widget="one2many_list"/>
+                    <field name="approver_ids" widget="one2many_list" readonly="1"/>
                 </page>
             </page>
 
@@ -31,6 +32,10 @@
 
             <xpath expr="//button[@name='action_confirm']" position="after">
                 <field name="loggedin_user_id" invisible="1" ></field>
+            </xpath>
+
+            <xpath expr="//field[@name='team_id']" position="after">
+                <field name="department_id" ></field>
             </xpath>
 
             <xpath expr="//button[@name='action_confirm']" position="after">

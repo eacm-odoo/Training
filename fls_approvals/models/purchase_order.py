@@ -13,21 +13,27 @@ class PurchaseOrder(models.Model):
     current_approver = fields.Many2one('res.users',string = 'Current Approver')
     current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id')
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
+    department_id = fields.Many2one('hr.department', string='Department')
+
+    def _send_approval_reminder_mail(self):
+        template = self.env.ref('fls_approvals.email_template_validate_po', raise_if_not_found=False)
+        if template:
+            self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
     def action_send_validate_po_email(self):
         self.state = 'to_approve'
 
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','purchase.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
-            if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount:
+            if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
                 self.approver_ids = [Command.link(rule.user_id.id)]
-            if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+            if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id: 
                 self.approver_ids = [Command.link(self.user_id.id)]
-            if rule.timesheet_approver and self.amount_total > rule.amount and self.company_id == rule.company_id: #Add Department
+            if rule.timesheet_approver and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id: 
                 self.approver_ids = [Command.link(self.timesheet_approver_id.id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids.ids[0]
-            self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_po').id]).send_mail(self.id, force_send=True)
+            self._send_approval_reminder_mail()
         else:
             self.state = 'approved'
     
@@ -53,4 +59,11 @@ class PurchaseOrder(models.Model):
             self.state = 'approved'
         else:
             self.current_approver = approvers[current_approver_index+1]
-            self.env['mail.template'].sudo().browse([self.env.ref('fls_approvals.email_template_validate_po').id]).send_mail(self.id, force_send=True)
+            self._send_approval_reminder_mail()
+
+    def copy(self, default=None):
+        new_po = super().copy(default)
+        new_po.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None})
+        return new_po
+    
+    
