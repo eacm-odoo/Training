@@ -25,11 +25,11 @@ class PurchaseOrder(models.Model):
 
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','purchase.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
-            if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
+            if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                 self.approver_ids = [Command.link(rule.user_id.id)]
-            if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id: 
+            if rule.buyer and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)): 
                 self.approver_ids = [Command.link(self.user_id.id)]
-            if rule.timesheet_approver and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id: 
+            if rule.timesheet_approver and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)): 
                 self.approver_ids = [Command.link(self.timesheet_approver_id.id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids.ids[0]

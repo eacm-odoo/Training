@@ -35,11 +35,11 @@ class AccountMove(models.Model):
         if not self.invoice_filter_type_domain:
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','journal.entry')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.project_manager and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+                if rule.project_manager and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                     if project:
                         self.approver_ids = [Command.link(project.user_id.id)]
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
+                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
@@ -50,9 +50,9 @@ class AccountMove(models.Model):
             po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','vendor.bill')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
+                if rule.user_id and  (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.buyer and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+                if rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(po.user_id.id)]
                 
             if self.approver_ids:
@@ -64,11 +64,11 @@ class AccountMove(models.Model):
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and self.company_id == rule.company_id and self.amount_total > rule.amount and self.department_id == rule.department_id:
+                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.delivery_director and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+                if rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
-                if rule.salesperson and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+                if rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(so.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
