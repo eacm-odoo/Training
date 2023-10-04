@@ -1,4 +1,4 @@
-from odoo import models, fields, api, Command, _
+from odoo import models, fields, api, Command, _, SUPERUSER_ID
 from odoo.exceptions import UserError
 
 class AccountMove(models.Model):
@@ -19,7 +19,7 @@ class AccountMove(models.Model):
     def _send_approval_reminder_mail(self):
         template = self.env.ref('fls_approvals.email_template_validate_je', raise_if_not_found=False)
         if template:
-            self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
+            self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
     @api.depends('current_approver')
     def _compute_approver_id(self):
@@ -83,7 +83,7 @@ class AccountMove(models.Model):
         approvers = self.approver_ids.ids
         current_approver_index = approvers.index(self.current_approver.id)
         message = self.current_approver.email_formatted+ 'has approved this JE'
-        self.message_post(body=message)
+        self.with_user(SUPERUSER_ID).message_post(body=message)
         if len(approvers) == current_approver_index+1:
             self.current_approver = None
             self.state = 'approved'

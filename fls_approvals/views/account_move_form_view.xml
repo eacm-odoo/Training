@@ -29,7 +29,7 @@
             </xpath>
 
             <xpath expr="//button[@name='action_post']" position="after">
-                <button string="Validate Quotation"
+                <button string="Send for Approval"
                         type="object"
                         name="action_send_validate_je_email"
                         class="oe_highlight"
@@ -38,7 +38,7 @@
             </xpath>
 
             <xpath expr="//button[@name='action_send_validate_je_email']" position="after">
-                <button string="Validate"
+                <button string="Approve"
                         type="object"
                         name="action_approve"
                         class="oe_highlight"

@@ -1,4 +1,4 @@
-from odoo import fields, models, Command, api, _ 
+from odoo import fields, models, Command, api, _ , SUPERUSER_ID
 from odoo.exceptions import UserError
 
 class SaleOrder(models.Model):
@@ -18,7 +18,7 @@ class SaleOrder(models.Model):
     def _send_approval_reminder_mail(self):
         template = self.env.ref('fls_approvals.email_template_validate_so', raise_if_not_found=False)
         if template:
-            self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
+            self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
     def action_send_validate_so_email(self):
         self.state = 'to_approve'
@@ -47,7 +47,7 @@ class SaleOrder(models.Model):
             raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
         approvers = self.approver_ids.ids
         message = self.current_approver.email_formatted+ 'has approved this Sale Order'
-        self.message_post(body=message)
+        self.with_user(SUPERUSER_ID).message_post(body=message)
         current_approver_index = approvers.index(self.current_approver.id)
         if len(approvers) == current_approver_index+1:
             self.current_approver = None

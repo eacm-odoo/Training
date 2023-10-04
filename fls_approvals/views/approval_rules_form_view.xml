@@ -16,12 +16,12 @@
                                 <field name="type"  attrs="{'readonly': [('models', '!=', 'account.move')]}"/>
                             </group>
                             <group name="approver_selection" string = "Approver">
-                                <field name="user_id"/>    
-                                <field name="project_manager"/>
-                                <field name="delivery_director"/>
-                                <field name="salesperson"/>
-                                <field name="buyer"/>
-                                <field name="timesheet_approver"/>
+                                <field name="user_id" attrs = "{'readonly':['|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True)]}"/>    
+                                <field name="project_manager" attrs = "{'readonly':['|','|','|','|',('user_id','!=',False),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True)],'invisible':[('type','not in',['vendor.bill','sale.invoice'])]}"/>
+                                <field name="delivery_director" attrs = "{'readonly':['|','|','|','|',('project_manager','=',True),('user_id','!=',False),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True)],'invisible':[('type','=','journal.entry')]}"/>
+                                <field name="salesperson" attrs = "{'readonly':['|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('user_id','!=',False),('buyer','=',True),('timesheet_approver','=',True)],'invisible':[('models','!=','sale.order'),('type','not in',['sale.invoice'])]}"/>
+                                <field name="buyer" attrs = "{'readonly':['|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('user_id','!=',False),('timesheet_approver','=',True)],'invisible':[('models','!=','purchase.order'),('type','not in',['vendor.bill'])]}"/>
+                                <field name="timesheet_approver" attrs = "{'readonly':['|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('user_id','!=',False)],'invisible':[('models','!=','purchase.order'),('type','!=','vendor.bill')]}"/>
                             </group>
                         </group>
                         <group name="confitions_selection" string="Conditions">

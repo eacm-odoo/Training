@@ -1,4 +1,5 @@
-from odoo import models, fields
+from odoo import models, fields,api
+from odoo.exceptions import ValidationError
 
 class ApprovalRule(models.Model):
     _name = 'approval.rule'
@@ -13,7 +14,7 @@ class ApprovalRule(models.Model):
         ('sale.order', 'Sale Order'),
         ('purchase.order', 'Purchase Order'),
         ('account.move', 'Journal Entry')
-    ], string='Models')
+    ], string='Models',required=True)
     type = fields.Selection([
         ('vendor.bill','Vendor Bill'),
         ('journal.entry','Journal Entry'),
@@ -24,3 +25,9 @@ class ApprovalRule(models.Model):
     buyer = fields.Boolean(string='Buyer')
     timesheet_approver = fields.Boolean(string='Timesheet Approver')
     sequence = fields.Integer(string='Sequence')
+
+    @api.constrains('project_manager', 'delivery_director', 'salesperson', 'buyer', 'timesheet_approver','user_id')
+    def _check_approval_roles(self):
+        for record in self:
+            if not any([record.project_manager, record.delivery_director, record.salesperson, record.buyer, record.timesheet_approver,record.user_id]):
+                raise ValidationError("At least one approval role must be selected.")
