@@ -25,16 +25,16 @@ class SaleOrder(models.Model):
 
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','sale.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
-            if rule.project_manager and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id: 
+            if rule.project_manager and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)): 
                 project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                 if project:
                     self.approver_ids = [Command.link(project.user_id.id)]
 
-            if self.company_id == rule.company_id and self.amount_total > rule.amount and rule.user_id and self.department_id == rule.department_id:
+            if (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and rule.user_id and (not rule.department_id or (self.department_id == rule.department_id)):
                 self.approver_ids = [Command.link(rule.user_id.id)]
-            if rule.delivery_director and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+            if rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                 self.approver_ids = [Command.link(self.x_studio_delivery_director.id)]
-            if rule.salesperson and self.amount_total > rule.amount and self.company_id == rule.company_id and self.department_id == rule.department_id:
+            if rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                 self.approver_ids = [Command.link(self.user_id.id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids.ids[0]
