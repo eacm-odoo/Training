@@ -13,11 +13,11 @@
             </page>
 
             <xpath expr="//button[@name='button_confirm'][1]" position="attributes">
-                <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
+                <attribute name="attrs">{'invisible': [('state', '!=', 'approved')]}</attribute>
             </xpath>
 
             <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
-                <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
+                <attribute name="attrs">{'invisible': 1}</attribute>
             </xpath>
 
             <xpath expr="//button[@name='button_confirm']" position="after">
@@ -33,7 +33,7 @@
             </xpath>
 
             <xpath expr="//button[@name='button_confirm']" position="after">
-                <button string="Validate Quotation"
+                <button string="Send for Approval"
                         type="object"
                         name="action_send_validate_po_email"
                         class="oe_highlight"
@@ -42,7 +42,7 @@
             </xpath>
 
             <xpath expr="//button[@name='action_send_validate_po_email']" position="after">
-                <button string="Validate"
+                <button string="Approve"
                         type="object"
                         name="action_approve"
                         class="oe_highlight"

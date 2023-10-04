@@ -4,7 +4,7 @@
     <record id="email_template_validate_so" model="mail.template">
         <field name="name">Validate Sales Order Email</field>
         <field name="subject">A Sale Order from {{object.user_id.name}}  dated {{object.date_order}} is waiting for your approval Sale Order :{{ object.name }}</field>
-        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_from">{{(object.env.ref('base.partner_root').email_formatted)}}</field>
         <field name="email_to">{{ object.current_approver.email_formatted }}</field>
         <field name="model_id" ref="sale.model_sale_order"/>
         <field name="auto_delete" eval="True"/>
