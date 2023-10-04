@@ -24,7 +24,9 @@ class ApprovalRule(models.Model):
     salesperson = fields.Boolean(string='Salesperson')
     buyer = fields.Boolean(string='Buyer')
     timesheet_approver = fields.Boolean(string='Timesheet Approver')
-    sequence = fields.Integer(string='Sequence')
+    sequence_toggle = fields.Integer(string='Toggle')
+    sequence = fields.Integer(string='Sequence',related='sequence_toggle')
+    
 
     @api.constrains('project_manager', 'delivery_director', 'salesperson', 'buyer', 'timesheet_approver','user_id')
     def _check_approval_roles(self):
