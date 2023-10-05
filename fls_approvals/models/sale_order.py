@@ -14,7 +14,7 @@ class SaleOrder(models.Model):
     current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id')
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
-    
+    no_of_approvals = fields.Integer('No of Approvals')
     def _send_approval_reminder_mail(self):
         template = self.env.ref('fls_approvals.email_template_validate_so', raise_if_not_found=False)
         if template:
@@ -45,15 +45,16 @@ class SaleOrder(models.Model):
     def action_approve(self):
         if self.current_approver_id!= self.loggedin_user_id:
             raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
+        self.no_of_approvals+=1
         approvers = self.approver_ids.ids
         message = self.current_approver.email_formatted+ 'has approved this Sale Order'
         self.with_user(SUPERUSER_ID).message_post(body=message)
         current_approver_index = approvers.index(self.current_approver.id)
-        if len(approvers) == current_approver_index+1:
+        if len(approvers) == self.no_of_approvals:
             self.current_approver = None
             self.state = 'approved'
         else:
-            self.current_approver = approvers[current_approver_index+1]
+            self.current_approver = approvers[(current_approver_index+1)%len(approvers)]
             self._send_approval_reminder_mail()
 
     @api.depends('current_approver')
@@ -68,5 +69,5 @@ class SaleOrder(models.Model):
     def copy_data(self, default=None):
         ret = super().copy_data(default)
         for so in ret:
-            so.update(current_approver = None, current_approver_id = None, approver_ids = None)
+            so.update(current_approver = None, current_approver_id = None, approver_ids = None,no_of_approvals = 0)
         return ret
