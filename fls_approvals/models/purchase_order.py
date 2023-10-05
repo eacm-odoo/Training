@@ -14,6 +14,7 @@ class PurchaseOrder(models.Model):
     current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id')
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
+    delivery_director = fields.Many2one('res.users',string = 'Delivery Director')
 
     def _send_approval_reminder_mail(self):
         template = self.env.ref('fls_approvals.email_template_validate_po', raise_if_not_found=False)
@@ -31,6 +32,8 @@ class PurchaseOrder(models.Model):
                 self.approver_ids = [Command.link(self.user_id.id)]
             if rule.timesheet_approver and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)): 
                 self.approver_ids = [Command.link(self.timesheet_approver_id.id)]
+            if rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)): 
+                self.approver_ids = [Command.link(self.delivery_director.id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids.ids[0]
             self._send_approval_reminder_mail()
