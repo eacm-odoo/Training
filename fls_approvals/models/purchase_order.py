@@ -15,6 +15,7 @@ class PurchaseOrder(models.Model):
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
     delivery_director = fields.Many2one('res.users',string = 'Delivery Director')
+    no_of_approvals = fields.Integer('No of Approvals')
 
     def _send_approval_reminder_mail(self):
         template = self.env.ref('fls_approvals.email_template_validate_po', raise_if_not_found=False)
@@ -50,23 +51,43 @@ class PurchaseOrder(models.Model):
             record.loggedin_user_id = self.env.context.get('uid', 0)
     
     def action_approve(self):
+        if self.state != 'to_approve':
+            return
         if self.current_approver_id!= self.loggedin_user_id:
             raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
+        self.no_of_approvals+=1
 
         approvers = self.approver_ids.ids
         message = self.current_approver.email_formatted+ 'has approved this Purchase Order'
         self.with_user(SUPERUSER_ID).message_post(body=message)
         current_approver_index = approvers.index(self.current_approver.id)
-        if len(approvers) == current_approver_index+1:
+        if len(approvers) == self.no_of_approvals:
             self.current_approver = None
             self.state = 'approved'
         else:
-            self.current_approver = approvers[current_approver_index+1]
+            self.current_approver = approvers[(current_approver_index+1)%len(approvers)]
             self._send_approval_reminder_mail()
 
     def copy(self, default=None):
         new_po = super().copy(default)
-        new_po.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None})
+        new_po.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None,'no_of_approvals':0})
         return new_po
     
+    def button_confirm(self):
+        for order in self:
+            if order.state not in ['draft', 'sent','approved']:
+                continue
+            order.order_line._validate_analytic_distribution()
+            order._add_supplier_to_product()
+            # Deal with double validation process
+            if order._approval_allowed():
+                order.button_approve()
+            else:
+                order.write({'state': 'to approve'})
+            if order.partner_id not in order.message_partner_ids:
+                order.message_subscribe([order.partner_id.id])
+        return True
     
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+    analytic_account = fields.Many2one('account.analytic.account',string = 'Account_Analytic')

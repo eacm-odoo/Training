@@ -33,3 +33,8 @@ class ApprovalRule(models.Model):
         for record in self:
             if not any([record.project_manager, record.delivery_director, record.salesperson, record.buyer, record.timesheet_approver,record.user_id]):
                 raise ValidationError("At least one approval role must be selected.")
+    
+    @api.onchange('models')
+    def onchange_models(self):
+        if self.models != 'account.move':
+            self.type = False

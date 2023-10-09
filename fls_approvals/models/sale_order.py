@@ -43,6 +43,8 @@ class SaleOrder(models.Model):
             self.state = 'approved'
     
     def action_approve(self):
+        if self.state != 'to_approve':
+            return
         if self.current_approver_id!= self.loggedin_user_id:
             raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
         self.no_of_approvals+=1
