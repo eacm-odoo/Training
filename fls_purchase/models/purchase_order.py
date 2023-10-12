@@ -4,7 +4,7 @@ from odoo import models, fields, api
 class PurchaseOrder(models.Model):
     _inherit = "purchase.order"
 
-    timesheet_approver_id = fields.Many2one('res.users', string="Timesheet Approver", compute="_compute_timesheet_approver", store=True, readonly=False)
+    timesheet_approver_id = fields.Many2one('res.users', string="Timesheet Approver", compute="_compute_timesheet_approver", store=True)
 
     @api.depends("partner_id", "partner_id.employee_ids", "partner_id.employee_ids.timesheet_manager_id")
     def _compute_timesheet_approver(self):
