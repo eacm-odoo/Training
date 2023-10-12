@@ -24,10 +24,8 @@ class AccountMove(models.Model):
         if move_type == 'in_invoice' and not move.partner_id.is_company:
             template = self.env.ref('fls_purchase.mail_template_vendor_bill_approval', raise_if_not_found=False)
             if template:
-                import locale
-                user_locale = self.env.context.get('lang', 'en_US')
-                locale.setlocale(locale.LC_ALL, user_locale)
-                move.formatted_amount_total = locale.currency(move.amount_total, grouping=True)
+                
+                move.formatted_amount_total ="{:,}".format(5000000)
                 # data = move._context.copy()
                 # pdf = self.env["ir.actions.report"].sudo()._render_qweb_pdf('account.report_invoice_with_payments',res_ids=move.ids, data=data)
                 # attachment_ids=[(0, 0, {
