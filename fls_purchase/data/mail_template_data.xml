@@ -1,5 +1,5 @@
 <odoo>
-    <data noupdate="1">
+    <data>
         <record id="fls_purchase.mail_template_purchase_approval" model="mail.template">
             <field name="name">RFQ Approval Reminder</field>
             <field name="model_id" ref="purchase.model_purchase_order"/>
@@ -24,6 +24,28 @@
             </field>
             <field name="lang">{{ object.timesheet_approver_id.partner_id.lang or object.partner_id.lang }}</field>
             <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_vendor_bill_approval" model="mail.template">
+            <field name="name">Send VendorBill for Approval</field>
+            <field name="subject">Please review the invoice created by {{object.invoice_user_id.name}}  dated {{object.invoice_date}} JE :{{ object.ref }}</field>
+            <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+            <field name="email_to">{{ object.partner_id.email_formatted }}</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+
+                <p>Dear <t t-out="object.partner_id.email_formatted or ''"/> ,</p>
+                <p>Attached please find your invoice <t t-out="object.ref or ''"/> to <t t-out="object.partner_id.name or ''"/> in the amount of <t t-out="object.formatted_amount_total or ''"/>
+                <p>This invoice has been generated automatically. In case you do not agree with the calculation, please contact your immediate manager within 3 work days. In case we receive no corrections, your invoice will be paid with the next payment run.</p>
+                <p>
+                Best regards,
+                Accounting department, <obect.company_id.name>
+                </p>
+                <p>Please do not reply to this email, your reply will not be addressed. In case of questions or comments, please contact your manager.</p>
+                <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            ]]></field>
         </record>
     </data>
 </odoo>
