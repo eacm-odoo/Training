@@ -37,7 +37,7 @@
             <field name="body_html"><![CDATA[
 
                 <p>Dear <t t-out="object.partner_id.email_formatted or ''"/> ,</p>
-                <p>Attached please find your invoice <t t-out="object.ref or ''"/> to <t t-out="object.partner_id.name or ''"/> in the amount of <t t-out="object.formatted_amount_total or ''"/>
+                <p>Attached please find your invoice <t t-out="object.ref or ''"/> to <t t-out="object.partner_id.name or ''"/> in the amount of <t t-out="object.currency_id.symbol or ''"/><t t-out="object.formatted_amount_total or ''"/>
                 <p>This invoice has been generated automatically. In case you do not agree with the calculation, please contact your immediate manager within 3 work days. In case we receive no corrections, your invoice will be paid with the next payment run.</p>
                 <p>
                 Best regards,
