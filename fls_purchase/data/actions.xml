@@ -6,7 +6,7 @@
             <field name="state">code</field>
             <field name="code">
 <![CDATA[
-records.action_confirm()
+records.button_confirm()
 ]]>
             </field>
         </record>
@@ -44,6 +44,21 @@ if record.timesheet_approver_id:
         "user_id": record.timesheet_approver_id.id,
     })
     record._send_rfq_approval_reminder_mail()
+]]>
+            </field>
+            <field name="trigger">on_create</field>
+        </record>
+
+        <record id="set_buyer_to_timesheet_manager" model="base.automation">
+            <field name="name">Set buyer to timesheet manager on PO</field>
+            <field name="model_id" ref="model_purchase_order"/>
+            <field name="state">code</field>
+            <field name="code">
+<![CDATA[
+if record.timesheet_approver_id:
+    record.write({
+        "user_id": record.timesheet_approver_id.id
+    })
 ]]>
             </field>
             <field name="trigger">on_create</field>

@@ -36,13 +36,15 @@
             <field name="lang">${object.partner_id.lang}</field>
             <field name="body_html"><![CDATA[
 
-                <p>Dear <t t-out="object.partner_id.email_formatted or ''"/> ,</p>
-                <p>Attached please find your invoice <t t-out="object.ref or ''"/> to <t t-out="object.partner_id.name or ''"/> in the amount of <t t-out="object.currency_id.symbol or ''"/><t t-out="object.formatted_amount_total or ''"/>
-                <p>This invoice has been generated automatically. In case you do not agree with the calculation, please contact your immediate manager within 3 work days. In case we receive no corrections, your invoice will be paid with the next payment run.</p>
+                <p>Dear <t t-out="object.partner_id.name or ''"/> ,</p> <br/>
+                <p>Attached please find your invoice <t t-out="object.ref or ''"/> to <t t-out="object.vendor_company_name or ''"/> in the amount of <t t-out="object.currency_id.name or ''"/><t t-out="object.formatted_amount_total or ''"/><br/>
+                <p>This invoice has been generated automatically. In case you do not agree with the calculation, please contact your immediate manager within 3 work days. In case we receive no corrections, your invoice will be paid with the next payment run.</p> <br/>
                 <p>
                 Best regards,
-                Accounting department, <obect.company_id.name>
                 </p>
+                <p>
+                Accounting department, <t t-out="object.vendor_company_name or ''"/>
+                </p> <br/>
                 <p>Please do not reply to this email, your reply will not be addressed. In case of questions or comments, please contact your manager.</p>
                 <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             ]]></field>
