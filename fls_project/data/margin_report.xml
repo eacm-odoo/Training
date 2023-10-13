@@ -1,0 +1,44 @@
+<odoo>
+    <record id="margin_report" model="account.report">
+        <field name="name">Project Margin</field>
+        <field name="filter_journals" eval="False"/>
+        <field name="filter_analytic" eval="False"/>
+        <field name="filter_growth_comparison" eval="False"/>
+        <field name="filter_multi_company">selector</field>
+        <field name="filter_unfold_all" eval="False"/>
+        <field name="filter_hierarchy">never</field>
+        <field name="default_opening_date_filter">this_month</field>
+        <field name="search_bar" eval="True"/>
+        <field name="custom_handler_model_id" ref="model_project_margin_report_handler"/>
+        <field name="column_ids">
+            <record id="project_margin_revenue" model="account.report.column">
+                <field name="name">Revenue</field>
+                <field name="expression_label">revenue</field>
+                <field name="figure_type">monetary</field>
+            </record>
+            <record id="project_margin_cost" model="account.report.column">
+                <field name="name">Cost</field>
+                <field name="expression_label">cost</field>
+                <field name="figure_type">monetary</field>
+            </record>
+            <record id="project_margin" model="account.report.column">
+                <field name="name">Margin</field>
+                <field name="expression_label">margin</field>
+                <field name="figure_type">monetary</field>
+            </record>
+            <record id="project_margin_percentage" model="account.report.column">
+                <field name="name">Margin %</field>
+                <field name="expression_label">margin_percentage</field>
+                <field name="figure_type">float</field>
+            </record>
+        </field>
+    </record>
+
+    <record id="action_project_report_margin" model="ir.actions.client">
+        <field name="name">Project Margin</field>
+        <field name="tag">account_report</field>
+        <field name="context" eval="{'report_id': ref('fls_project.margin_report')}"/>
+    </record>
+
+    <menuitem id="menu_action_project_report_margin" name="Margin Report" action="action_project_report_margin" parent="project.menu_project_report" sequence="50"/>
+</odoo>
