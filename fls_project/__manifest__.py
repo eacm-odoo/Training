@@ -17,8 +17,8 @@ During the Purchase workflow, when selecting a vendor, the client also wants to 
         'data/margin_report.xml',
     ],
     'assets': {
-        'mail.assets_core_messaging': [
-            'fls_project/static/src/models/*.js',
+        'web.assets_backend': [
+            'fls_project/static/src/js/*.js',
         ],
     },
     'installable': True,
