@@ -23,7 +23,9 @@ odoo.define('fls_project.project_report', function (require) {
                 const name = displayName.replace(searchKey, "");
                 let queryFound = undefined;
                 if (searchKey) {
+                    /***** Custom Code Start *****/
                     queryFound = searchKey.includes(query);
+                    /****** Custom Code End ******/
                 } else {
                     queryFound = displayName.includes(query);
                 }
