@@ -17,6 +17,7 @@ class ProjectReport(models.Model):
         """
         lines = []
         projects = self._query_projects(options)
+
         unique_projects = self.env['project.project'].search([])
         for project in unique_projects:
             lines.append((0, {
@@ -29,6 +30,7 @@ class ProjectReport(models.Model):
                 'unfolded': False,
             }))
         return lines
+    
     def _query_projects(self, options):
         """
         Get sums for the initial balance.
@@ -42,15 +44,16 @@ class ProjectReport(models.Model):
                 project_project.analytic_account_id,
                 sale_order_line.currency_id,
                 sale_order.date_order                                                         AS date,
-                sale_order.date_order                                                         AS order_date,
                 project_project.name                                                          AS project,
                 sale_order_line.qty_to_invoice                                                AS sale_order_qty,
                 SUM(sale_order_line.price_unit)                                               AS sale_order_revenue
             FROM project_project
+            INNER JOIN account_analytic_line
+            ON project_project.id = account_analytic_line.project_id
             INNER JOIN sale_order_line
-            ON project_project.sale_order_id = sale_order_line.order_id
+            ON account_analytic_line.so_line = sale_order_line.id
             INNER JOIN sale_order
-            ON project_project.sale_order_id = sale_order.id
+            ON sale_order_line.order_id = sale_order.id
             INNER JOIN product_product
             ON product_product.id = sale_order_line.product_id
             INNER JOIN product_template
@@ -85,42 +88,47 @@ class ProjectReport(models.Model):
                 account_move_line.quantity                                                    AS invoice_qty,
                 SUM(account_move_line.price_unit)                                             AS invoice_revenue
             FROM project_project
-            INNER JOIN sale_order_line
-            ON project_project.sale_order_id = sale_order_line.order_id
-            INNER JOIN sale_order_line_invoice_rel
-            ON sale_order_line_invoice_rel.order_line_id = sale_order_line.id
-            INNER JOIN account_move_line
-            ON sale_order_line_invoice_rel.invoice_line_id = account_move_line.id
+            INNER JOIN (
+                    SELECT 
+                        jsonb_object_keys(analytic_distribution)                              AS analytic_account_id,
+                        account_move_line.currency_id,
+                        account_move_line.quantity,
+                        account_move_line.price_unit,
+                        account_move_line.move_id
+                    FROM account_move_line
+                    WHERE account_move_line.analytic_distribution IS NOT NULL
+                ) account_move_line ON project_project.analytic_account_id::varchar(255) = account_move_line.analytic_account_id
             INNER JOIN account_move
-            ON account_move.id = account_move_line.move_id
-            WHERE account_move.state = 'posted' OR account_move.state = 'draft'
+                ON account_move.id = account_move_line.move_id
+            WHERE account_move.state IN ('draft','to_approve','approved','posted')
             GROUP BY project_project.id, account_move_line.currency_id, account_move.date, invoice_qty
         """)
         project_data += self._cr.dictfetchall()
         self._cr.execute(f"""
             SELECT
-                hr_expense.id,
-                hr_expense.company_id,
+                project_project.id,
+                project_project.company_id,
                 hr_expense.currency_id,
-                hr_expense.analytic_distribution,
                 hr_expense.date                                                               AS date,
                 SUM(hr_expense.total_amount)                                                  AS expense_amount
-            FROM hr_expense
-            WHERE hr_expense.state IN ('approved','done')
-            GROUP BY hr_expense.id, hr_expense.currency_id, hr_expense.company_id, hr_expense.analytic_distribution, date
+            FROM project_project
+            INNER JOIN (
+                    SELECT 
+                        jsonb_object_keys(analytic_distribution)                              AS analytic_account_id,
+                        hr_expense.currency_id,
+                        hr_expense.date,
+                        hr_expense.total_amount
+                    FROM hr_expense
+                    WHERE hr_expense.analytic_distribution IS NOT NULL
+                        AND hr_expense.state IN ('approved','done')
+                ) hr_expense ON project_project.analytic_account_id::varchar(255) = hr_expense.analytic_account_id
+            GROUP BY project_project.id, project_project.company_id, hr_expense.date, hr_expense.currency_id
         """)
-        expenses_data = self._cr.dictfetchall()
-        expenses_by_id = {}
-        for expense_data in expenses_data:
-            distribution = expense_data.get('analytic_distribution', {})
-            for analytic_id in distribution.keys():
-                expense_list = expenses_by_id.get(int(analytic_id), [])
-                expense_list.append(expense_data)
-                expenses_by_id[int(analytic_id)] = expense_list
-        projects = self.filter_projects_by_column(project_data, options, expenses_by_id)
+        project_data += self._cr.dictfetchall()
+        projects = self.filter_projects_by_column(project_data, options)
         return projects
     
-    def filter_projects_by_column(self, project_data, options, expenses_by_id):
+    def filter_projects_by_column(self, project_data, options):
         projects = {}
         columns = options['columns']
         date_ranges = []
@@ -147,21 +155,15 @@ class ProjectReport(models.Model):
                     projects[id_date]['revenue'] += project.get('sale_order_qty', 0) * project.get('sale_order_revenue', 0) * currency_conversion_rate
                     projects[id_date]['revenue'] += project.get('invoice_qty', 0) * project.get('invoice_revenue', 0) * currency_conversion_rate
                     projects[id_date]['cost'] += project.get('timesheet_cost', 0) * currency_conversion_rate
-                    for expense in expenses_by_id.get(project.get('analytic_account_id', False), []):
-                        if date_range[0].date() <= expense['date'] <= date_range[1].date() and not expense.get('is_added', False):
-                            usd_currency = self.env['res.currency'].search([('name', '=', 'USD')])
-                            from_currency = self.env['res.currency'].browse([expense['currency_id']])
-                            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.env['res.company'].browse([expense['company_id']]),expense['date'].strftime("%m/%d/%y"))
-                            projects[id_date]['cost'] -= expense['expense_amount']*currency_conversion_rate
-                            expense['is_added'] = True
+                    projects[id_date]['cost'] -= project.get('expense_amount', 0) * currency_conversion_rate
                     project.update({
                         'sale_order_revenue': 0,
                         'timesheet_cost': 0,
+                        'expense_amount': 0,
                         'invoice_revenue': 0
                     })
         return projects
 
-    
     def _get_columns(self, id, projects, options):
         columns_values = []
         columns = options['columns']
@@ -173,7 +175,7 @@ class ProjectReport(models.Model):
                 cost = project['cost']
                 revenue = project['revenue']
                 margin = revenue + cost
-                margin_percentage = 0
+                margin_percentage = 0.00
                 if column['name'] == 'Cost':
                     formatted_value = '$\xa0{0:,.2f}'.format(cost)
                     value = cost
@@ -183,7 +185,7 @@ class ProjectReport(models.Model):
                 elif column['name'] == 'Margin':
                     formatted_value = '$\xa0{0:,.2f}'.format(margin)
                     value = margin
-                elif column['name'] == 'Margin Percentage':
+                elif column['name'] == 'Margin %':
                     if revenue != 0:
                         margin_percentage = margin/revenue*100
                     formatted_value = '{0:,.2f}\xa0%'.format(margin_percentage)
@@ -194,7 +196,7 @@ class ProjectReport(models.Model):
                     'class': 'number',
                 })
             else:
-                if column['name'] == 'Margin Percentage':
+                if column['name'] == 'Margin %':
                     formatted_value = '0.00\xa0%'
                 else:
                     formatted_value = '$\xa00.00'
