@@ -35,8 +35,7 @@
                 </t>
             </t>
     
-            <t t-if="company.external_report_layout_id" t-call="{{company.external_report_layout_id.sudo().key}}"><t t-out="0"/></t>
-            <t t-else="else" t-call="fls_reports.external_layout_standard_invoice_mobility"><t t-out="0"/></t>
+            <t t-call="fls_reports.external_layout_standard_invoice_mobility"><t t-out="0"/></t>
             
         </template>
 
@@ -73,10 +72,10 @@
                 </t>
 
                 <div >
-                    <div class="col-xs-4 pull-left" style="width: 70%; float:left">
+                    <div class="col-xs-4 pull-left" style="width: 60%; float:left">
                         <img style="width: 350px;height=350px" t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo"/>
                     </div>
-                  <div style="width: 30%; float:right" class="col-xs-4 pull-right text-right">
+                  <div style="width: 40%; float:right" class="col-xs-4 pull-right text-right">
                     <div name="company_address" t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: True}"/>
                     <div t-if="company.phone">Phone: <span t-field="company.phone"/></div>
                     <div t-if="company.email">Email: <span t-field="company.email"/></div>
@@ -133,7 +132,7 @@
             <xpath expr="//div[hasclass('page')]//div[hasclass('row')][1]" position="replace"/>
             <xpath expr="//table[@name='invoice_line_table']" position="replace">
 
-                <table style="width:100%; border: 1px solid black;border-collapse: collapse;" class="" name="invoice_line_table">
+                <table class="" name="invoice_line_table">
                     <thead style="border: 1px solid black;border-collapse: collapse;">
                         <tr style="border: 1px solid black;border-collapse: collapse;">
                             <th class="text-center" width="15%">Description</th>
@@ -143,7 +142,7 @@
                             <th class="text-center" width="10%">Subtotal</th>
                         </tr>
                     </thead>
-                    <tbody style="border: 1px solid black;border-collapse: collapse;" class="invoice_tbody">
+                    <tbody class="invoice_tbody">
                         <tr style="border: 1px solid black;border-collapse: collapse;" t-foreach="o.invoice_line_ids" t-as="l">
                             <td class="text-center">
                                 <div t-if="o.analytic_account_to_invoice"> <span  t-field="l.account_analytic.name"/></div>
@@ -155,40 +154,41 @@
                             <td class="text-center">
                                 <span t-field="l.product_uom_id" />
                             </td>
-                            <td class="text-right">
+                            <td class="text-center">
                                 <span t-field="l.price_unit"/>
                             </td>
 
-                            <td class="text-right" id="subtotal">
+                            <td class="text-center" id="subtotal">
                                 <span t-field="l.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                         </tr>
-                        <tr style="border: 1px solid black;border-collapse: collapse;" t-if="o.company_id.country_code in ['AU','NL','DE']">
+                        <tr t-if="o.company_id.country_code in ['AU','NL','DE']">
                             <td colspan="3"></td>
-                            <td>SUBTOTAL</td>
-                            <td><span t-field="o.amount_untaxed_signed"/></td>
+                            <td style="border: 1px solid black;border-collapse: collapse;" >SUBTOTAL</td>
+                            <td style="border: 1px solid black;border-collapse: collapse;" ><span t-field="o.amount_untaxed_signed"/></td>
                         </tr>
-                        <tr style="border: 1px solid black;border-collapse: collapse;" >
-                            <td colspan="3"></td>
-                            <td t-if="o.company_id.country_code == 'AU'">GST 10%</td>
-                            <td t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
-                            <td t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
-                            <td t-if="o.company_id.country_code in ['AU','NL','DE']"><span t-field="o.amount_tax_signed"/></td>
+                        <tr >
+                            <td  colspan="3"></td>
+                            <td style="border: 1px solid black;border-collapse: collapse;"  t-if="o.company_id.country_code == 'AU'">GST 10%</td>
+                            <td style="border: 1px solid black;border-collapse: collapse;"  t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
+                            <td style="border: 1px solid black;border-collapse: collapse;"  t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
+                            <td style="border: 1px solid black;border-collapse: collapse;" t-if="o.company_id.country_code in ['AU','NL','DE']"><span t-field="o.amount_tax_signed"/></td>
                         </tr>
-                        <tr style="border: 1px solid black;border-collapse: collapse;" >
+                        <tr >
                             <td colspan="3"></td>
-                            <td>TOTAL</td>
-                            <td><span t-field="o.amount_total"/></td>
+                            <td style="border: 1px solid black;border-collapse: collapse;" >TOTAL</td>
+                            <td style="border: 1px solid black;border-collapse: collapse;" ><span t-field="o.amount_total"/></td>
                         </tr>
                     </tbody>
                 </table>
+                <br/>
                 <table  class="table table-sm o_main_table table-borderless"  >
                     <tbody style="padding-left:10px;">
 
                         <tr>
                             <td></td>
                             <td>
-                                <div t-if="o.bank_acount_id">WIRE INSTRUCTIONS:</div>
+                                <div t-if="o.bank_acount_id" style="font-weight: bold;">WIRE INSTRUCTIONS:</div><br/>
                                 <div t-if="o.bank_acount_id">    Beneficiary: <span t-field="o.bank_acount_id.acc_holder_name"/></div>
                                 <div t-if="o.bank_acount_id">    Account Number: <span t-field="o.bank_acount_id.acc_number"/></div>
                                 <div t-if="o.bank_acount_id">    IBAN: <span t-field="o.bank_acount_id.aba_routing"/></div>
