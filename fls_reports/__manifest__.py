@@ -1,0 +1,21 @@
+{
+    'name': "Customization of invoice and bill templates",
+    'summary': 'Customization of invoice and bill templates',
+    'sequence': 100,
+    'license': 'OPL-1',
+    'website': 'https://www.odoo.com',
+    'version': '16.0',
+    'author': 'Odoo Inc',
+    'description': """
+Task ID: 3434932
+This feature that will generate customized bills and invoices 
+    """,
+    'depends': ['sale', 'purchase','account'],
+    'data': [
+        "report/invoice_report.xml",
+        "views/account_move_form_view.xml",
+    ],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+}
