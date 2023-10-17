@@ -15,9 +15,23 @@ class AccountMove(models.Model):
         ('posted', 'Posted'),
     ], ondelete={'to_approve': lambda sor: sor.write({'state': 'draft'}),'approved': lambda sor: sor.write({'state': 'draft'})})
     no_of_approvals = fields.Integer('No of Approvals')
+    delivery_director = fields.Many2one('res.users', compute = '_compute_delivery_director')
+    
+    def _compute_delivery_director(self):
+        if self.invoice_filter_type_domain == 'sale':
+            so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
+            self.delivery_director = so.x_studio_delivery_director
+        else:
+            self.delivery_director = False
+        
 
     def _send_approval_reminder_mail(self):
-        template = self.env.ref('fls_approvals.email_template_validate_je', raise_if_not_found=False)
+        if not self.invoice_filter_type_domain:
+            template = self.env.ref('fls_approvals.email_template_validate_je', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'sale':
+            template = self.env.ref('fls_approvals.email_template_validate_inv', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'purchase':
+            template = self.env.ref('fls_approvals.email_template_validate_bills', raise_if_not_found=False)
         if template:
             self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
@@ -35,11 +49,11 @@ class AccountMove(models.Model):
         if not self.invoice_filter_type_domain:
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','journal.entry')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.project_manager and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if rule.project_manager and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)):
                     project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                     if project:
                         self.approver_ids = [Command.link(project.user_id.id)]
-                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
+                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount:
                     self.approver_ids = [Command.link(rule.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]

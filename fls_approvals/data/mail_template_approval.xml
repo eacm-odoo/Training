@@ -39,9 +39,9 @@
         ]]></field>
     </record>
 
-    <record id="email_template_validate_je" model="mail.template">
-        <field name="name">Validate Journal Entry Email</field>
-        <field name="subject">A Journal Entry from {{object.invoice_user_id.name}}  dated {{object.invoice_date}} is waiting for your approval JE :{{ object.ref }}</field>
+    <record id="email_template_validate_inv" model="mail.template">
+        <field name="name">Validate Invoice Entry Email</field>
+        <field name="subject">An Invoice from {{object.invoice_user_id.name}}  dated {{object.invoice_date}} is waiting for your approval Invoice :{{ object.ref }}</field>
         <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
         <field name="email_to">{{ object.current_approver.email_formatted }}</field>
         <field name="model_id" ref="account.model_account_move"/>
@@ -50,7 +50,45 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Journal Entry from user <t t-out="object.invoice_user_id.name or ''"/> dated <t t-out="object.invoice_date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_residual or ''"/> is waiting for your approval in Odoo. </p>
+            <p>An Invoice from user <t t-out="object.invoice_user_id.name or ''"/> dated <t t-out="object.invoice_date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_residual or ''"/> is waiting for your approval in Odoo. </p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+    <record id="email_template_validate_bills" model="mail.template">
+        <field name="name">Validate Bills Entry Email</field>
+        <field name="subject">A Vendor Bills Entry from {{object.invoice_user_id.name}}  dated {{object.invoice_date}} is waiting for your approval Vendor Bill :{{ object.ref }}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.current_approver.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
+            <p>A Vendor Bill from user <t t-out="object.invoice_user_id.name or ''"/> dated <t t-out="object.invoice_date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_residual or ''"/> is waiting for your approval in Odoo. </p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>    
+    <record id="email_template_validate_je" model="mail.template">
+        <field name="name">Validate Journal Entry Email</field>
+        <field name="subject">A Journal Entry from {{object.invoice_user_id.name}}  dated {{object.date}} is waiting for your approval JE :{{ object.ref }}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.current_approver.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
+            <p>A Journal Entry from user <t t-out="object.invoice_user_id.name or ''"/> dated <t t-out="object.date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="object.amount_total or ''"/> is waiting for your approval in Odoo. </p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>

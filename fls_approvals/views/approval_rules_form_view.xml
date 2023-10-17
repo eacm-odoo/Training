@@ -27,7 +27,7 @@
                         <group name="confitions_selection" string="Conditions">
                             <field name="amount"/>
                             <field name="company_id"/>
-                            <field name="department_id"/>
+                            <field name="department_id" attrs="{'invisible':[('type','=','journal.entry')]}"/>
                         </group>
                     </sheet>
                 </form>
