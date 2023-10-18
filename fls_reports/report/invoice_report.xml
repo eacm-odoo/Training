@@ -11,7 +11,7 @@
                 <t t-out="0"/>
             </div>
 
-            <div class="footer">
+            <div t-if="o.move_type in ['out_invoice','out_refund']" class="footer">
                 <div>If you have any questions concerning this invoice, please call us.</div>
                 <div style = "text-align:right;">Sincerely, Accounts Receivable</div>
                 <div style = "text-align:center;"><b>THANK YOU FOR YOUR BUSINESS!</b></div>
@@ -71,7 +71,7 @@
                     </t>
                 </t>
 
-                <div >
+                <div t-if="o.move_type in ['out_invoice','out_refund']" >
                     <div class="col-xs-4 pull-left" style="width: 60%; float:left">
                         <img style="width: 350px;height=350px" t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo"/>
                     </div>
@@ -89,11 +89,40 @@
                     <div t-if="o.invoice_date">Date: <span t-field="o.invoice_date"/></div>
                   </div>    
                 </div>
-
+                <h1  t-if="o.move_type in ['in_invoice','in_refund']" >INVOICE</h1>
+                <div  t-if="o.move_type in ['in_invoice','in_refund']">
+                    <div class="col-xs-4" style="width: 70%; float:left ">
+                        <div >INVOICE #: <span t-field="o.ref"/></div>
+                        <div >INVOICE DATE: <span t-field="o.invoice_date"/></div>
+                    </div>
+                    <div style="width: 30%; float:right" class="col-xs-4">
+                        <div>DELIVERY DATE: <span t-field="o.date"/></div>
+                        <div>PAYMENT TERM: <span t-field="o.invoice_payment_term_id.name"/></div>
+                    </div>    
+                    <br/>
+                </div>
+                <div  t-if="o.move_type in ['in_invoice','in_refund']" class="page">
+                    <div class="col-xs-4" style="width: 50%; float:left ">
+                        <h4 style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border: 1px solid black;">SELLER</h4>
+                        <address class="mb-1" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+                    <div style="width: 50%; float:right" class="col-xs-4">
+                        <h4 style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border: 1px solid black;">BUYER</h4>
+                        <address class="mb-1" t-field="o.company_id.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>    
+                </div>
+                <div t-if="o.move_type in ['in_invoice','in_refund']">
+                    <div t-if="o.bank_acount_id" style="font-weight: bold;">Payment Instructions:</div>
+                    <div t-if="o.bank_acount_id">IBAN/Account Number: <span t-field="o.bank_acount_id.bank_bic"/></div>
+                    <div t-if="o.bank_acount_id">SWIFT: <span t-field="o.bank_acount_id.bank_bic"/></div>
+                    <div t-if="o.bank_acount_id">Bank: <span t-field="o.bank_acount_id.bank_name"/></div>
+                    <div t-if="o.bank_acount_id">Beneficiary: <span t-field="o.bank_acount_id.acc_holder_name"/></div>
+                    <br/>
+                </div>
                 <t t-set="orders" t-value="o.invoice_line_ids.mapped('sale_line_ids').mapped('order_id')"/>
                 <t t-set="order_id" t-value="orders and orders[0] or False"/>
 
-                    <div class=" pull-right text-right" >
+                    <div  t-if="o.move_type in ['out_invoice','out_refund']"  class=" pull-right text-right" >
 
 
                                     <span> TO: </span><address class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
@@ -101,7 +130,7 @@
                                     <div t-if="o.partner_id.company_registry">ABN: <span t-field="o.partner_id.company_registry"/></div>
                         
                     </div>
-                <div class="row page">
+                <div  t-if="o.move_type in ['out_invoice','out_refund']" class="row page">
                     <table style="width:100%; border: 1px solid black;border-collapse: collapse;">
                         <thead style="border: 1px solid black;border-collapse: collapse;">
                             <tr>
@@ -182,7 +211,7 @@
                     </tbody>
                 </table>
                 <br/>
-                <table  class="table table-sm o_main_table table-borderless"  >
+                <table t-if="o.move_type in ['out_invoice','out_refund']" class="table table-sm o_main_table table-borderless"  >
                     <tbody style="padding-left:10px;">
 
                         <tr>
@@ -191,7 +220,7 @@
                                 <div t-if="o.bank_acount_id" style="font-weight: bold;">WIRE INSTRUCTIONS:</div><br/>
                                 <div t-if="o.bank_acount_id">    Beneficiary: <span t-field="o.bank_acount_id.acc_holder_name"/></div>
                                 <div t-if="o.bank_acount_id">    Account Number: <span t-field="o.bank_acount_id.acc_number"/></div>
-                                <div t-if="o.bank_acount_id">    IBAN: <span t-field="o.bank_acount_id.aba_routing"/></div>
+                                <div t-if="o.bank_acount_id">    IBAN: <span t-field="o.bank_acount_id.bank_bic"/></div>
                                 <div t-if="o.bank_acount_id">    Bank: <span t-field="o.bank_acount_id.bank_name"/></div>
                                 <div t-if="o.bank_acount_id and o.company_id.country_code == 'DE'">    BIC: <span t-field="o.bank_acount_id.bank_bic"/></div>
                                 <div t-if="o.bank_acount_id and o.company_id.country_code in ['NL','US']">    SWIFT: <span t-field="o.bank_acount_id.bank_bic"/></div>
