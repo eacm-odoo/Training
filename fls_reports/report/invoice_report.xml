@@ -73,7 +73,7 @@
 
                 <div t-if="o.move_type in ['out_invoice','out_refund']" >
                     <div class="col-xs-4 pull-left" style="width: 60%; float:left">
-                        <img style="width: 350px;height=350px" t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo"/>
+                        <img style="width: 300px;height=300px" t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo"/>
                     </div>
                   <div style="width: 40%; float:right" class="col-xs-4 pull-right text-right">
                     <div name="company_address" t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: True}"/>
