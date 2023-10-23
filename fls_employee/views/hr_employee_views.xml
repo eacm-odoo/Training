@@ -1,0 +1,75 @@
+<odoo>
+    <record model="ir.ui.view" id="view_employee_form_inherit_fls_employee">
+        <field name="name">hr.employee.form.inherit.fls.emloyee</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='coach_id']" position="after">
+                <field name="fls_geo_id"/>
+            </xpath>
+            <xpath expr="//field[@name='work_location_id']" position="after">
+                <field name="work_country_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_employee_margin_tree" model="ir.ui.view">
+        <field name="name">hr.employee.margin.tree</field>
+        <field name="model">hr.employee.margin</field>
+        <field name="arch" type="xml">
+            <tree string="Employee Margin">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="job_id"/>
+                <field name="fls_geo_id"/>
+                <field name="timesheet_manager_id"/>
+                <field name="work_country_id"/>
+                <field name="company_id"/>
+                <field name="revenue"/>
+                <field name="cost"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_employee_margin_form" model="ir.ui.view">
+        <field name="name">hr.employee.margin.form</field>
+        <field name="model">hr.employee.margin</field>
+        <field name="arch" type="xml">
+            <form string="Employee Margin">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="date"/>
+                            <field name="job_id"/>
+                            <field name="fls_geo_id"/>
+                            <field name="timesheet_manager_id"/>
+                            <field name="work_country_id"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="revenue"/>
+                            <field name="cost"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>        
+    
+    <record id="action_open_employee_margin_views" model="ir.actions.act_window">
+        <field name="name">Employee Margins</field>
+        <field name="res_model">hr.employee.margin</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_employee_margin_tree"/>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a new sales receipt
+          </p><p>
+            Employee margin records cannot be created normally.
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_action_employee_report_tree" name="Employee Margins" action="action_open_employee_margin_views" parent="hr.hr_menu_hr_reports" sequence="50"/>
+</odoo>
