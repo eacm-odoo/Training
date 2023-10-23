@@ -1,17 +1,21 @@
 {
-    'name': 'Unique Employee Name Constraint',
-    'summary': '''Raises an error when a new hr.employee record is created with case-insensitive similarity to an existing employee name.''',
+    'name': 'FLS: Employee',
+    'summary': '''Modifications involving the employees module''',
     'author': 'Odoo Inc',
-    'developers': ['Lars Gartenberg (laga)'],
-    'task_ids': ['3434934',],
+    'developers': ['Lars Gartenberg (laga)', 'Zeno Nanon (zna)'],
+    'task_ids': ['3434934','3434930'],
     'website': 'https://www.odoo.com/',
     'category': 'Custom Development',
     'version': '1.0',
     'license': 'OPL-1',
-    'depends': ['hr', 'hr_contract'],
-    'data': [],
+    'depends': ['hr', 'hr_contract', 'sale_project'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/hr_employee_views.xml',
+        'data/actions.xml',
+        'data/employee_margin_report.xml',
+    ],
     'application': False,
     'auto_install': False,
     'installable': True,
 }
-
