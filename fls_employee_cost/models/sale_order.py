@@ -1,20 +1,35 @@
 from odoo import models, api, fields
-from datetime import date
 
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
     
     invoiced_usd = fields.Float(string="Amount Invoiced USD", compute="_compute_untaxed_amount_invoiced", store=True)
+    post_qty_invoiced = fields.Float(
+        string="Invoiced Quantity (Posted Only)",
+        compute='_compute_post_qty_invoiced',
+        digits='Product Unit of Measure',
+        store=True)
+
+    @api.depends('invoice_lines.move_id.state', 'invoice_lines.quantity')
+    def _compute_post_qty_invoiced(self):
+        """
+        Copy of _compute_qty_invoiced() to exclude draft invoices from qty_invoiced. Computed for post_qty_invoiced()
+        """
+        for line in self:
+            qty_invoiced = 0.0
+            for invoice_line in line._get_invoice_lines():
+                if invoice_line.move_id.state not in ['cancel', 'draft'] or invoice_line.move_id.payment_state == 'invoicing_legacy':
+                    if invoice_line.move_id.move_type == 'out_invoice':
+                        qty_invoiced += invoice_line.product_uom_id._compute_quantity(invoice_line.quantity, line.product_uom)
+                    elif invoice_line.move_id.move_type == 'out_refund':
+                        qty_invoiced -= invoice_line.product_uom_id._compute_quantity(invoice_line.quantity, line.product_uom)
+            line.post_qty_invoiced = qty_invoiced
 
     @api.depends('invoice_lines', 'invoice_lines.price_total', 'invoice_lines.move_id.state', 'invoice_lines.move_id.move_type')
     def _compute_untaxed_amount_invoiced(self):
-        """ Compute the untaxed amount already invoiced from the sale order line, taking the refund attached
-            the so line into account. This amount is computed as
-                SUM(inv_line.price_subtotal) - SUM(ref_line.price_subtotal)
-            where
-                `inv_line` is a customer invoice line linked to the SO line
-                `ref_line` is a customer credit note (refund) line linked to the SO line
+        """ 
+        Inherited to track the amount invoiced in USD in parallel to untaxed_amount_invoiced which could be in different currency
         """
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         for line in self:
@@ -22,7 +37,7 @@ class SaleOrderLine(models.Model):
             amount_invoiced_usd = 0.0
             for invoice_line in line._get_invoice_lines():
                 if invoice_line.move_id.state == 'posted':
-                    invoice_date = invoice_line.move_id.invoice_date or fields.Date.today()
+                    invoice_date = invoice_line.move_id.date or fields.Date.today()
                     if invoice_line.move_id.move_type == 'out_invoice':
                         amount_invoiced += invoice_line.currency_id._convert(invoice_line.price_subtotal, line.currency_id, line.company_id, invoice_date)
                         amount_invoiced_usd += invoice_line.currency_id._convert(invoice_line.price_subtotal, usd_currency, line.company_id, invoice_date)
@@ -77,7 +92,7 @@ class SaleOrderLine(models.Model):
                     amount_to_invoice = max(price_subtotal - amount, 0)
                 else:
                     ##### CUSTOM CODE START #####
-                    amount_to_invoice = price_subtotal - line.qty_invoiced*line.price_unit
+                    amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit
                     #####  CUSTOM CODE END  #####
 
             line.untaxed_amount_to_invoice = amount_to_invoice
