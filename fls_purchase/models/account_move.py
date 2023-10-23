@@ -4,25 +4,22 @@ from datetime import datetime
 
 class AccountMove(models.Model):
     _inherit = "account.move"
-
-    date = fields.Date(compute="_compute_accounting_date", store=True)
+    
     formatted_amount_total = fields.Char("Formatted Amount Total")
     vendor_company_name = fields.Char("Vendor Company Name")
 
-    @api.depends("line_ids")
-    def _compute_accounting_date(self):
-        for mv in self:
-            mv.date = datetime.today()
-            for line in mv.line_ids.mapped('purchase_line_id'):
-                purchase_id = line.order_id
-                date_planned = purchase_id.date_planned.date()
-                if mv.move_type == "in_invoice" and purchase_id and date_planned:
-                    mv.date = date_planned
+    def write(self, vals):
+        for line in self.line_ids.mapped('purchase_line_id'):
+            purchase_id = line.order_id
+            date_planned = purchase_id.date_planned.date()
+            if self.move_type == "in_invoice" and purchase_id and date_planned:
+                    vals['date'] = date_planned
+        res = super(AccountMove, self).write(vals)
+        return res
 
     @api.model
     def create(self, vals):
         move = super(AccountMove, self).create(vals)
-
         if move.move_type == 'in_invoice' and not move.partner_id.is_company and move.partner_id.vendor:
             employee_record = self.env['hr.employee'].search([('related_contact_ids', 'in',[move.partner_id.id] )],limit=1)
             if employee_record:
@@ -40,5 +37,4 @@ class AccountMove(models.Model):
                     # })]
                     # self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment',res_id=move.id,attachment_ids=attachment_ids)
                     self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment',res_id=move.id)
-
         return move
