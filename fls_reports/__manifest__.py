@@ -14,6 +14,7 @@ This feature that will generate customized bills and invoices
     'data': [
         "report/invoice_report.xml",
         "views/account_move_form_view.xml",
+        "views/sale_order_view_form.xml"
     ],
     'installable': True,
     'application': False,

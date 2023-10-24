@@ -40,6 +40,7 @@
         </template>
 
         <template id="report_invoice_document_mobility" inherit_id="account.report_invoice_document">
+
             <t t-call="web.external_layout" position="attributes">
                 <attribute name="t-call">fls_reports.external_layout_invoice_mobility</attribute>
             </t>
@@ -76,7 +77,7 @@
                         <img style="width: 300px;height=300px" t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo"/>
                     </div>
                   <div style="width: 40%; float:right" class="col-xs-4 pull-right text-right">
-                    <div name="company_address" t-field="company.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: True}"/>
+                    <span name="company_address" ><span style="font-weight: bold;" t-field="company.partner_id.name"/></span><address class="mb-0" t-field="company.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                     <div t-if="company.phone">Phone: <span t-field="company.phone"/></div>
                     <div t-if="company.email">Email: <span t-field="company.email"/></div>
                     <div t-if="company.l10n_nl_kvk">KVK: <span t-field="company.l10n_nl_kvk"/></div>
@@ -85,8 +86,8 @@
                     <br/>
                     <div style="text-align:left;" t-if="company.country_code == 'AU'"> <h3>Tax Invoice </h3></div> 
                     <div style="text-align:left;" t-else="else"><h3>Invoice</h3></div> 
-                    <div t-if="o.name">INVOICE NO: <span t-field="o.name"/></div>
-                    <div t-if="o.invoice_date">Date: <span t-field="o.invoice_date"/></div>
+                    <div t-if="o.name" style="font-weight: bold;">INVOICE NO: <span t-field="o.name"/></div>
+                    <div t-if="o.invoice_date" style="font-weight: bold;">Date: <span t-field="o.invoice_date"/></div>
                   </div>    
                 </div>
                 <h1  t-if="o.move_type in ['in_invoice','in_refund']" >INVOICE</h1>
@@ -125,9 +126,10 @@
                     <div  t-if="o.move_type in ['out_invoice','out_refund']"  class=" pull-right text-right" >
 
 
-                                    <span style="padding-left:60px;"> TO: <span t-field="o.partner_id.name"/></span><address style="padding-left:87px;" class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+                                    <span style="padding-left:60px;"> TO: <span style="font-weight: bold;" t-field="o.partner_id.name"/></span><address style="padding-left:87px;" class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
                                     <div style="padding-left:87px;" t-if="company.country_code in ['AU','NL','DE'] and o.partner_id.vat">VAT ID: <span t-field="o.partner_id.vat"/></div>
                                     <div style="padding-left:87px;" t-if="o.partner_id.company_registry">ABN: <span t-field="o.partner_id.company_registry"/></div>
+                                    <div style="padding-left:87px;" t-if="o.ref">Ref: <span t-field="o.ref"/></div>
                         
                     </div><br/>
                 <div  t-if="o.move_type in ['out_invoice','out_refund']" class="row page">
@@ -230,14 +232,14 @@
                                     <div style="font-weight: bold;">
                                         Check Remittance
                                     </div>
-                                    <div>Please make your check payable to First Line Software Inc.</div>
-                                    <div>Please mail your check to:</div>
-                                    <div>First Line Software Inc, P.O. Box  824147, Philadelphia, PA  19182-4147</div>
-                                    <div>For overnight delivery:</div>
-                                    <div>First Line Software Inc. </div>
-                                    <div>ATTN: Box 824147</div>
-                                    <div>525 Fellowship Rd., Suite 330</div>
-                                    <div>Mt. Laurel, NJ 08054-3415</div>
+                                    <div><span>Please make your check payable to First Line Software Inc.</span></div>
+                                    <div><span>Please mail your check to:</span></div>
+                                    <div><span>First Line Software Inc, P.O. Box  824147, Philadelphia, PA  19182-4147</span></div>
+                                    <div><span>For overnight delivery:</span></div>
+                                    <div><span>First Line Software Inc.</span> </div>
+                                    <div><span>ATTN: Box 824147</span></div>
+                                    <div><span>525 Fellowship Rd., Suite 330</span></div>
+                                    <div><span>Mt. Laurel, NJ 08054-3415</span></div>
                                 </div>
     
                             </td>
