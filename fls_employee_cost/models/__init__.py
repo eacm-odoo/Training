@@ -7,3 +7,4 @@ from . import res_company
 from . import res_currency
 from . import resource_calendar
 from . import sale_order
+from . import account_move

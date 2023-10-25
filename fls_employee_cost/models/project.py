@@ -91,7 +91,7 @@ class Project(models.Model):
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
             self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','untaxed_amounts_to_invoice:array_agg(untaxed_amount_to_invoice)', 'amounts_invoiced_usd:array_agg(invoiced_usd)', 'invoiced_usd', 'qty_delivered', 'qty_invoiced','discount'],
+            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','untaxed_amounts_to_invoice:array_agg(untaxed_amount_to_invoice)', 'amounts_invoiced_usd:array_agg(invoiced_usd)', 'invoiced_usd', 'qty_delivered', 'qty_invoiced','discount:avg(discount)'],
             ['product_id'],
         )
         #####  CUSTOM CODE END  #####
@@ -103,15 +103,16 @@ class Project(models.Model):
             ##### CUSTOM CODE START #####
             for res in sale_line_read_group:
                 to_invoice = 0
-                invoiced = 0
+                discount = 1
+                if res.get('discount', False) and float(res['discount'])>0:
+                    discount = 100-float(res['discount'])
+                    discount /= 100
                 for i, amount_to_invoice in enumerate(res['untaxed_amounts_to_invoice']):
                     if amount_to_invoice<0:
                         continue
                     from_currency = self.env['res.currency'].browse([res['currency_id'][i]])
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
-                    to_invoice += float(amount_to_invoice)*currency_conversion_rate
-                    if res['discount']>0:
-                        to_invoice+=(res['untaxed_amount_invoiced']*currency_conversion_rate*100)/(100-res['discount'])-(res['untaxed_amount_invoiced']*currency_conversion_rate)
+                    to_invoice += float(amount_to_invoice)*discount*currency_conversion_rate
                 sols_per_product[res['product_id'][0]] = (
                     to_invoice,
                     float(res['invoiced_usd']),

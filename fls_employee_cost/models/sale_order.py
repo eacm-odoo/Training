@@ -1,4 +1,5 @@
 from odoo import models, api, fields
+from datetime import date
 
 
 class SaleOrderLine(models.Model):
@@ -19,7 +20,7 @@ class SaleOrderLine(models.Model):
         for line in self:
             qty_invoiced = 0.0
             for invoice_line in line._get_invoice_lines():
-                if invoice_line.move_id.state not in ['cancel', 'draft'] or invoice_line.move_id.payment_state == 'invoicing_legacy':
+                if invoice_line.move_id.state not in ['cancel', 'draft', 'to_approve', 'approved'] or invoice_line.move_id.payment_state == 'invoicing_legacy':
                     if invoice_line.move_id.move_type == 'out_invoice':
                         qty_invoiced += invoice_line.product_uom_id._compute_quantity(invoice_line.quantity, line.product_uom)
                     elif invoice_line.move_id.move_type == 'out_refund':
@@ -92,7 +93,13 @@ class SaleOrderLine(models.Model):
                     amount_to_invoice = max(price_subtotal - amount, 0)
                 else:
                     ##### CUSTOM CODE START #####
-                    amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit
+                    has_amls = False
+                    for aml in inv_lines.filtered(lambda l: l.parent_state in ['draft', 'to_approve', 'approved']):
+                        currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,line.currency_id,aml.company_id,date.today().strftime("%m/%d/%y"))
+                        amount_to_invoice += aml.quantity * aml.price_unit * currency_conversion_rate
+                        has_amls = True
+                    if not has_amls:
+                        amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit
                     #####  CUSTOM CODE END  #####
 
             line.untaxed_amount_to_invoice = amount_to_invoice
