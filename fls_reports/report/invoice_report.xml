@@ -210,7 +210,7 @@
         <br />
 
         <table t-if="o.move_type in ['in_invoice','in_refund']" class="table table-sm o_main_table table-borderless" name="invoice_line_table">
-            <thead style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border: 1px solid black;color:black;">
+            <thead style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border-top: 1px solid black;border-bottom: 1px solid black;color:black;">
                 <tr >
                     <th class="text-center" width="25%">DESCRIPTION</th>
                     <th class="text-center" width="8%">UNITS</th>
