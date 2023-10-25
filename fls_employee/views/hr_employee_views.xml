@@ -20,13 +20,11 @@
             <tree string="Employee Margin">
                 <field name="date"/>
                 <field name="employee_id"/>
+                <field name="company_id"/>
                 <field name="job_id"/>
                 <field name="fls_geo_id"/>
                 <field name="timesheet_manager_id"/>
                 <field name="work_country_id"/>
-                <field name="company_id"/>
-                <field name="revenue"/>
-                <field name="cost"/>
             </tree>
         </field>
     </record>
@@ -40,16 +38,14 @@
                     <group>
                         <group>
                             <field name="employee_id"/>
+                            <field name="company_id"/>
                             <field name="date"/>
                             <field name="job_id"/>
+                        </group>
+                        <group>
                             <field name="fls_geo_id"/>
                             <field name="timesheet_manager_id"/>
                             <field name="work_country_id"/>
-                            <field name="company_id"/>
-                        </group>
-                        <group>
-                            <field name="revenue"/>
-                            <field name="cost"/>
                         </group>
                     </group>
                 </sheet>
