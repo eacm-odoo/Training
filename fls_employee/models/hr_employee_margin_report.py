@@ -2,7 +2,8 @@ from odoo import models
 from datetime import datetime, timedelta
 
 import re
-
+import logging
+logger = logging.getLogger(__name__)
 
 class HrEmployeeMarginCustomHandler(models.AbstractModel):
     _name = 'hr.employee.margin.report.handler'
@@ -30,13 +31,14 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
         self._cr.execute(f"""
             WITH account_analytic_line_recs AS (
                 SELECT 
+                    account_analytic_line.id,
                     account_analytic_line.employee_id,
                     account_analytic_line.so_line,
                     account_analytic_line.date                                                          AS date,
                     SUM(account_analytic_line.cost_usd)                                                 AS cost,
                     SUM(account_analytic_line.revenue_usd)                                              AS revenue
                 FROM account_analytic_line
-                GROUP BY employee_id, so_line, date
+                GROUP BY id, employee_id, so_line, date
             )
             SELECT
                 hr_employee.name,
