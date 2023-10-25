@@ -16,7 +16,7 @@ class HrEmployeeMargin(models.Model):
     timesheet_manager_id = fields.Many2one('res.users', string='Timesheet Approver')
     work_country_id = fields.Many2one('res.country', string='Work Country')
     company_id = fields.Many2one('res.company', string='Company')
-            
+    
     def _query_last_employee_margins(self):
         self._cr.execute(f"""
             SELECT DISTINCT ON (hr_employee.id)

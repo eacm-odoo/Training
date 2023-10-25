@@ -66,9 +66,9 @@ class AccountMove(models.Model):
             for rule in approval_rules:
                 if rule.user_id and  (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (po.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
+                if po.user_id and rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(po.user_id.id)]
-                if rule.delivery_director and po.delivery_director and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
+                if po.delivery_director and rule.delivery_director and po.delivery_director and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(po.delivery_director.id)]
                 if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
                     move_line_ids = self.line_ids
@@ -78,7 +78,7 @@ class AccountMove(models.Model):
                                 projects = line.account_analytic.project_ids
                                 self.approver_ids = [Command.link(projects[0].user_id.id)]
                                 break
-                if rule.timesheet_approver and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if po.timesheet_approver_id and rule.timesheet_approver and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(po.timesheet_approver_id.id)]
                 
             if self.approver_ids:
@@ -92,9 +92,9 @@ class AccountMove(models.Model):
             for rule in approval_rules:
                 if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (so.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
+                if so.x_studio_delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
-                if rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
+                if so.user_id and rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(so.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
