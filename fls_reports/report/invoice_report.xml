@@ -177,7 +177,7 @@
                     t-field="o.partner_id.vat" /></div>
             <div style="padding-left:87px;" t-if="o.partner_id.company_registry">ABN: <span
                     t-field="o.partner_id.company_registry" /></div>
-            <div style="padding-left:87px;" t-if="o.ref">Ref: <span t-field="o.ref" /></div>
+            <div style="padding-left:87px;" t-if="o.ref">Ref: <span t-field="o.reference" /></div>
 
         </div>
         <br />
