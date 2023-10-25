@@ -11,8 +11,8 @@ class AccountMove(models.Model):
     def compute_sale_order_id(self):
         for record in self:
             if record.sale_order_count>0:
-                record.client_order_ref = record.line_ids.sale_line_ids.order_id.client_order_ref
-                record.ref = record.line_ids.sale_line_ids.order_id.ref
+                record.client_order_ref = record.line_ids.sale_line_ids[0].order_id.client_order_ref
+                record.ref = record.line_ids.sale_line_ids[0].order_id.ref
             else:
                 record.client_order_ref = ""
                 record.ref = ""

@@ -65,7 +65,7 @@
             padding-left: 10px;
             }
             th{
-            text-decoration: underline;
+            text-decoration: none;
             font-weight: bold;
             }
         </style>
@@ -183,7 +183,7 @@
         <br />
         <div t-if="o.move_type in ['out_invoice','out_refund']" class="row page">
             <table style="width:100%; border: 1px solid black;border-collapse: collapse;">
-                <thead style="border: 1px solid black;border-collapse: collapse;">
+                <thead style="border: 1px solid black;border-collapse: collapse;color:black;">
                     <tr>
                         <th class="text-center">ORDER REFERENCE</th>
                         <th class="text-center">DATE SHIPPED</th>
@@ -210,7 +210,7 @@
         <br />
 
         <table t-if="o.move_type in ['in_invoice','in_refund']" class="table table-sm o_main_table table-borderless" name="invoice_line_table">
-            <thead style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border: 1px solid black;">
+            <thead style="background-color: rgba(169, 169, 169, 0.5); padding: 3px; border-top: 1px solid black;border-bottom: 1px solid black;color:black;">
                 <tr >
                     <th class="text-center" width="25%">DESCRIPTION</th>
                     <th class="text-center" width="8%">UNITS</th>
@@ -255,7 +255,7 @@
             </tbody>
         </table>
         <table t-if="o.move_type in ['out_invoice','out_refund']" class="" name="invoice_line_table">
-            <thead style="border: 1px solid black;border-collapse: collapse;">
+            <thead style="border: 1px solid black;border-collapse: collapse;color:black;text-decoration: none;">
                 <tr >
                     <th class="text-center" width="15%">DESCRIPTION</th>
                     <th class="text-center" width="8%">UNITS</th>
@@ -291,14 +291,14 @@
                             t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
                     </td>
                 </tr>
-                <tr t-if="o.company_id.country_code in ['AU','NL','DE']">
+                <tr style="border: none;" t-if="o.company_id.country_code in ['AU','NL','DE']">
                     <td style="border: none;" colspan="3"></td>
                     <td class="text-center">SUBTOTAL</td>
                     <td class="text-center">
                         <span t-field="o.amount_untaxed_signed" />
                     </td>
                 </tr>
-                <tr>
+                <tr style="border: none;">
                     <td style="border: none;" colspan="3"></td>
                     <td class="text-center" t-if="o.company_id.country_code == 'AU'">GST 10%</td>
                     <td class="text-center" t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
@@ -324,8 +324,10 @@
                 <tr>
                     <td></td>
                     <td>
-                        <div t-if="o.bank_acount_id" style="font-weight: bold;">WIRE
-                            INSTRUCTIONS:</div>
+                        <div t-if="o.bank_acount_id and o.company_id.country_code == 'US'" style="font-weight: bold;">Wire/ACH
+                            Instructions:</div>
+                        <div t-if="o.bank_acount_id and o.company_id.country_code !='US'" style="font-weight: bold;">Wire
+                            Instructions:</div>
                         <div t-if="o.bank_acount_id"> Beneficiary: <span
                                 t-field="o.bank_acount_id.acc_holder_name" /></div>
                         <div t-if="o.bank_acount_id"> Account Number: <span
@@ -344,7 +346,7 @@
                         <br />
                         <div t-if="o.company_id.country_code == 'US'">
                             <div style="font-weight: bold;">
-                                Check Remittance
+                                Check Remittance:
                             </div>
                             <div>
                                 <span>Please make your check payable to First Line Software Inc.</span>
