@@ -2,8 +2,7 @@ from odoo import models
 from datetime import datetime, timedelta
 
 import re
-import logging
-logger = logging.getLogger(__name__)
+
 
 class HrEmployeeMarginCustomHandler(models.AbstractModel):
     _name = 'hr.employee.margin.report.handler'
