@@ -67,9 +67,6 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             GROUP BY hr_employee.id, hr_employee.name, timesheet_year, timesheet_month
         """)
         res = self._cr.dictfetchall()
-        print("\n")
-        print(res)
-        print("\n")
         return res
     
     def _query_employee_margin(self):
@@ -117,6 +114,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
 
     def _dynamic_lines_generator(self, report, options, all_column_groups_expression_totals):
         lines = []
+        employees = self.compile_employee_data()
+        options['employees'] = employees
         line_id = self.env['account.report']._get_generic_line_id('hr.employee', 0)
         unfold_all = options.get('unfold_all', False)
         lines.append((0, {
@@ -211,9 +210,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
     
     def _report_expand_unfoldable_line_employee_margin_report(self, line_dict_id, groupby, options, progress, offset, unfold_all_batch_data):
         lines = []
-        employees = self.compile_employee_data()
         margins_by_employee = self._query_employee_margin()
-        for employee in employees:
+        for employee in options['employees']:
             margin_data = margins_by_employee.get(employee['id'], {})
             add_line = True
             if groupby:
