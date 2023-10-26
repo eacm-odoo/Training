@@ -40,7 +40,7 @@
         </style>
         <div t-if="o.move_type in ['out_invoice','out_refund']" class="footer">
             <div>If you have any questions concerning this invoice, please call us.</div>
-            <div style="text-align:right;">Sincerely, Accounts Receivable</div>
+            <div style="text-align:right;">Sincerely, Accounts Receivable</div><br/><br/>
             <div style="text-align:center;">
                 <b>THANK YOU FOR YOUR BUSINESS!</b>
             </div>
