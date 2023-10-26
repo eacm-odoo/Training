@@ -7,7 +7,8 @@ class AccountMove(models.Model):
     reference = fields.Char(compute = 'compute_sale_order_id')
 
     bank_acount_id = fields.Many2one(comodel_name='res.partner.bank')
-    analytic_account_to_invoice = fields.Boolean(string="Analytic Account on Report?")
+    analytic_account_to_invoice = fields.Boolean(string= 'Analytic Account on Report?')
+    currency_name = fields.Char(related = 'currency_id.name')
     def compute_sale_order_id(self):
         for record in self:
             if record.sale_order_count>0:

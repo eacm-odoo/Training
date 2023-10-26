@@ -14,7 +14,30 @@
 
             <t t-out="0" />
         </div>
-
+        <style type="text/css">
+            .border {
+            border: 1px solid black;
+            }
+            td {
+            text-align: left;
+            padding-left: 10px;
+            }
+            th{
+            text-decoration: none;
+            font-weight: bold;
+            }
+            div {
+                font-size:13px;
+            }
+            span{
+                font-size:13px;
+            }
+            .text-end{
+                text-align:right;
+                padding-right:5px;
+                font-size:13px;
+            }
+        </style>
         <div t-if="o.move_type in ['out_invoice','out_refund']" class="footer">
             <div>If you have any questions concerning this invoice, please call us.</div>
             <div style="text-align:right;">Sincerely, Accounts Receivable</div>
@@ -68,6 +91,17 @@
             text-decoration: none;
             font-weight: bold;
             }
+            div {
+                font-size:13px;
+            }
+            span{
+                font-size:13px;
+            }
+            .text-end{
+                text-align:right;
+                padding-right:5px;
+                font-size:13px;
+            }
         </style>
 
         <t t-if="not company">
@@ -83,9 +117,9 @@
             </t>
         </t>
 
-        <div t-if="o.move_type in ['out_invoice','out_refund']" >
+        <div style="content: '';display: table;clear: both;width:100%;" t-if="o.move_type in ['out_invoice','out_refund']" >
             <div class="col-xs-4 pull-left" style="width: 60%; float:left">
-                <img style="width: 300px;height=300px" t-if="company.logo"
+                <img style="width: 200px;height=200px" t-if="company.logo"
                     t-att-src="image_data_uri(company.logo)" class="float-start" alt="Logo" />
             </div>
             <div style="width: 40%; float:right" class="col-xs-4 pull-right text-right">
@@ -109,18 +143,26 @@
                     <h3>Invoice</h3>
                 </div>
                 <div t-if="o.name" style="font-weight: bold;">INVOICE NO: <span t-field="o.name" /></div>
-                <div t-if="o.invoice_date" style="font-weight: bold;">Date: <span
-                        t-field="o.invoice_date" /></div>
+                <div t-if="o.invoice_date" style="font-weight: bold;">Date: 
+                    <span t-if = "o.company_id.country_code in ['AU','NL','DE']" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
+
+                    <span t-if = "o.company_id.country_code == 'US'" t-esc="o.invoice_date.strftime('%m/%d/%Y')" /></div>
             </div>
         </div>
         <h1 style=" font-color:rgba(169, 169, 169, 0.7);" t-if="o.move_type in ['in_invoice','in_refund']">INVOICE</h1>
         <div t-if="o.move_type in ['in_invoice','in_refund']" style = "content: '';display: table;clear: both;width:100%;">
             <div class="col-xs-4" style="width: 70%; float:left ">
                 <div style="font-weight: bold;">INVOICE #: <span t-field="o.ref" /></div>
-                <div style="font-weight: bold;">INVOICE DATE: <span t-field="o.invoice_date" /></div>
+                <div style="font-weight: bold;">INVOICE DATE:
+                    <span t-if = "o.company_id.country_code in ['AU','NL','DE']" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
+
+                    <span t-if = "o.company_id.country_code == 'US'" t-esc="o.invoice_date.strftime('%m/%d/%Y')" /></div>
             </div>
             <div style="width: 30%; float:right" class="col-xs-4">
-                <div style="font-weight: bold;">DELIVERY DATE: <span t-field="o.date" /></div>
+                <div style="font-weight: bold;">DELIVERY DATE: 
+                    <span t-if = "o.company_id.country_code in ['AU','NL','DE']" t-esc="o.date.strftime('%d/%m/%Y')" />
+
+                    <span t-if = "o.company_id.country_code == 'US'" t-esc="o.date.strftime('%m/%d/%Y')" /></div>
                 <div style="font-weight: bold;">PAYMENT TERM: <span t-field="o.invoice_payment_term_id.name" /></div>
             </div>
             <br />
@@ -145,7 +187,7 @@
                 <span style="font-weight: bold;" t-field="company.partner_id.name" />
 
                 <address class="mb-1" t-field="o.company_id.partner_id"
-                    t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}' />
+                    t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' />
             </div>
         </div>
         <div t-if="o.move_type in ['in_invoice','in_refund']">
@@ -168,16 +210,16 @@
         <div t-if="o.move_type in ['out_invoice','out_refund']" class=" pull-right text-right">
 
 
-            <span style="padding-left:60px;"> TO: <span style="font-weight: bold;"
+            <span> TO: <span style="font-weight: bold;"
                     t-field="o.partner_id.name" /></span>
-            <address style="padding-left:87px;" class="mb-0" t-field="o.partner_id"
+            <address  class="mb-0" t-field="o.partner_id"
                 t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' />
-            <div style="padding-left:87px;"
+            <div 
                 t-if="company.country_code in ['AU','NL','DE'] and o.partner_id.vat">VAT ID: <span
                     t-field="o.partner_id.vat" /></div>
-            <div style="padding-left:87px;" t-if="o.partner_id.company_registry">ABN: <span
+            <div  t-if="o.partner_id.company_registry">ABN: <span
                     t-field="o.partner_id.company_registry" /></div>
-            <div style="padding-left:87px;" t-if="o.ref">Ref: <span t-field="o.reference" /></div>
+            <div t-if="o.reference">Ref: <span t-field="o.reference" /></div>
 
         </div>
         <br />
@@ -198,7 +240,9 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span t-esc="o.date" />
+                            <span t-if = "o.company_id.country_code in ['AU','NL','DE']" t-esc="o.date.strftime('%d/%m/%Y')" />
+
+                            <span t-if = "o.company_id.country_code == 'US'" t-esc="o.date.strftime('%m/%d/%Y')" />
                         </td>
                         <td class="text-center">
                             <span t-esc="o.invoice_payment_term_id.name" />
@@ -222,7 +266,7 @@
             <tbody >
                 <tr style="border-bottom: 1px solid black;" 
                     t-foreach="o.invoice_line_ids" t-as="l">
-                    <td class="text-center">
+                    <td class="text-begin">
                         <div t-if="o.analytic_account_to_invoice">
                             <span t-field="l.account_analytic.name" />
                         </div>
@@ -230,26 +274,29 @@
                             <span t-field="l.name" />
                         </div>
                     </td>
-                    <td class="text-center">
+                    <td class="text-begin">
                         <span t-field="l.product_uom_id" />
                     </td>
-                    <td class="text-center">
+                    <td class="text-end">
                         <span t-field="l.quantity" />
                     </td>
-                    <td class="text-center">
+                    <td class="text-end">
                         <span t-field="l.price_unit" />
                     </td>
 
-                    <td class="text-center" id="subtotal">
-                        <span t-field="l.price_subtotal"
-                            t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                    <td class="text-end" id="subtotal">
+                        <span t-field="o.currency_name"/>
+                        <span t-out="'{:,}'.format(l.price_subtotal, '.2f')"/>
+
                     </td>
                 </tr>
                 <tr >
                     <td style="border: none;" colspan="3"></td>
-                    <td style = "background-color: rgba(169, 169, 169, 0.5);" class="text-center">TOTAL:</td>
-                    <td style = "background-color: rgba(169, 169, 169, 0.5);" class="text-center">
-                        <span t-field="o.amount_total" />
+                    <td style = "background-color: rgba(169, 169, 169, 0.5);" class="text-end">TOTAL:</td>
+                    <td style = "background-color: rgba(169, 169, 169, 0.5);" class="text-end">
+                        <span t-field="o.currency_name" />
+                        <span t-out="'{:,}'.format(o.amount_total, '.2f')"/>
+
                     </td>
                 </tr>
             </tbody>
@@ -268,7 +315,7 @@
                 <tr class="invoice_tbody"
                     
                     t-foreach="o.invoice_line_ids" t-as="l">
-                    <td class="text-center">
+                    <td class="text-begin">
                         <div t-if="o.analytic_account_to_invoice">
                             <span t-field="l.account_analytic.name" />
                         </div>
@@ -276,42 +323,46 @@
                             <span t-field="l.name" />
                         </div>
                     </td>
-                    <td class="text-center">
+                    <td class="text-begin">
                         <span t-field="l.product_uom_id" />
                     </td>
-                    <td class="text-center">
+                    <td class="text-end">
                         <span t-field="l.quantity" />
                     </td>
-                    <td class="text-center">
+                    <td class="text-end">
                         <span t-field="l.price_unit" />
                     </td>
 
-                    <td class="text-center" id="subtotal">
-                        <span t-field="l.price_subtotal"
-                            t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}" />
+                    <td class="text-end" id="subtotal">
+                        <span t-field="o.currency_name"/>
+                        <span t-out="'{:,}'.format(l.price_subtotal, '.2f')"/>
+                        
                     </td>
                 </tr>
                 <tr style="border: none;" t-if="o.company_id.country_code in ['AU','NL','DE']">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-center">SUBTOTAL</td>
-                    <td class="text-center">
-                        <span t-field="o.amount_untaxed_signed" />
+                    <td class="text-end">SUBTOTAL</td>
+                    <td class="text-end">
+                        <span t-field="o.currency_name"/>
+                        <span t-out="'{:,}'.format(o.amount_untaxed_signed, '.2f')" />
                     </td>
                 </tr>
                 <tr style="border: none;">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-center" t-if="o.company_id.country_code == 'AU'">GST 10%</td>
-                    <td class="text-center" t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
-                    <td class="text-center" t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
-                    <td class="text-center" t-if="o.company_id.country_code in ['AU','NL','DE']">
-                        <span t-field="o.amount_tax_signed" />
+                    <td class="text-end" t-if="o.company_id.country_code == 'AU'">GST 10%</td>
+                    <td class="text-end" t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
+                    <td class="text-end" t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
+                    <td class="text-end" t-if="o.company_id.country_code in ['AU','NL','DE']">
+                        <span t-field="o.currency_name"/>
+                        <span t-out="'{:,}'.format(o.amount_tax_signed, '.2f')"/>
                     </td>
                 </tr>
                 <tr style="border: none;">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-center">TOTAL</td>
-                    <td class="text-center">
-                        <span t-field="o.amount_total" />
+                    <td class="text-end">TOTAL</td>
+                    <td class="text-end">
+                        <span t-field="o.currency_name"/>
+                        <span t-out="'{:,}'.format(o.amount_total, '.2f')"/>
                     </td>
                 </tr>
             </tbody>
@@ -332,8 +383,8 @@
                                 t-field="o.bank_acount_id.acc_holder_name" /></div>
                         <div t-if="o.bank_acount_id"> Account Number: <span
                                 t-field="o.bank_acount_id.acc_number" /></div>
-                        <div t-if="o.bank_acount_id"> IBAN: <span
-                                t-field="o.bank_acount_id.bank_bic" /></div>
+                        <div t-if="o.bank_acount_id and o.company_id.country_code in ['NL','DE']"> IBAN: <span
+                                t-field="o.bank_acount_id.aba_routing" /></div>
                         <div t-if="o.bank_acount_id"> Bank: <span
                                 t-field="o.bank_acount_id.bank_name" /></div>
                         <div t-if="o.bank_acount_id and o.company_id.country_code == 'DE'"> BIC: <span
@@ -393,6 +444,7 @@
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">fls_reports.fls_report_invoice_doc</field>
+
     </record>
 
 
