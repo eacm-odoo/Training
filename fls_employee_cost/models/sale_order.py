@@ -95,11 +95,11 @@ class SaleOrderLine(models.Model):
                     ##### CUSTOM CODE START #####
                     has_amls = False
                     for aml in inv_lines.filtered(lambda l: l.parent_state in ['draft', 'to_approve', 'approved']):
-                        currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,line.currency_id,aml.company_id,date.today().strftime("%m/%d/%y"))
-                        amount_to_invoice += aml.quantity * aml.price_unit * currency_conversion_rate
+                        currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,line.currency_id,aml.company_id,aml.move_id.date.strftime("%m/%d/%y"))
+                        amount_to_invoice += aml.quantity * aml.price_unit * ((100-aml.discount)/100) * currency_conversion_rate
                         has_amls = True
                     if not has_amls:
-                        amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit
+                        amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit*((100-line.discount)/100)
                     #####  CUSTOM CODE END  #####
 
             line.untaxed_amount_to_invoice = amount_to_invoice
