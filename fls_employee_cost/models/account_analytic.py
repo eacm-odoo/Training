@@ -1,7 +1,8 @@
-from odoo import fields, models, _, api
-from datetime import date
+from odoo import fields, models, _
 from odoo.osv import expression
-from odoo.exceptions import AccessError
+from odoo.exceptions import UserError
+from datetime import timedelta
+
 
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
@@ -35,3 +36,16 @@ class AccountAnalyticLine(models.Model):
             #####  CUSTOM CODE END  #####
         return domain
     
+    def action_add_time_to_timer(self, time):
+        if self.validated:
+            raise UserError(_('You cannot use the timer on validated timesheets.'))
+        ##### CUSTOM CODE START #####
+        if not self.user_id.sudo().employee_ids:
+            #####  CUSTOM CODE END  #####
+            raise UserError(_('An employee must be linked to your user to record time.'))
+        timer = self.user_timer_id
+        if not timer:
+            self.action_timer_start()
+            timer = self.user_timer_id
+        timer.timer_start = min(timer.timer_start - timedelta(0, time), fields.Datetime.now())
+        
