@@ -14,37 +14,7 @@
 
             <t t-out="0" />
         </div>
-        <style type="text/css">
-            .border {
-            border: 1px solid black;
-            }
-            td {
-            text-align: left;
-            padding-left: 10px;
-            }
-            th{
-            text-decoration: none;
-            font-weight: bold;
-            }
-            div {
-                font-size:13px;
-            }
-            span{
-                font-size:13px;
-            }
-            .text-end{
-                text-align:right;
-                padding-right:5px;
-                font-size:13px;
-            }
-        </style>
-        <div t-if="o.move_type in ['out_invoice','out_refund']" class="footer">
-            <div>If you have any questions concerning this invoice, please call us.</div>
-            <div style="text-align:right;">Sincerely, Accounts Receivable</div><br/><br/>
-            <div style="text-align:center;">
-                <b>THANK YOU FOR YOUR BUSINESS!</b>
-            </div>
-        </div>
+        
     </template>
 
     <template id="external_layout_invoice_mobility2">
@@ -194,14 +164,14 @@
             <br />
             <br />
             <br/>
-            <div t-if="o.bank_acount_id" style="font-weight: bold;padding-top:20px;">Payment
+            <div t-if="o.partner_bank_id" style="font-weight: bold;padding-top:20px;">Payment
                 Instructions:</div>
-            <div t-if="o.bank_acount_id">IBAN/Account Number: <span
-                    t-field="o.bank_acount_id.bank_bic" /></div>
-            <div t-if="o.bank_acount_id">SWIFT: <span t-field="o.bank_acount_id.bank_bic" /></div>
-            <div t-if="o.bank_acount_id">Bank: <span t-field="o.bank_acount_id.bank_name" /></div>
-            <div t-if="o.bank_acount_id">Beneficiary: <span
-                    t-field="o.bank_acount_id.acc_holder_name" /></div>
+            <div t-if="o.partner_bank_id">IBAN/Account Number: <span
+                    t-field="o.partner_bank_id.acc_number" /></div>
+            <div t-if="o.partner_bank_id">SWIFT: <span t-field="o.bank_acount_id.bank_bic" /></div>
+            <div t-if="o.partner_bank_id">Bank: <span t-field="o.bank_acount_id.bank_name" /></div>
+            <div t-if="o.partner_bank_id">Beneficiary: <span
+                    t-field="o.partner_bank_id.acc_holder_name" /></div>
         </div>
         <t t-set="orders"
             t-value="o.invoice_line_ids.mapped('sale_line_ids').mapped('order_id')" />
@@ -428,6 +398,14 @@
                 </tr>
             </tbody>
         </table>
+        <div t-if="o.move_type in ['out_invoice','out_refund']">
+            <br/><br/><br/><br/>
+            <div>If you have any questions concerning this invoice, please call us.</div>
+            <div style="text-align:right;">Sincerely, Accounts Receivable</div><br/><br/>
+            <div style="text-align:center;">
+                <b>THANK YOU FOR YOUR BUSINESS!</b>
+            </div>
+        </div>
         </t>
     </t>
     </template>
