@@ -1,1 +1,1 @@
-from . import account_move, res_company, sale_order
+from . import account_move, res_company, sale_order, ir_actions_reports
