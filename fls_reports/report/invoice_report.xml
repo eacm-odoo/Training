@@ -185,10 +185,10 @@
             <address  class="mb-0" t-field="o.partner_id"
                 t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}' />
             <div 
-                t-if="company.country_code in ['AU','NL','DE'] and o.partner_id.vat">VAT ID: <span
+                t-if="company.country_code in ['NL','DE'] and o.partner_id.vat">VAT ID: <span
                     t-field="o.partner_id.vat" /></div>
-            <div  t-if="o.partner_id.company_registry">ABN: <span
-                    t-field="o.partner_id.company_registry" /></div>
+            <div  t-if="company.country_code == 'AU' and o.partner_id.vat">ABN: <span
+                    t-field="o.partner_id.vat" /></div>
             <div t-if="o.reference">Ref: <span t-field="o.reference" /></div>
 
         </div>
