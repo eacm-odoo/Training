@@ -46,7 +46,7 @@ class SaleOrder(models.Model):
         if self.state != 'to_approve':
             return
         if self.current_approver_id!= self.loggedin_user_id:
-            raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
+            raise UserError(_('Unable to approve the record, it has to be approved by ' + self.current_approver.name+' first'))
         self.no_of_approvals+=1
         approvers = self.approver_ids.ids
         message = self.current_approver.email_formatted+ 'has approved this Sale Order'
