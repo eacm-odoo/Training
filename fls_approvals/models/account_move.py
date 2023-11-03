@@ -99,7 +99,7 @@ class AccountMove(models.Model):
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (so.department_id == rule.department_id)):
+                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
                 if so.x_studio_delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
