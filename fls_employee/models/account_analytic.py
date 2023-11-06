@@ -1,5 +1,5 @@
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+
 
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
@@ -30,6 +30,6 @@ class AccountAnalyticLine(models.Model):
             line.revenue_usd = 0
             if line.date and line.so_line and line.so_line.currency_id and line.so_line.order_id and line.so_line.order_id.company_id:
                 currency_conversion_rate = self.env['res.currency']._get_conversion_rate(line.so_line.currency_id,usd_currency,line.so_line.order_id.company_id,line.date.strftime("%m/%d/%y"))
-                if line.so_line.product_id.service_policy == 'delivered_timesheet':
+                if line.so_line.product_id.service_policy and line.so_line.product_id.service_policy == 'delivered_timesheet':
                     line.revenue_usd = line.so_line.price_unit * line.unit_amount * currency_conversion_rate
                     

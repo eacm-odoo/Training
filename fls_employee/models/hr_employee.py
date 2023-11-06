@@ -7,9 +7,9 @@ import re
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
 
-    employee_margin_id = fields.Many2one(string='Recent Margin')
+    employee_margin_id = fields.Many2one('hr.employee.margin', string='Recent Margin')
     work_country_id = fields.Many2one('res.country', string='Work Country', related='address_id.country_id', store=True)
-    fls_geo_id = fields.Many2one('fls.geo', string='FLS GEO')
+    fls_geo_id = fields.Many2one('fls.geo', string='FLS Geo')
 
     def _normalize_name(self, name):
         return re.sub(' +', ' ', name).strip() if name else name

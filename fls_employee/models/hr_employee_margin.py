@@ -9,13 +9,13 @@ class HrEmployeeMargin(models.Model):
     _description = 'Employee Margin'
 
     name = fields.Char()
-    date = fields.Date(string='Date', required=True)
-    employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
-    job_id = fields.Many2one('hr.job', string='Job')
-    fls_geo_id = fields.Many2one('fls.geo', string='FLS GEO')
-    timesheet_manager_id = fields.Many2one('res.users', string='Timesheet Approver')
-    work_country_id = fields.Many2one('res.country', string='Work Country')
-    company_id = fields.Many2one('res.company', string='Company')
+    date = fields.Date(string='Date', required=True, copy=True)
+    employee_id = fields.Many2one('hr.employee', string='Employee', required=True, copy=True)
+    job_id = fields.Many2one('hr.job', string='Job Position', copy=True)
+    fls_geo_id = fields.Many2one('fls.geo', string='FLS GEO', copy=True)
+    timesheet_manager_id = fields.Many2one('res.users', string='Timesheet Approver', copy=True)
+    work_country_id = fields.Many2one('res.country', string='Work Country', copy=True)
+    company_id = fields.Many2one('res.company', string='Company', copy=True)
             
     def _query_last_employee_margins(self):
         self._cr.execute(f"""

@@ -1,4 +1,4 @@
-from odoo import fields, models, api, _
+from odoo import fields, models
 
 
 class FlsGeo(models.Model):
@@ -6,4 +6,5 @@ class FlsGeo(models.Model):
     _description='FLS GEO'
 
     name = fields.Char()
+    user_id = fields.Many2one('res.users', string="Responsible")
     

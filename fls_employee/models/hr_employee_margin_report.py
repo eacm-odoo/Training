@@ -9,6 +9,42 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
     _inherit = 'account.report.custom.handler'
     _description = 'Employee Margin Report Custom Handler'
 
+    def _query_employee_history_fls_geo(self):
+        self._cr.execute(f"""
+            SELECT
+                ARRAY_AGG(hr_employee_margin.fls_geo_id)                                                AS fls_geo_ids
+            FROM hr_employee_margin
+        """)
+        res = self._cr.dictfetchall()
+        res = list(set(res[0]['fls_geo_ids']))
+        if None in res:
+            res.remove(None)
+        return res
+    
+    def _query_employee_history_work_country(self):
+        self._cr.execute(f"""
+            SELECT
+                ARRAY_AGG(hr_employee_margin.work_country_id)                                           AS work_country_ids
+            FROM hr_employee_margin
+        """)
+        res = self._cr.dictfetchall()
+        res = list(set(res[0]['work_country_ids']))
+        if None in res:
+            res.remove(None)
+        return res
+    
+    def _query_employee_history_timesheet_manager(self):
+        self._cr.execute(f"""
+            SELECT
+                ARRAY_AGG(hr_employee_margin.timesheet_manager_id)                                      AS timesheet_manager_ids
+            FROM hr_employee_margin
+        """)
+        res = self._cr.dictfetchall()
+        res = list(set(res[0]['timesheet_manager_ids']))
+        if None in res:
+            res.remove(None)
+        return res
+    
     def _query_employees(self):
         self._cr.execute(f"""
             SELECT
@@ -34,6 +70,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
                     account_analytic_line.employee_id,
                     account_analytic_line.so_line,
                     account_analytic_line.date                                                          AS date,
+                    EXTRACT(MONTH FROM account_analytic_line.date)                                      AS timesheet_month,
+                    EXTRACT(YEAR FROM account_analytic_line.date)                                       AS timesheet_year,
                     SUM(account_analytic_line.cost_usd)                                                 AS cost,
                     SUM(account_analytic_line.revenue_usd)                                              AS revenue
                 FROM account_analytic_line
@@ -110,6 +148,9 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
     def _custom_options_initializer(self, report, options, previous_options=None):
         """ To be overridden to add report-specific _init_options... code to the report. """
         options['unfold_all'] = self._context.get('print_mode')
+        options['fls_geo_id'] = self._query_employee_history_fls_geo()
+        options['work_country_id'] = self._query_employee_history_work_country()
+        options['timesheet_manager_id'] = self._query_employee_history_timesheet_manager()
         if report.root_report_id and not hasattr(report, '_init_options_custom'):
             report.root_report_id._init_options_custom(options, previous_options)
 
@@ -173,9 +214,10 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
 
     def _report_expand_unfoldable_line_employee_margin_by_group_report(self, line_dict_id, groupby, options, progress, offset, unfold_all_batch_data):
         lines = []
+        unfold_all = options.get('unfold_all', False)
         if groupby:
             model_name = line_dict_id.replace("~","")
-            groups = self.env[model_name].search([])
+            groups = self.env[model_name].browse(options[groupby])
             for group in groups:
                 line_id = self.env['account.report']._get_generic_line_id(model_name, group.id, parent_line_id=line_dict_id)
                 lines.append({
@@ -187,7 +229,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
                     'columns': [],
                     'groupby': f"""{groupby},{group.id}""",
                     'unfoldable': True,
-                    'unfolded': True,
+                    'unfolded': unfold_all,
                     'expand_function': '_report_expand_unfoldable_line_employee_margin_report',
                     'colspan': len(options['columns']) + 1
                 })
@@ -201,7 +243,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
                 'columns': [],
                 'groupby': f"""{groupby},0""",
                 'unfoldable': True,
-                'unfolded': True,
+                'unfolded': unfold_all,
                 'expand_function': '_report_expand_unfoldable_line_employee_margin_report',
                 'colspan': len(options['columns']) + 1
             })
@@ -244,18 +286,17 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
         usd_currency = self.env['res.currency'].search([('name','=','USD')], limit=1) 
         for employee in employees:
             for rec in employee['records']:
-                rec_date = datetime.strptime(rec['date'], '%Y-%m-%d')
                 sol = self.env['sale.order.line'].browse([rec['so_line']])
                 if len(sol) == 1 and sol.product_id.service_policy != 'delivered_timesheet':
                     rec['revenue'] = 0
                     for aml in sol.invoice_lines:
-                        if aml.move_id.date.month == rec_date.month and aml.move_id.date.year == rec_date.year:
+                        if aml.move_id.date.month == rec['timesheet_month'] and aml.move_id.date.year == rec['timesheet_year']:
                             currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,usd_currency,aml.company_id,aml.move_id.date.strftime("%m/%d/%y"))
                             rec['revenue'] += aml.price_subtotal * currency_conversion_rate
                     unique_employees = []
                     employee_timsheet_counter = 0
                     for aal in sol.timesheet_ids:
-                        if aal.date.month == rec_date.month and aal.date.year == rec_date.year:
+                        if aal.date.month == rec['timesheet_month'] and aal.date.year == rec['timesheet_year']:
                             if aal.employee_id.id == rec['employee_id']:
                                 employee_timsheet_counter += 1
                             if aal.employee_id.id not in unique_employees:
@@ -263,7 +304,6 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
                     rec['revenue'] /= len(unique_employees) or 1
                     rec['revenue'] /= employee_timsheet_counter or 1
         return employees
-
 
     def _get_columns(self, employee_timesheets, employee_margins, options, groupby):
         columns = options['columns']
@@ -285,6 +325,9 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
                     revenue += rec['revenue']
             margin = revenue + cost
             margin_percentage = 0.00
+            cost = float(cost)
+            margin = float(margin)
+            margin_percentage = float(margin_percentage)
             if column['name'] == 'Cost':
                 formatted_value = '$\xa0{0:,.2f}'.format(cost)
                 value = cost
