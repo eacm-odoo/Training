@@ -84,7 +84,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             FROM hr_employee
             INNER JOIN account_analytic_line_recs
                 ON hr_employee.id = account_analytic_line_recs.employee_id
-            GROUP BY hr_employee.id, hr_employee.name
+            GROUP BY hr_employee.name, hr_employee.id
+            ORDER BY hr_employee.name
         """)
         return self._cr.dictfetchall()
     
@@ -217,7 +218,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
         unfold_all = options.get('unfold_all', False)
         if groupby:
             model_name = line_dict_id.replace("~","")
-            groups = self.env[model_name].browse(options[groupby])
+            groups = self.env[model_name].browse(options[groupby]).sorted(lambda rec: rec.name)
             for group in groups:
                 line_id = self.env['account.report']._get_generic_line_id(model_name, group.id, parent_line_id=line_dict_id)
                 lines.append({
