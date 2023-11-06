@@ -37,7 +37,7 @@
 
     <record id="action_employee_report_margin" model="ir.actions.client">
         <field name="name">Employee Margin</field>
-        <field name="tag">account_report</field>
+        <field name="tag">employee_report</field>
         <field name="context" eval="{'report_id': ref('fls_employee.employee_margin_report')}"/>
     </record>
 
