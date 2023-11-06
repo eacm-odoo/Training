@@ -101,10 +101,17 @@ class AccountMove(models.Model):
             for rule in approval_rules:
                 if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if so.x_studio_delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
-                    self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
+                if self.delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    self.approver_ids = [Command.link(self.delivery_director.id)]
                 if self.invoice_user_id and rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(self.invoice_user_id.id)]
+                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    move_line_ids = self.line_ids
+                    for line in move_line_ids:                        
+                        if so.analytic_account_id and so.analytic_account_id.project_ids :
+                            projects = so.analytic_account_id.project_ids
+                            self.approver_ids = [Command.link(projects[0].user_id.id)]
+                            break
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
                 self._send_approval_reminder_mail()
