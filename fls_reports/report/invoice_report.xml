@@ -360,7 +360,7 @@
                         <div t-if="o.bank_acount_id and o.company_id.country_code == 'DE'"> BIC: <span
                                 t-field="o.bank_acount_id.bank_bic" /></div>
                         <div
-                            t-if="o.bank_acount_id and o.company_id.country_code in ['NL','US']">
+                            t-if="o.bank_acount_id and o.company_id.country_code in ['AU','NL','US']">
                             SWIFT: <span t-field="o.bank_acount_id.bank_bic" /></div>
                         <div t-if="o.bank_acount_id and o.company_id.country_code == 'AU'"> BSB
                             Number: <span t-field="o.bank_acount_id.bsb" /></div>
