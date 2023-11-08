@@ -311,7 +311,7 @@
                 </tr>
                 <tr style="border: none;" t-if="o.company_id.country_code in ['AU','NL','DE']">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-end">SUBTOTAL</td>
+                    <td style="border: none;" class="text-end">SUBTOTAL</td>
                     <td class="text-end">
                         <span t-field="o.currency_name"/>
                         <span t-out="'{0:,.2f}'.format(o.amount_untaxed_signed)" />
@@ -319,9 +319,9 @@
                 </tr>
                 <tr style="border: none;">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-end" t-if="o.company_id.country_code == 'AU'">GST 10%</td>
-                    <td class="text-end" t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
-                    <td class="text-end" t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
+                    <td style="border: none;" class="text-end" t-if="o.company_id.country_code == 'AU'">GST 10%</td>
+                    <td style="border: none;" class="text-end" t-if="o.company_id.country_code == 'NL'">VAT 21%</td>
+                    <td style="border: none;" class="text-end" t-if="o.company_id.country_code == 'DE'">VAT 19%</td>
                     <td class="text-end" t-if="o.company_id.country_code in ['AU','NL','DE']">
                         <span t-field="o.currency_name"/>
                         <span t-out="'{0:,.2f}'.format(o.amount_tax_signed)"/>
@@ -329,10 +329,10 @@
                 </tr>
                 <tr style="border: none;">
                     <td style="border: none;" colspan="3"></td>
-                    <td class="text-end">TOTAL</td>
+                    <td style="border: none;font-weight: bold;" class="text-end">TOTAL DUE:</td>
                     <td class="text-end">
-                        <span t-field="o.currency_name"/>
-                        <span t-out="'{0:,.2f}'.format(o.amount_total)"/>
+                        <span style="font-weight: bold;" t-field="o.currency_name"/>
+                        <span style="font-weight: bold;" t-out="'{0:,.2f}'.format(o.amount_total)"/>
                     </td>
                 </tr>
             </tbody>
