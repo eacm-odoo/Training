@@ -1,0 +1,38 @@
+<odoo>
+    <record model="ir.ui.view" id="view_employee_filter_inherit_fls_employee_cost">
+        <field name="name">hr.employee.search.inherit.fls.emloyee.cost</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//searchpanel" position="attributes">
+                <attribute name="class" add="employee_panel" separator=" "/>
+            </xpath>
+        </field>
+    </record>
+    
+    <record model="ir.ui.view" id="hr_employee_public_view_search_inherit_fls_employee_cost">
+        <field name="name">hr.employee.public.search.inherit.fls.emloyee.cost</field>
+        <field name="model">hr.employee.public</field>
+        <field name="inherit_id" ref="hr.hr_employee_public_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//searchpanel" position="attributes">
+                <attribute name="class" add="employee_panel" separator=" "/>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_employee_form_inherit_fls_employee_cost">
+        <field name="name">hr.employee.form.inherit.fls.emloyee.cost</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_id']" position="after">
+                <label for="full_cost"/>
+                <div class="o_row mw-50" name="full_cost">
+                    <field name="full_cost" class="oe_inline o_hr_narrow_field" nolabel="1"/>
+                    <div class="mb-3">/ hour</div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

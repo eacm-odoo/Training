@@ -1,15 +1,21 @@
 /** @odoo-module */
 
-import ListView from 'web.ListView';
-import BenchReportListController from './bench_report_list_controller';
-import viewRegistry from 'web.view_registry';
+import { listView } from '@web/views/list/list_view';
+import { registry } from '@web/core/registry';
 
-var BenchReportListView = ListView.extend({
-    config: _.extend({}, ListView.prototype.config, {
-        Controller: BenchReportListController,
-    }),
-});
+import BenchReportListController  from './bench_report_list_controller';
 
-viewRegistry.add('bench_report_list', BenchReportListView);
+export const BenchReportListView = {
+    ...listView,
+    buttonTemplate: 'BenchReport.Buttons',
+    Controller: BenchReportListController,
+    props() {
+        const props = listView.props(...arguments);
+        props.showButtons = true;
+        return props;
+    },
+}
+
+registry.category('views').add('bench_report_list', BenchReportListView);
 
 export default BenchReportListView;
