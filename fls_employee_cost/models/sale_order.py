@@ -1,6 +1,9 @@
 from odoo import models, api, fields
 from datetime import date
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -93,10 +96,13 @@ class SaleOrderLine(models.Model):
                 #     amount_to_invoice = max(price_subtotal - amount, 0)
                 # else:
                     ##### CUSTOM CODE START #####
+                qty_to_invoice = 0
                 for aml in inv_lines.filtered(lambda l: l.parent_state in ['draft', 'to_approve', 'approved']):
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,line.currency_id,aml.company_id,aml.move_id.date.strftime("%m/%d/%y"))
                     amount_to_invoice += aml.quantity * aml.price_unit * ((100-aml.discount)/100) * currency_conversion_rate
-                amount_to_invoice = price_subtotal - line.post_qty_invoiced*line.price_unit*((100-line.discount)/100)
+                    qty_to_invoice += aml.quantity
+                if line.qty_delivered > line.qty_invoiced:
+                    amount_to_invoice += (line.qty_delivered - line.qty_invoiced) * line.price_unit * ((100-line.discount)/100)
                     #####  CUSTOM CODE END  #####
 
             line.untaxed_amount_to_invoice = amount_to_invoice
