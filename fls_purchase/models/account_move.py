@@ -9,10 +9,11 @@ class AccountMove(models.Model):
     vendor_company_name = fields.Char("Vendor Company Name")
 
     def write(self, vals):
+        all_in_invoice = all(move_type == 'in_invoice' for move_type in self.mapped('move_type'))
         for line in self.line_ids.mapped('purchase_line_id'):
             purchase_id = line.order_id
             date_planned = purchase_id.date_planned.date()
-            if self.move_type == "in_invoice" and purchase_id and date_planned:
+            if all_in_invoice and purchase_id and date_planned:
                     vals['date'] = date_planned
         res = super(AccountMove, self).write(vals)
         return res
