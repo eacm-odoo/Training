@@ -16,4 +16,18 @@ model.calculate_employee_margin()
         <field eval="False" name="doall" />
         <field name="priority">1000</field>
     </record>
+    
+    <record id="model_hr_employee_margin_multi_duplicate" model="ir.actions.server">
+        <field name="name">Duplicate</field>
+        <field name="model_id" ref="fls_employee.model_hr_employee_margin"/>
+        <field name="binding_model_id" ref="fls_employee.model_hr_employee_margin"/>
+        <field name="binding_view_types">tree</field>
+        <field name="state">code</field>
+        <field name="code">
+<![CDATA[
+for rec in records:
+    rec.copy()
+]]>
+        </field>
+    </record>
 </odoo>

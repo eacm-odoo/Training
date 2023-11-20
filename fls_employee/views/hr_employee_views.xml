@@ -37,9 +37,9 @@
                 <sheet>
                     <group>
                         <group>
+                            <field name="date"/>
                             <field name="employee_id"/>
                             <field name="company_id"/>
-                            <field name="date"/>
                             <field name="job_id"/>
                         </group>
                         <group>
