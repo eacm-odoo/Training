@@ -53,6 +53,9 @@
             <xpath expr="//field[@name='invoice_incoterm_id']" position="before">
                 <field name="department_id" ></field>
             </xpath>
+            <xpath expr="//field[@name='invoice_incoterm_id']" position="after">
+                <field name="buyer" attrs="{'invisible': [('invoice_filter_type_domain', '!=', 'purchase')]}"/>
+            </xpath>
         </field>
     </record>
 

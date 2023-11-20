@@ -4,6 +4,8 @@ from odoo.exceptions import ValidationError
 class ApprovalRule(models.Model):
     _name = 'approval.rule'
     _description = 'Approval Rule'
+    _order = 'sequence'
+
 
     name = fields.Char(string='Name', required=True)
     amount = fields.Float(string='Amount')
@@ -24,7 +26,7 @@ class ApprovalRule(models.Model):
     salesperson = fields.Boolean(string='Salesperson')
     buyer = fields.Boolean(string='Buyer')
     timesheet_approver = fields.Boolean(string='Timesheet Approver')
-    sequence_toggle = fields.Integer(string='Toggle',default=lambda self: len(self.env['approval.rule'].search([])))
+    sequence_toggle = fields.Integer(string='Toggle',default=lambda self: self.env['ir.sequence'].next_by_code('approval.sequence.value'))
     sequence = fields.Integer(string='Sequence',related='sequence_toggle')
 
     @api.constrains('project_manager', 'delivery_director', 'salesperson', 'buyer', 'timesheet_approver','user_id')

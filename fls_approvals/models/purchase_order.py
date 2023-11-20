@@ -51,14 +51,15 @@ class PurchaseOrder(models.Model):
             record.loggedin_user_id = self.env.context.get('uid', 0)
     
     def action_approve(self):
+        admin_user_group = self.env['res.groups'].search([('category_id.name','=','Administration'),('name','=','Access Rights')])
         if self.state != 'to_approve':
             return
-        if self.current_approver_id!= self.loggedin_user_id:
-            raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
+        if self.current_approver_id!= self.loggedin_user_id  and admin_user_group.id not in self.env.user.groups_id.ids:
+            raise UserError(_('Unable to approve the record, it has to be approved by ' + self.current_approver.name+' first'))
         self.no_of_approvals+=1
 
         approvers = self.approver_ids.ids
-        message = self.current_approver.email_formatted+ 'has approved this Purchase Order'
+        message = self.env.user.email_formatted+ 'has approved this Purchase Order'
         self.with_user(SUPERUSER_ID).message_post(body=message)
         current_approver_index = approvers.index(self.current_approver.id)
         if len(approvers) == self.no_of_approvals:

@@ -13,12 +13,14 @@ This feature that will allow the admin (specific users) to set up approval rule(
     """,
     'depends': ['sale', 'purchase','account','base'],
     'data': [
+        'data/ir_sequence.xml',
         'data/mail_template_approval.xml',
         'views/sale_orderview_inherit.xml',
         'views/approval_rules_form_view.xml',
         'views/purchase_order_form_view.xml',
         'views/account_move_form_view.xml',
         'security/ir.model.access.csv',
+        
         
     ],
     'installable': True,

@@ -15,15 +15,24 @@ class AccountMove(models.Model):
         ('posted', 'Posted'),
     ], ondelete={'to_approve': lambda sor: sor.write({'state': 'draft'}),'approved': lambda sor: sor.write({'state': 'draft'})})
     no_of_approvals = fields.Integer('No of Approvals')
-    delivery_director = fields.Many2one('res.users', compute = '_compute_delivery_director')
-    
-    def _compute_delivery_director(self):
-        if self.invoice_filter_type_domain == 'sale':
-            so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
-            self.delivery_director = so.x_studio_delivery_director
-        else:
-            self.delivery_director = False
-        
+    delivery_director = fields.Many2one('res.users')
+    buyer = fields.Many2one('res.users',string = "Buyer")
+
+    @api.model
+    def create(self, vals):
+        move = super().create(vals)
+        if move.invoice_filter_type_domain == 'sale':
+            so = self.env['sale.order'].search([('name','=',move.invoice_origin)])
+            move.delivery_director = so.x_studio_delivery_director
+            move.department_id = so.department_id
+        if move.invoice_filter_type_domain == 'purchase':
+            po = self.env['purchase.order'].search([('name','=',move.invoice_origin)])
+            move.buyer = po.user_id.id
+            move.department_id = po.department_id
+            self.delivery_director = po.delivery_director
+
+
+        return move
 
     def _send_approval_reminder_mail(self):
         if not self.invoice_filter_type_domain:
@@ -64,13 +73,13 @@ class AccountMove(models.Model):
             po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','vendor.bill')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and  (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (po.department_id == rule.department_id)):
+                if rule.user_id and  (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if po.user_id and rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
-                    self.approver_ids = [Command.link(po.user_id.id)]
-                if po.delivery_director and rule.delivery_director and po.delivery_director and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
-                    self.approver_ids = [Command.link(po.delivery_director.id)]
-                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (po.department_id == rule.department_id)):
+                if self.buyer and rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    self.approver_ids = [Command.link(self.buyer.id)]
+                if self.delivery_director and rule.delivery_director and po.delivery_director and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    self.approver_ids = [Command.link(self.delivery_director.id)]
+                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
                     move_line_ids = self.line_ids
                     for line in move_line_ids:
                         if line.account_analytic:
@@ -90,12 +99,19 @@ class AccountMove(models.Model):
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (so.department_id == rule.department_id)):
+                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if so.x_studio_delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
-                    self.approver_ids = [Command.link(so.x_studio_delivery_director.id)]
-                if so.user_id and rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (so.department_id == rule.department_id)):
-                    self.approver_ids = [Command.link(so.user_id.id)]
+                if self.delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    self.approver_ids = [Command.link(self.delivery_director.id)]
+                if self.invoice_user_id and rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    self.approver_ids = [Command.link(self.invoice_user_id.id)]
+                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                    move_line_ids = self.line_ids
+                    for line in move_line_ids:                        
+                        if so.analytic_account_id and so.analytic_account_id.project_ids :
+                            projects = so.analytic_account_id.project_ids
+                            self.approver_ids = [Command.link(projects[0].user_id.id)]
+                            break
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
                 self._send_approval_reminder_mail()
@@ -104,14 +120,15 @@ class AccountMove(models.Model):
 
 
     def action_approve(self):
-        self.no_of_approvals+=1
+        admin_user_group = self.env['res.groups'].search([('category_id.name','=','Administration'),('name','=','Access Rights')])
         if self.state != 'to_approve':
             return
-        if self.current_approver_id!= self.loggedin_user_id:
-            raise UserError(_('Unable to Approver Record, This record has to be approved by ' + self.current_approver.name))
+        if self.current_approver_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+            raise UserError(_('Unable to approve the record, it has to be approved by ' + self.current_approver.name+' first'))
+        self.no_of_approvals+=1
         approvers = self.approver_ids.ids
         current_approver_index = approvers.index(self.current_approver.id)
-        message = self.current_approver.email_formatted+ 'has approved this JE'
+        message = self.env.user.email_formatted+ 'has approved this JE'
         self.with_user(SUPERUSER_ID).message_post(body=message)
         if len(approvers) == self.no_of_approvals:
             self.current_approver = None
@@ -125,6 +142,12 @@ class AccountMove(models.Model):
         am = super().copy(default)
         am.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None,'no_of_approvals':0})
         return am
+    
+    def button_draft(self):
+        super().button_draft()
+        self.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None,'no_of_approvals':0})
+
+        
 
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'

@@ -12,8 +12,14 @@
             </xpath>
             <xpath expr="//field[@name='bank_acount_id']" position="before">
                 <field name="analytic_account_to_invoice"></field>
+            </xpath> 
+            <xpath expr="//field[@name='analytic_account_to_invoice']" position="before">
+                <field name="client_order_ref"></field>
+            </xpath>     
+            <xpath expr="//field[@name='client_order_ref']" position="before">
+                <field name="reference"></field>
             </xpath>                                   
         </field>
     </record>
-
+    
 </odoo>
