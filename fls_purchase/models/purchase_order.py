@@ -19,3 +19,8 @@ class PurchaseOrder(models.Model):
         template = self.env.ref('fls_purchase.mail_template_purchase_approval', raise_if_not_found=False)
         if template:
             self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
+
+    def _prepare_invoice(self):
+        invoice_vals = super()._prepare_invoice()
+        invoice_vals['invoice_date'] = fields.Date.today()
+        return invoice_vals

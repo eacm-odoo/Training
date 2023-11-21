@@ -18,8 +18,8 @@ class FlsActionsReports(models.Model):
         # access the report details with sudo() but evaluation context as current user
         report_sudo = self._get_report(report_ref)
         if report_sudo.model == 'account.move':
-            invoice = self.env['account.move'].browse(res_ids)
-            if invoice.move_type in ['out_invoice','out_refund'] and invoice.company_id.partner_id.country_code == 'US':
+            invoices = self.env['account.move'].browse(res_ids)
+            for invoice in invoices.filtered(lambda i: i.move_type in ['out_invoice', 'out_refund'] and i.company_id.partner_id.country_code == 'US'):
                 us_letter = self.env['report.paperformat'].search([('name','=','US Letter')])
                 report_sudo.paperformat_id = us_letter.id
                 
