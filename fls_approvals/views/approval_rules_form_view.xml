@@ -1,0 +1,78 @@
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="view_approval_rule_form" model="ir.ui.view">
+            <field name="name">approval.rule.form</field>
+            <field name="model">approval.rule</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                       
+                        <group>
+                            <group name="workflow_selection" string="Workflow Selection">
+                                <field name="models"/>
+                                <field name="name"/>
+                                <field name="sequence"/>
+                                <field name="type"  attrs="{'invisible': [('models', '!=', 'account.move')]}"/>
+                            </group>
+                            <group name="approver_selection" string = "Approver">
+                                <field name="user_id" attrs = "{'invisible':['|','|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True),'&amp;',('models','in',['account.move',False]),('type','=',False)]}"/>    
+                                <field name="project_manager" attrs = "{'invisible':['|','|','|','|','|',('user_id','!=',False),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True),('type','not in',['vendor.bill','sale.invoice'])]}"/>
+                                <field name="delivery_director" attrs = "{'invisible':['|','|','|','|','|','|',('project_manager','=',True),('user_id','!=',False),('salesperson','=',True),('buyer','=',True),('timesheet_approver','=',True),'&amp;',('models','=','account.move'),('type','=','journal.entry'),'&amp;',('models','in',['account.move',False]),('type','=',False)]}"/>
+                                <field name="salesperson" attrs = "{'invisible':['|','|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('user_id','!=',False),('buyer','=',True),('timesheet_approver','=',True),'&amp;',('models','!=','sale.order'),('type','not in',['sale.invoice'])]}"/>
+                                <field name="buyer" attrs = "{'invisible':['|','|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('user_id','!=',False),('timesheet_approver','=',True),'&amp;',('models','not in',['purchase.order']),('type','not in',['vendor.bill'])]}"/>
+                                <field name="timesheet_approver" attrs = "{'invisible':['|','|','|','|','|',('project_manager','=',True),('delivery_director','=',True),('salesperson','=',True),('buyer','=',True),('user_id','!=',False),'&amp;',('models','!=','purchase.order'),('type','!=','vendor.bill')]}"/>
+                            </group>
+                        </group>
+                        <group name="confitions_selection" string="Conditions">
+                            <field name="amount"/>
+                            <field name="company_id"/>
+                            <field name="department_id" attrs="{'invisible':[('type','=','journal.entry')]}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- List View -->
+        <record id="view_approval_rule_list" model="ir.ui.view">
+            <field name="name">approval.rule.list</field>
+            <field name="model">approval.rule</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="amount"/>
+                    <field name="company_id"/>
+                    <field name="department_id"/>
+                    <field name="user_id"/>
+                    <field name="models"/>
+                </tree>
+            </field>
+
+        </record>
+        <record id="approval_rule_view_search" model="ir.ui.view">
+            <field name="name">approval_rule.view.search</field>
+            <field name="model">approval.rule</field>
+            <field name="arch" type="xml">
+                <search string="Approval Rule Search view">
+                    <field name="models"/>
+                    <filter name="approval_rule_so" string="SO Approval Rules" domain="[('models', '=', 'sale.order')]"/>
+                    <filter name="approval_rule_po" string="PO Approval Rules" domain="[('models', '=', 'purchase.order')]"/>
+                    <field name="type"/>
+                    <filter name="approval_rule_inv" string="INV Approval Rules" domain="[('type', '=', 'sale.invoice')]"/>
+                    <filter name="approval_rule_bill" string="VB Approval Rules" domain="[('type', '=', 'vendor.bill')]"/>
+                    <filter name="approval_rule_je" string="JE Approval Rules" domain="[('type', '=', 'journal.entry')]"/>
+                </search>
+            </field>
+        </record>
+        <!-- Action -->
+        <record id="action_approval_rule" model="ir.actions.act_window">
+            <field name="name">Approval Rules</field>
+            <field name="res_model">approval.rule</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="menu_approval_rules" name="Approval Rules" parent="base.menu_users" sequence="90"
+            action="action_approval_rule"/>
+        <!-- Action -->
+    </data>
+</odoo>
