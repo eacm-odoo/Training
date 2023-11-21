@@ -48,4 +48,4 @@ class AccountAnalyticLine(models.Model):
             self.action_timer_start()
             timer = self.user_timer_id
         timer.timer_start = min(timer.timer_start - timedelta(0, time), fields.Datetime.now())
-        
+    
