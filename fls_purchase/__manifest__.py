@@ -4,7 +4,7 @@
     'sequence': 100,
     'license': 'OPL-1',
     'website': 'https://www.odoo.com',
-    'version': '16.0',
+    'version': '1.0.1',
     'author': 'Odoo Inc',
     'description': """
 Task ID: 3176750
