@@ -1,4 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-hr.access_hr_employee_user,FLS hr.employee user,model_hr_employee,base.group_hr_user,1,1,1,1
+hr.access_hr_employee_user,FLS hr.employee user,model_hr_employee,hr.group_hr_user,1,1,1,1
 access_hr_employee_margin,hr.employee.margin,model_hr_employee_margin,base.group_system,1,1,1,1
 access_fls_geo,fls.geo,model_fls_geo,base.group_system,1,1,1,1
