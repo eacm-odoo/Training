@@ -41,5 +41,5 @@
         <field name="context" eval="{'report_id': ref('fls_employee.employee_margin_report')}"/>
     </record>
 
-    <menuitem id="menu_action_employee_report_margin" name="Employee Margin Report" action="action_employee_report_margin" parent="hr.hr_menu_hr_reports" sequence="50"/>
+    <menuitem id="menu_action_employee_report_margin" name="Employee Margin Report" action="action_employee_report_margin" parent="hr.hr_menu_hr_reports" sequence="50" groups="base.group_system"/>
 </odoo>
