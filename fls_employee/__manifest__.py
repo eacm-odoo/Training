@@ -9,7 +9,10 @@
     'version': '1.0',
     'license': 'OPL-1',
     'depends': ['hr', 'hr_contract'],
-    'data': [],
+    'data': [
+        'security/ir.model.access.csv',
+        'security/res_groups.xml'
+    ],
     'application': False,
     'auto_install': False,
     'installable': True,
