@@ -33,6 +33,7 @@ for the accounting part of the system it’s 8-2 hours which is 6, so invoices w
         'views/project_views.xml',
         'views/res_company_views.xml',
         'views/resource_calendar_views.xml',
+        'views/account_move_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
