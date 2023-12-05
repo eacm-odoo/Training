@@ -4,3 +4,4 @@ fls_access_hr_employee_full_officer,FLS hr.employee full officer,model_hr_employ
 fls_access_hr_employee_administrator,FLS hr.employee full administrator,model_hr_employee,hr.group_hr_manager,1,0,0,0
 access_hr_employee_margin,hr.employee.margin,model_hr_employee_margin,base.group_system,1,1,1,1
 access_fls_geo,fls.geo,model_fls_geo,base.group_system,1,1,1,1
+access_fls_geo_full_officer,fls.geo full officer,model_fls_geo,__export__.res_groups_80_8ce43687,1,0,0,0
