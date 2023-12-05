@@ -43,7 +43,7 @@
                             <field name="job_id"/>
                         </group>
                         <group>
-                            <field name="fls_geo_id"/>
+                            <field name="fls_geo_id" options="{'no_open': True}"/>
                             <field name="timesheet_manager_id"/>
                             <field name="work_country_id"/>
                         </group>
