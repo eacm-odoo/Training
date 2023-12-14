@@ -12,11 +12,11 @@ class AccountAnalyticLine(models.Model):
         sudo_self = self.sudo()  # this creates only one env for all operation that required sudo()
         # (re)compute the amount (depending on unit_amount, employee_id for the cost, and account_id for currency)
         ##### CUSTOM CODE START #####
-        if any(field_name in values for field_name in ['unit_amount', 'employee_id', 'account_id', 'is_adjusted']):
+        if any(field_name in values for field_name in ['unit_amount', 'employee_id', 'account_id', 'is_adjusted']):    
             for timesheet in sudo_self:
                 cost = timesheet._hourly_cost()
                 amount = -timesheet.unit_amount * cost
-                if values.get('is_adjusted') or (not values.get('is_adjusted') and self.is_adjusted):
+                if values.get('is_adjusted') or (not values.get('is_adjusted') and timesheet.is_adjusted):
                     amount = 0
                 amount_converted = timesheet.employee_id.currency_id._convert(
                     amount, timesheet.account_id.currency_id or timesheet.currency_id, timesheet.company_id, timesheet.date)
