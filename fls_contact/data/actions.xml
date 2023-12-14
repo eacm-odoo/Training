@@ -8,11 +8,12 @@
             <field name="state">code</field>
             <field name="code">
 <![CDATA[
-for r in records:
-    if r.vendor:
-        r.write({'supplier_rank': 0})
-    else:
-        r.write({'supplier_rank': 1})
+if record: 
+    record.write({'supplier_rank': 0 if record.vendor else 1 })
+                
+if records: 
+    for r in records:
+        r.write({'supplier_rank': 0 if record.vendor else 1 })
 ]]>
             </field>
             <field name="active" eval="True" />
