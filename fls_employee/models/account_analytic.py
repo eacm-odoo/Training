@@ -4,10 +4,8 @@ from odoo import api, fields, models, _
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
 
-    cost_usd = fields.Float(string="Cost USD", compute='_compute_cost_usd')
-    revenue_usd = fields.Float(string="Revenue USD", compute='_compute_revenue_usd')
-    # cost_usd = fields.Float(string="Cost USD", compute='_compute_cost_usd', store=True)
-    # revenue_usd = fields.Float(string="Revenue USD", compute='_compute_revenue_usd', store=True)
+    cost_usd = fields.Float(string="Cost USD", compute='_compute_cost_usd', store=True)
+    revenue_usd = fields.Float(string="Revenue USD", compute='_compute_revenue_usd', store=True)
 
     @api.depends('amount', 'currency_id')
     def _compute_cost_usd(self):
@@ -24,7 +22,7 @@ class AccountAnalyticLine(models.Model):
         'so_line.currency_id', 
         'so_line.price_unit', 
         'so_line.product_id', 
-        # 'so_line.product_id.service_policy', 
+        'so_line.product_id.service_policy', 
         'so_line.order_id.company_id')
     def _compute_revenue_usd(self):
         usd_currency = self.env['res.currency'].search([('name','=','USD')], limit=1)
