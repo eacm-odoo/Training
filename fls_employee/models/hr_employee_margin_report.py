@@ -16,7 +16,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             FROM hr_employee_margin
         """)
         res = self._cr.dictfetchall()
-        res = list(set(res[0]['fls_geo_ids'])) if res else []
+        res = list(set(res[0].get('fls_geo_ids', [])))
         if None in res:
             res.remove(None)
         return res
