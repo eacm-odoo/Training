@@ -16,7 +16,12 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             FROM hr_employee_margin
         """)
         res = self._cr.dictfetchall()
+<<<<<<< Updated upstream
         res = list(set(res[0].get('fls_geo_ids', [])))
+=======
+        fls_geo_ids = res[0]['fls_geo_ids'] if res and res[0].get('fls_geo_ids', {}) else {}
+        res = list(set(fls_geo_ids)) 
+>>>>>>> Stashed changes
         if None in res:
             res.remove(None)
         return res
@@ -28,7 +33,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             FROM hr_employee_margin
         """)
         res = self._cr.dictfetchall()
-        res = list(set(res[0]['work_country_ids']))
+        work_country_ids = res[0]['work_country_ids'] if res and res[0].get('work_country_ids', {}) else {}
+        res = list(set(work_country_ids))
         if None in res:
             res.remove(None)
         return res
@@ -40,7 +46,8 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             FROM hr_employee_margin
         """)
         res = self._cr.dictfetchall()
-        res = list(set(res[0]['timesheet_manager_ids']))
+        timesheet_manager_ids = res[0]['timesheet_manager_ids'] if res and res[0].get('timesheet_manager_ids', {}) else {}
+        res = list(set(timesheet_manager_ids ))
         if None in res:
             res.remove(None)
         return res
