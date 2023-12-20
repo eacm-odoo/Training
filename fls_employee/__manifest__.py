@@ -10,7 +10,6 @@
     'license': 'OPL-1',
     'depends': ['hr', 'hr_contract', 'sale_project', 'sale_timesheet'],
     'data': [
-        'security/res_groups.xml',
         'security/ir.model.access.csv',
         'views/fls_geo_views.xml',
         'views/hr_employee_views.xml',
