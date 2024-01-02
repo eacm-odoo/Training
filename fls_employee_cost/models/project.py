@@ -91,7 +91,18 @@ class Project(models.Model):
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         sale_line_read_group = self.env['sale.order.line'].sudo()._read_group(
             self._get_profitability_sale_order_items_domain(domain),
-            ['product_id', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'untaxed_amount_to_invoice', 'untaxed_amount_invoiced','untaxed_amounts_to_invoice:array_agg(untaxed_amount_to_invoice)', 'amounts_invoiced_usd:array_agg(invoiced_usd)', 'invoiced_usd', 'qty_delivered', 'qty_invoiced'],
+            ['product_id'
+             , 'ids:array_agg(id)'
+             , 'currency_id:array_agg(currency_id)'
+             , 'untaxed_amount_to_invoice'
+             , 'untaxed_amount_invoiced'
+             , 'untaxed_amounts_to_invoice:array_agg(untaxed_amount_to_invoice)'
+             , 'amounts_invoiced_usd:array_agg(invoiced_usd)'
+             , 'invoiced_usd'
+             , 'qty_delivered'
+             , 'qty_invoiced'
+             ,'discount:avg(discount)'],
+             
             ['product_id'],
         )
         #####  CUSTOM CODE END  #####
@@ -103,12 +114,18 @@ class Project(models.Model):
             ##### CUSTOM CODE START #####
             for res in sale_line_read_group:
                 to_invoice = 0
+                discount = 1
+                if res.get('discount', False) and float(res['discount'])>0:
+                    discount = 100-float(res['discount'])
+                    discount /= 100
                 for i, amount_to_invoice in enumerate(res['untaxed_amounts_to_invoice']):
                     if amount_to_invoice<0:
                         continue
+
                     from_currency = self.env['res.currency'].browse([res['currency_id'][i]])
                     currency_conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency,usd_currency,self.company_id,date.today().strftime("%m/%d/%y"))
-                    to_invoice += float(amount_to_invoice)*currency_conversion_rate
+                    to_invoice += float(amount_to_invoice)*discount*currency_conversion_rate
+
                 sols_per_product[res['product_id'][0]] = (
                     to_invoice,
                     float(res['invoiced_usd']),
@@ -165,13 +182,33 @@ class Project(models.Model):
         }
 
     def _get_profitability_items_from_aal(self, profitability_items, with_action=True):
+        aa_line_read_group = self.env['account.analytic.line'].sudo()._read_group(
+            self.sudo()._get_profitability_aal_domain(),
+            ['timesheet_invoice_type'
+             , 'timesheet_invoice_id'
+             , 'unit_amount'
+             , 'amount'
+             , 'tamount:array_agg(amount)'
+             , 'ids:array_agg(id)'
+             , 'currency_id:array_agg(currency_id)'
+             , 'date:array_agg(date)'],
+
+            ['timesheet_invoice_type', 'timesheet_invoice_id'],
+            lazy=False)
+        
+        from_currency = self.env['res.currency'].browse([aa_line_read_group[0]['currency_id'][0]])
+ 
         if not self.allow_timesheets:
             total_invoiced = total_to_invoice = 0.0
             revenue_data = []
             for revenue in profitability_items['revenues']['data']:
                 if revenue['id'] in ['billable_fixed', 'billable_time', 'billable_milestones', 'billable_manual']:
                     continue
-                total_invoiced += revenue['invoiced']
+                if revenue['id'] == 'other_invoice_revenues':
+                    conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency, usd_currency, self.company_id, date.today().strftime("%m/%d/%y"))
+                    revenue['invoiced'] *= conversion_rate
+                    revenue['to_invoice'] *= conversion_rate
+                    total_invoiced += revenue['invoiced']
                 total_to_invoice += revenue['to_invoice']
                 revenue_data.append(revenue)
             profitability_items['revenues'] = {
@@ -179,13 +216,7 @@ class Project(models.Model):
                 'total': {'to_invoice': total_to_invoice, 'invoiced': total_invoiced},
             }
             return profitability_items 
-        ##### CUSTOM CODE START #####
-        aa_line_read_group = self.env['account.analytic.line'].sudo()._read_group(
-            self.sudo()._get_profitability_aal_domain(),
-            ['timesheet_invoice_type', 'timesheet_invoice_id', 'unit_amount', 'amount', 'tamount:array_agg(amount)', 'ids:array_agg(id)', 'currency_id:array_agg(currency_id)', 'date:array_agg(date)'],
-            ['timesheet_invoice_type', 'timesheet_invoice_id'],
-            lazy=False)
-        #####  CUSTOM CODE END  #####
+        
         can_see_timesheets = with_action and len(self) == 1 and self.user_has_groups('hr_timesheet.group_hr_timesheet_approver')
         revenues_dict = {}
         costs_dict = {}
@@ -193,6 +224,13 @@ class Project(models.Model):
         total_costs = {'billed': 0.0, 'to_bill': 0.0}
         usd_currency = self.env['res.currency'].search([('name','=','USD')]) 
         ##### CUSTOM CODE START #####
+
+        for revenue in profitability_items['revenues']['data']:
+            if revenue['id'] == 'other_invoice_revenues':
+                conversion_rate = self.env['res.currency']._get_conversion_rate(from_currency, usd_currency, self.company_id, date.today().strftime("%m/%d/%y"))
+                revenue['invoiced'] *= conversion_rate
+                revenue['to_invoice'] *= conversion_rate
+
         for res in aa_line_read_group:
             from_currency = self.env['res.currency'].browse([res['currency_id'][0]])
             total = 0
