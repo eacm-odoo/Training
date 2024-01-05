@@ -5,7 +5,6 @@ class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
 
     cost_usd = fields.Float(string="Cost USD", compute='_compute_cost_usd', store=True)
-    revenue_usd = fields.Float(string="Revenue USD", compute='_compute_revenue_usd', store=True)
 
     @api.depends('amount', 'currency_id')
     def _compute_cost_usd(self):
@@ -16,20 +15,33 @@ class AccountAnalyticLine(models.Model):
                 currency_conversion_rate = self.env['res.currency']._get_conversion_rate(line.currency_id,usd_currency,line.company_id,line.date.strftime("%m/%d/%y"))
                 line.cost_usd = line.amount * currency_conversion_rate
 
-    @api.depends(
-        'date', 
-        'unit_amount', 
-        'so_line.currency_id', 
-        'so_line.price_unit', 
-        'so_line.product_id', 
-        'so_line.product_id.service_policy', 
-        'so_line.order_id.company_id')
-    def _compute_revenue_usd(self):
+    def _compute_line_revenue_usd(self, rec_month=None, rec_year=None, rec_employee_id=None):
+        if self:
+            rec_month = self.date.month
+            rec_year = self.date.year
+            rec_employee_id = self.employee_id.id
         usd_currency = self.env['res.currency'].search([('name','=','USD')], limit=1)
-        for line in self:
-            line.revenue_usd = 0
-            if line.date and line.so_line and line.so_line.currency_id and line.so_line.order_id and line.so_line.order_id.company_id:
-                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(line.so_line.currency_id,usd_currency,line.so_line.order_id.company_id,line.date.strftime("%m/%d/%y"))
-                if line.so_line.product_id.service_policy and line.so_line.product_id.service_policy == 'delivered_timesheet':
-                    line.revenue_usd = line.so_line.price_unit * line.unit_amount * currency_conversion_rate
-                    
+        revenue = 0
+        if not rec_month or not rec_year or not rec_employee_id:
+            return 0
+
+        sol = self.so_line
+        if len(sol) != 1 and sol.product_id.service_policy != 'delivered_timesheet':
+            return 0
+        # Computes Revenue
+        filtered_invoice_lines = sol.invoice_lines.filtered(
+            lambda aml: aml.move_id.date.month == rec_month and aml.move_id.date.year == rec_year
+        )
+
+        for aml in filtered_invoice_lines:
+            # if aml.currency_id != usd_currency:
+                # currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,usd_currency,aml.company_id,aml.move_id.date.strftime("%m/%d/%y"))
+            revenue += aml.price_subtotal * aml.conversion_rate
+        
+        filtered_timesheet_ids = sol.timesheet_ids.filtered(
+            lambda aal: aal.date.month == rec_month and aal.date.year == rec_year)
+
+        employee_timesheet_counter = len([aal for aal in filtered_timesheet_ids if aal.employee_id.id == rec_employee_id])
+        revenue /= len(filtered_timesheet_ids.employee_id.ids) or 1
+        revenue /= employee_timesheet_counter or 1
+        return revenue

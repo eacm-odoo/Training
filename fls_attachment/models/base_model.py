@@ -13,10 +13,11 @@ class BaseModel(models.AbstractModel):
                 if file_size > float(attachment_limit) * 1024 ** 2:  # convert to bytes
                     raise exceptions.UserError(f"The file size exceeds the maximum limit of {attachment_limit} MB.")
 
-    @api.model
-    def create(self, vals):
-        self._check_binary_field_limits(vals)
-        return super(BaseModel, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._check_binary_field_limits(vals)
+        return super(BaseModel, self).create(vals_list)
 
     def write(self, vals):
         self._check_binary_field_limits(vals)

@@ -18,21 +18,20 @@ class AccountMove(models.Model):
     delivery_director = fields.Many2one('res.users')
     buyer = fields.Many2one('res.users',string = "Buyer")
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
-        move = super().create(vals)
-        if move.invoice_filter_type_domain == 'sale':
-            so = self.env['sale.order'].search([('name','=',move.invoice_origin)])
-            move.delivery_director = so.x_studio_delivery_director
-            move.department_id = so.department_id
-        if move.invoice_filter_type_domain == 'purchase':
-            po = self.env['purchase.order'].search([('name','=',move.invoice_origin)])
-            move.buyer = po.user_id.id
-            move.department_id = po.department_id
-            self.delivery_director = po.delivery_director
-
-
-        return move
+        moves = super().create(vals)
+        for move in moves: 
+            if move.invoice_filter_type_domain == 'sale':
+                so = self.env['sale.order'].search([('name','=',move.invoice_origin)])
+                move.delivery_director = so.x_studio_delivery_director
+                move.department_id = so.department_id
+            if move.invoice_filter_type_domain == 'purchase':
+                po = self.env['purchase.order'].search([('name','=',move.invoice_origin)])
+                move.buyer = po.user_id.id
+                move.department_id = po.department_id
+                self.delivery_director = po.delivery_director
+        return moves
 
     def _send_approval_reminder_mail(self):
         if not self.invoice_filter_type_domain:
