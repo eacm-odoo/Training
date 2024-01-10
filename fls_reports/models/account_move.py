@@ -10,10 +10,11 @@ class AccountMove(models.Model):
     analytic_account_to_invoice = fields.Boolean(string= 'Analytic Account on Report?')
     currency_name = fields.Char(related = 'currency_id.name')
     
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
         res = super().create(vals)
-        if res.sale_order_count>0:
-            res.client_order_ref = res.line_ids.sale_line_ids[0].order_id.client_order_ref
-            res.reference = res.line_ids.sale_line_ids[0].order_id.ref
+        for move in res:
+            if move.sale_order_count>0:
+                move.client_order_ref = move.line_ids.sale_line_ids[0].order_id.client_order_ref
+                move.reference = move.line_ids.sale_line_ids[0].order_id.ref
         return res

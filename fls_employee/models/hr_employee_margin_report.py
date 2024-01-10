@@ -67,26 +67,10 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
     
     def _query_timesheets(self):
         self._cr.execute(f"""
-            WITH account_analytic_line_recs AS (
-                SELECT 
-                    account_analytic_line.id,
-                    account_analytic_line.employee_id,
-                    account_analytic_line.so_line,
-                    account_analytic_line.date                                                          AS date,
-                    EXTRACT(MONTH FROM account_analytic_line.date)                                      AS timesheet_month,
-                    EXTRACT(YEAR FROM account_analytic_line.date)                                       AS timesheet_year,
-                    SUM(account_analytic_line.cost_usd)                                                 AS cost,
-                    SUM(account_analytic_line.revenue_usd)                                              AS revenue
-                FROM account_analytic_line
-                GROUP BY id, employee_id, so_line, date
-            )
             SELECT
                 hr_employee.name,
-                hr_employee.id,
-                JSON_AGG(account_analytic_line_recs.*)                                                  AS records
+                hr_employee.id
             FROM hr_employee
-            INNER JOIN account_analytic_line_recs
-                ON hr_employee.id = account_analytic_line_recs.employee_id
             GROUP BY hr_employee.name, hr_employee.id
             ORDER BY hr_employee.name
         """)
@@ -160,8 +144,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
 
     def _dynamic_lines_generator(self, report, options, all_column_groups_expression_totals):
         lines = []
-        employees = self.compile_employee_data()
-        options['employees'] = employees
+        options['employees'] = options['employees'] if 'employees' in options else self.compile_employee_data()
         line_id = self.env['account.report']._get_generic_line_id('hr.employee', 0)
         unfold_all = options.get('unfold_all', False)
         lines.append((0, {
@@ -214,6 +197,7 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
             'expand_function': '_report_expand_unfoldable_line_employee_margin_by_group_report',
             'colspan': len(options['columns']) + 1
         }))
+        # del options['employees']
         return lines
 
     def _report_expand_unfoldable_line_employee_margin_by_group_report(self, line_dict_id, groupby, options, progress, offset, unfold_all_batch_data):
@@ -258,56 +242,68 @@ class HrEmployeeMarginCustomHandler(models.AbstractModel):
     def _report_expand_unfoldable_line_employee_margin_report(self, line_dict_id, groupby, options, progress, offset, unfold_all_batch_data):
         lines = []
         margins_by_employee = self._query_employee_margin()
-        for employee in options['employees']:
-            margin_data = margins_by_employee.get(employee['id'], {})
-            add_line = True
+        employees = options['employees']
+
+        def group_by_function(employee):
             if groupby:
-                add_line = False
                 field_filter = groupby.split(",")
                 field_name, field_value = field_filter[0], int(field_filter[1]) or None
-                group_ids = margin_data.get(field_name, [])
-                if field_value in group_ids:
-                    add_line = True
-            if add_line:
-                line_id = self.env['account.report']._get_generic_line_id('hr.employee.margin', employee['id'], parent_line_id=line_dict_id)
-                lines.append({
-                    'id': line_id,
-                    'name': employee['name'],
-                    'parent_id': line_dict_id,
-                    'search_key': employee['name'],
-                    'columns': self._get_columns(employee, margin_data.get('margins', []), options, groupby),
-                    'level': 2,
-                    'unfoldable': False,
-                    'unfolded': False,
-                })
+                group_ids = margins_by_employee.get(employee['id'], {}).get(field_name, [])
+                return field_value in group_ids
+            return False
+
+        filtered_employees = list(filter(group_by_function, employees)) if groupby else employees
+        for employee in filtered_employees:
+            margin_data = margins_by_employee.get(employee['id'], {})
+            line_id = self.env['account.report']._get_generic_line_id('hr.employee.margin', employee['id'], parent_line_id=line_dict_id)
+            lines.append({
+                'id': line_id,
+                'name': employee['name'],
+                'parent_id': line_dict_id,
+                'search_key': employee['name'],
+                'columns': self._get_columns(employee, margin_data.get('margins', []), options, groupby),
+                'level': 2,
+                'unfoldable': False,
+                'unfolded': False,
+            })
 
         return {
             'lines': lines
         }        
 
-    def compile_employee_data(self):
+    def compile_employee_data(self, line_dict_id=None, group_by=None):
         employees = self._query_timesheets()
         usd_currency = self.env['res.currency'].search([('name','=','USD')], limit=1) 
-        for employee in employees:
-            for rec in employee['records']:
-                sol = self.env['sale.order.line'].browse([rec['so_line']])
-                if len(sol) == 1 and sol.product_id.service_policy != 'delivered_timesheet':
-                    rec['revenue'] = 0
-                    for aml in sol.invoice_lines:
-                        if aml.move_id.date.month == rec['timesheet_month'] and aml.move_id.date.year == rec['timesheet_year']:
-                            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(aml.currency_id,usd_currency,aml.company_id,aml.move_id.date.strftime("%m/%d/%y"))
-                            rec['revenue'] += aml.price_subtotal * currency_conversion_rate
-                    unique_employees = []
-                    employee_timsheet_counter = 0
-                    for aal in sol.timesheet_ids:
-                        if aal.date.month == rec['timesheet_month'] and aal.date.year == rec['timesheet_year']:
-                            if aal.employee_id.id == rec['employee_id']:
-                                employee_timsheet_counter += 1
-                            if aal.employee_id.id not in unique_employees:
-                                unique_employees.append(aal.employee_id.id)
-                    rec['revenue'] /= len(unique_employees) or 1
-                    rec['revenue'] /= employee_timsheet_counter or 1
-        return employees
+        margins_by_employee = self._query_employee_margin()
+        # pre-fetch all sale order lines that are not delivered timesheet
+        sol_ids = self.env['sale.order.line'].search([('product_id.service_policy','!=','delivered_timesheet')])
+        sol_ids = sol_ids.filtered(lambda l: l.product_id.service_policy != 'delivered_timesheet')
+
+        def group_by_function(employee):
+            field_filter = group_by.split(",")
+            field_name, field_value = field_filter[0], int(field_filter[1]) or None
+            group_ids = margins_by_employee.get(employee['id'], {}).get(field_name, [])
+            return field_value in group_ids
+            
+
+        filtered_employees = list(filter(group_by_function, employees)) if group_by else employees
+        for employee in filtered_employees:
+            employee['records'] = []
+            hr_employee = self.env['hr.employee'].sudo().browse([employee['id']])
+            if hr_employee.timesheet_ids:
+                for aal in hr_employee.timesheet_ids:
+                    # aal = self.env['account.analytic.line'].browse([rec['id']])
+                    employee['records'].append({
+                        'id': aal.id,
+                        'employee_id': aal.employee_id.id,
+                        'so_line': aal.so_line.id,
+                        'date': aal.date,
+                        'timesheet_month': aal.date.month,
+                        'timesheet_year': aal.date.year,
+                        'cost': aal.cost_usd,
+                        'revenue': aal.sudo()._compute_line_revenue_usd(aal.date.month, aal.date.year, aal.employee_id.id),
+                    })
+        return filtered_employees
 
     def _get_columns(self, employee_timesheets, employee_margins, options, groupby):
         columns = options['columns']
