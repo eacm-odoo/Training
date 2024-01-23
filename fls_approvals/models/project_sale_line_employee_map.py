@@ -31,3 +31,4 @@ class ProjectProductEmployeeMap(models.Model):
             if line.exists() and line.so_line.id != old_so_line_id:
                 line.write({'prevent_so_line_update': True})
                 line.sudo().write({'so_line': old_so_line_id})
+

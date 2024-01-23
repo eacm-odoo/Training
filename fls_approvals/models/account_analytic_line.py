@@ -12,3 +12,4 @@ class AccountAnalyticLine(models.Model):
             if timesheet.prevent_so_line_update:
                 continue
             timesheet.so_line = timesheet.project_id.allow_billable and timesheet._timesheet_determine_sale_line()
+
