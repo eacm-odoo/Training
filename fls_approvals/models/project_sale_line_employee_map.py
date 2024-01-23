@@ -30,6 +30,6 @@ class ProjectProductEmployeeMap(models.Model):
         for line_id, old_so_line_id in analytic_lines_to_preserve.items():
             line = self.env['account.analytic.line'].browse(line_id)
             if line and line.so_line.id != old_so_line_id:
-                line.prevent_so_line_update = True
-                line.sudo().write({'so_line': old_so_line_id})
+                line.freeze_so_line = True
+                line.so_line = old_so_line_id
 
