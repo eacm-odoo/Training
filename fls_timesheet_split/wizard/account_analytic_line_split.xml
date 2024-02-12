@@ -1,0 +1,37 @@
+<odoo>
+    <data>
+        <record id="fls_timesheet_split_view_account_analytic_line_split" model="ir.ui.view">
+            <field name="name">FLS: split Timesheet lines</field>
+            <field name="model">account.analytic.line.split</field>
+            <field name="arch" type="xml">
+                <form string="Split Timesheet">
+                    <group >
+                        <field name="work_hour_limit" />
+                        <field name="account_analytic_line_ids" invisible="1"/>
+                    </group>
+                <footer>
+                    <button name="button_confirm"  string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="fls_timesheet_split_action_account_analytic_line_split" model="ir.actions.act_window">
+            <field name="name">FLS: split Timesheet lines</field>
+            <field name="res_model">account.analytic.line.split</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="fls_timesheet_split_view_account_analytic_line_split"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="fls_split_timesheet_action" model="ir.actions.server">
+            <field name="name">Split Timesheets</field>
+            <field name="model_id" ref="analytic.model_account_analytic_line"/>
+            <field name="binding_model_id" ref="analytic.model_account_analytic_line"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">action = records.open_analytic_line_split()</field>
+        </record>
+    </data>
+</odoo>

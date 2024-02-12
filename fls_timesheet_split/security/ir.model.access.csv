@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+fls_timesheet_split.access_account_analytic_line_split,access_account_analytic_line_split,fls_timesheet_split.model_account_analytic_line_split,base.group_user,1,1,1,1
