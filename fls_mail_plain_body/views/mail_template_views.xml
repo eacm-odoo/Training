@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_mail_template_form_inherit_fls_mail_plain_body" model="ir.ui.view">
+        <field name="name">mail.template.form.inherit.fls.partner</field>
+        <field name="model">mail.template</field>
+        <field name="inherit_id" ref="mail.email_template_form"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='subject']" position="after">
+                <field name="use_text"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
