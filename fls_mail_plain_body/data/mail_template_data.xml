@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <template id="no_template_template" name="FLS Mail: Raw plain text template"><t t-out="message.body"/></template>
+</odoo>
