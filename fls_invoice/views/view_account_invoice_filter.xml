@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fls_view_account_invoice_filter" model="ir.ui.view">
+        <field name="name">fls.view.account.invoice.filter</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='invoicedate']" position="after">
+                <filter string="Accounting Date" name="account_date" context="{'group_by': 'date'}"/>
+                <filter string="Tags" name="sale_order_tag_ids" context="{'group_by': 'sale_order_tag_ids'}"/>
+            </xpath>
+            <xpath expr="//filter[@name='invoice_date']" position="before">
+                <filter name="accounting_date" string="Accounting Date" date="date"/>
+                <filter name="sale_order_tag_ids" string= "Tags" domain="[]"/>
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
