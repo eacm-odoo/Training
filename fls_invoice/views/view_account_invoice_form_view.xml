@@ -10,4 +10,16 @@
               </xpath>
         </field>
     </record>
+
+    <record id="view_account_move_pivot" model="ir.ui.view">
+        <field name="name">view.account.move.pivot</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+
+            <pivot string="Journal Entry" sample="1">
+                <field name="sale_order_tag_ids" type="row"/>
+                <field name="delivery_director" type="row"/>
+            </pivot>
+        </field>
+    </record>
 </odoo>
