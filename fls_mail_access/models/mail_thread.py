@@ -103,7 +103,6 @@ class MailThread(models.AbstractModel):
         updated_fields = [fname for fnames in updated_relation.values() for fname in fnames if updated_values.get(fname)]
 
         if updated_fields:
-
             doc_data = [(model, [updated_values[fname] for fname in fnames]) for model, fnames in updated_relation.items()]
             res = self.env['mail.followers']._get_subscription_data(doc_data, None, include_pshare=True, include_active=True)
             for _fol_id, _res_id, partner_id, subtype_ids, pshare, active in res:
@@ -115,8 +114,8 @@ class MailThread(models.AbstractModel):
                     else:
                         new_partner_subtypes[partner_id] = set(sids)
 
-        template_blacklist = ['mail.message_user_assigned']
         notify_data = dict()
+        template_blacklist = ['mail.message_user_assigned']
 
         res = self._message_auto_subscribe_followers(updated_values, def_ids)
         for partner_id, sids, template in res:
