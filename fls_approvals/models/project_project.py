@@ -33,3 +33,4 @@ class ProjectProject(models.Model):
                     'freeze_so_line': True,
                     'so_line': old_so_line_id,
                 })
+
