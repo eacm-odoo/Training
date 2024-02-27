@@ -52,3 +52,4 @@ class MailThread(models.AbstractModel):
                 self.with_context(lang=lang)._message_auto_subscribe_notify(pids, template)
 
         return True
+

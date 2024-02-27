@@ -6,3 +6,4 @@ class ProjectTask(models.Model):
 
     def _task_message_auto_subscribe_notify(self, users_per_task):
         return
+
