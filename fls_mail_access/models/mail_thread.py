@@ -88,4 +88,3 @@ class MailThread(models.AbstractModel):
             partner_ids = self.env['res.partner'].sudo().search([('id', 'in', partner_ids), ('active', '=', True), ('type', '!=', 'private')]).ids
 
         return self._message_subscribe(partner_ids, subtype_ids, customer_ids=customer_ids)
-
