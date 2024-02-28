@@ -5,7 +5,7 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_account_invoice_filter"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='invoicedate']" position="after">
+            <xpath expr="//filter[@name='invoicedate']" position="before">
                 <filter string="Accounting Date" name="account_date" context="{'group_by': 'date'}"/>
             </xpath>
             <xpath expr="//filter[@name='invoice_date']" position="before">
