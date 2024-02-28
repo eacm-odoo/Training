@@ -7,11 +7,9 @@ class ProjectTask(models.Model):
     @api.model
     def _task_message_auto_subscribe_notify(self, users_per_task, task_assignment_template='project.project_message_user_assigned'):
         task_template_blacklist = ['project.project_message_user_assigned']
-        if task_assignment_template in task_template_blacklist:
-            return
         
         template_id = self.env['ir.model.data']._xmlid_to_res_id(task_assignment_template, raise_if_not_found=False)
-        if not template_id:
+        if not template_id or task_assignment_template in task_template_blacklist:
             return
         
         task_model_description = self.env['ir.model']._get(self._name).display_name
