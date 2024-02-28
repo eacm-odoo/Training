@@ -1,3 +1,8 @@
-from . import sale_order, approval_rule, account_move, purchase_order
-from . import project_project, project_task, account_analytic_line, project_sale_line_employee_map
-
+from . import sale_order
+from . import approval_rule
+from . import account_move
+from . import purchase_order
+from . import account_analytic_line
+from . import project_project
+from . import project_task
+from . import project_sale_line_employee_map
