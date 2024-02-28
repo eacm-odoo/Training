@@ -25,7 +25,6 @@ class AccountAnalyticLineSplit(models.TransientModel):
                 'time_type': 'overtime'
             }) 
             line.write({
-                'unit_amount': self.work_hour_limit,
-                'time_type': 'regular'
+                'unit_amount': self.work_hour_limit
             })
         return {'type': 'ir.actions.act_window_close'}
