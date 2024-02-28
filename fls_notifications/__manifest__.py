@@ -9,6 +9,7 @@
     'website': 'https://www.odoo.com',
     'license': 'OPL-1',
     'version': '1.0',
+    'task_ids': [3724016],
     'depends': ['mail', 'project'],
     'installable': True,
     'application': False,
