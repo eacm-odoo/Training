@@ -14,6 +14,14 @@ class ProjectProject(models.Model):
             return super(ProjectProject, self).write(values)
 
     def _get_validated_analytic_lines(self):
+        analytic_lines_to_preserve = {}
+        validated_lines = self.env['account.analytic.line'].search([
+            ('project_id', 'in', self.ids),
+            ('validated', '=', True),
+        ])
+        analytic_lines_to_preserve = {line.id: line.so_line.id for line in validated_lines}
+
+        return analytic_lines_to_preserve
         '''Builds a map of validated analytic lines to their associated sale order line ids.'''
         analytic_lines_to_preserve = {}
         for project in self:
