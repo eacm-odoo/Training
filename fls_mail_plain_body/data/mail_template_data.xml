@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <template id="no_template_template" name="FLS Mail: Raw plain text template"><t t-out="message.body"/></template>
+
+     <record id="email_template_fls_onboarding_request" model="mail.template">
+            <field name="name">Onboarding: Request for IT resources</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="subject">{{object.x_studio_expected_start_date}} - First day for {{object.name}}</field>
+            <field name="body_html" type="html">
+                <a t-attf-href="/web?#id={{ object.id }}&amp;view_type=form&amp;model=hr.employee" style="padding: 5px 10px; color: #FFFFFF; text-decoration: none; background-color: #875A7B; border: 1px solid #875A7B; border-radius: 3px">Employee Page</a> <br/>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;">Please set up all the necessary resources for the new comer.</p>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;">
+                    <u>
+                        <strong style="box-sizing:border-box;font-weight:500;">
+                            First Name:<t t-out="object.x_studio_first_name or '''First name not defined'''"></t><br/>
+                            Last Name:<t t-out="object.x_studio_last_name or '''Last name not defined'''"></t><br/>
+                            Personal e-mail:<t t-out="object.private_email or '''Privat email not defined'''"></t><br/>
+                            Physical location:<t t-out="object.x_studio_work_country or '''Work country not defined'''"></t><br/>
+                            Branch:<t t-out="object.x_studio_geo_region or '''Geo region not defined'''"></t><br/>
+                            Department:<t t-out="object.department_id.name or '''Department not defined'''"></t>
+                        </strong>
+                    </u>
+                </p>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;">
+                    <u>
+                        <strong style="box-sizing:border-box;font-weight:500;">
+                            Manager:<t t-out="object.parent_id.name or '''Manager not defined'''"></t><br/>
+                            Job title:<t t-out="object.job_id.name or '''Job position not defined'''"></t><br/>
+                            Start date:<t t-out="object.x_studio_expected_start_date or '''Expected start date not defined'''"></t><br/>
+                            Required environment:
+                        </strong>
+                    </u>
+                </p>
+                <ul style="padding:0 0 0 24px;list-style-type:none;list-style-image:initial;list-style-position:initial;margin:0px 0 12px 0;box-sizing:border-box;" class="o_checklist">
+                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-1">VM</li>
+                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-2">Mail</li>
+                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-3"></li>
+                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-4">Laptop</li>
+                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-5">Other ___________</li>
+                </ul>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;"><br/></p>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;">Warm regards,</p>
+                <p style="margin:0px 0 12px 0;box-sizing:border-box;">HR team<br/></p>
+            </field>
+        </record>
+</odoo>
