@@ -14,3 +14,4 @@ class MailThread(models.AbstractModel):
         if self.env.context.get('block_notifications'):
             return [follower for follower in followers if follower[2] not in template_blacklist]
         return followers
+

@@ -12,3 +12,4 @@ class MailFollowers(models.Model):
         return super()._insert_followers(res_model, res_ids, 
                                          partner_ids, subtypes, 
                                          customer_ids, check_existing, existing_policy)
+
