@@ -11,7 +11,7 @@ Task ID: 3434926
 This feature that will allow the admin (specific users) to set up approval rule(s) for the workflows 
 (specific to Sale Order, Purchase Order, Invoice, Bill, and Journal Entry) based on different conditions/ attributes explained later in this document.
     """,
-    'depends': ['sale', 'purchase','account','base'],
+    'depends': ['sale_timesheet', 'purchase','account','base'],
     'data': [
         'data/ir_sequence.xml',
         'data/mail_template_approval.xml',
