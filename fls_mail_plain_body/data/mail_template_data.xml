@@ -2,8 +2,8 @@
 <odoo>
     <template id="no_template_template" name="FLS Mail: Raw plain text template"><t t-out="message.body"/></template>
 
-     <record id="email_template_fls_onboarding_request" model="mail.template">
-            <field name="name">Onboarding: Request for IT resources</field>
+    <record id="email_template_fls_onboarding_request" model="mail.template">
+            <field name="name">FLS: Onboarding: Request for IT resources</field>
             <field name="model_id" ref="hr.model_hr_employee"/>
             <field name="subject">{{object.x_studio_expected_start_date}} - First day for {{object.name}}</field>
             <field name="body_html" type="html">
@@ -24,7 +24,7 @@
                 <p style="margin:0px 0 12px 0;box-sizing:border-box;">
                     <u>
                         <strong style="box-sizing:border-box;font-weight:500;">
-                            Manager:<t t-out="object.parent_id.name or '''Manager not defined'''"></t><br/>
+                            Manager:<t t-out="object.sudo().parent_id.name or '''Manager not defined'''"></t><br/>
                             Job title:<t t-out="object.job_id.name or '''Job position not defined'''"></t><br/>
                             Start date:<t t-out="object.x_studio_expected_start_date or '''Expected start date not defined'''"></t><br/>
                             Required environment:
@@ -34,7 +34,6 @@
                 <ul style="padding:0 0 0 24px;list-style-type:none;list-style-image:initial;list-style-position:initial;margin:0px 0 12px 0;box-sizing:border-box;" class="o_checklist">
                     <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-1">VM</li>
                     <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-2">Mail</li>
-                    <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-3"></li>
                     <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-4">Laptop</li>
                     <li style="margin:0 20px 0 20px;box-sizing:border-box;position:relative;list-style-type:none;list-style-image:initial;list-style-position:initial;" id="checkId-5">Other ___________</li>
                 </ul>
