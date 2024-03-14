@@ -1,6 +1,6 @@
 from odoo import models, fields, api, Command, _, SUPERUSER_ID
 from odoo.exceptions import UserError
-
+import ast
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
@@ -13,10 +13,13 @@ class AccountMove(models.Model):
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
         ('posted', 'Posted'),
-    ], ondelete={'to_approve': lambda sor: sor.write({'state': 'draft'}),'approved': lambda sor: sor.write({'state': 'draft'})})
+        ('rejected','Rejected')
+    ], ondelete={'to_approve': lambda sor: sor.write({'state': 'draft'}),'approved': lambda sor: sor.write({'state': 'draft'}),'rejected': lambda sor: sor.write({'state': 'draft'})})
     no_of_approvals = fields.Integer('No of Approvals')
     delivery_director = fields.Many2one('res.users')
     buyer = fields.Many2one('res.users',string = "Buyer")
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper')
+    submitter = fields.Many2one('res.users',string='Submitter')
 
     @api.model_create_multi
     def create(self, vals):
@@ -30,7 +33,13 @@ class AccountMove(models.Model):
                 po = self.env['purchase.order'].search([('name','=',move.invoice_origin)])
                 move.buyer = po.user_id.id
                 move.department_id = po.department_id
-                self.delivery_director = po.delivery_director
+                move.delivery_director = po.delivery_director
+                if move.invoice_source_email: 
+                    template = self.env.ref('fls_approvals.email_template_notify_admin_bills', raise_if_not_found=False)
+                    if template:
+                        move.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
+
+                
         return moves
 
     def _send_approval_reminder_mail(self):
@@ -53,15 +62,18 @@ class AccountMove(models.Model):
             record.loggedin_user_id = self.env.context.get('uid', 0)
     def action_send_validate_je_email(self):
 
-        self.state = 'to_approve'
         if not self.invoice_filter_type_domain:
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','journal.entry')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.project_manager and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)):
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1),self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
+                rule_amount = currency_conversion_rate*rule.amount
+                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not( self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id))):
+                    continue                  
+                if rule.project_manager:
                     project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                     if project:
                         self.approver_ids = [Command.link(project.user_id.id)]
-                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount:
+                if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
             if self.approver_ids:
                 self.current_approver = self.approver_ids.ids[0]
@@ -72,13 +84,17 @@ class AccountMove(models.Model):
             po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','vendor.bill')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and  (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1) ,self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
+                rule_amount = currency_conversion_rate*rule.amount
+                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not(self.amount_total > rule_amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
+                    continue   
+                if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if self.buyer and rule.buyer and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if self.buyer and rule.buyer:
                     self.approver_ids = [Command.link(self.buyer.id)]
-                if self.delivery_director and rule.delivery_director and po.delivery_director and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if self.delivery_director and rule.delivery_director:
                     self.approver_ids = [Command.link(self.delivery_director.id)]
-                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if rule.project_manager:
                     move_line_ids = self.line_ids
                     for line in move_line_ids:
                         if line.account_analytic:
@@ -98,13 +114,17 @@ class AccountMove(models.Model):
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                if rule.user_id and (not rule.company_id or (self.company_id == rule.company_id)) and self.amount_total > rule.amount and (not rule.department_id or (self.department_id == rule.department_id)):
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1),self.currency_id,self.company_id,self.date_order.strftime("%m/%d/%y"))
+                rule_amount = currency_conversion_rate*rule.amount
+                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not(self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
+                    continue  
+                if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
-                if self.delivery_director and rule.delivery_director and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if self.delivery_director and rule.delivery_director:
                     self.approver_ids = [Command.link(self.delivery_director.id)]
-                if self.invoice_user_id and rule.salesperson and self.amount_total > rule.amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if self.invoice_user_id and rule.salesperson:
                     self.approver_ids = [Command.link(self.invoice_user_id.id)]
-                if rule.project_manager and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if rule.project_manager:
                     move_line_ids = self.line_ids
                     for line in move_line_ids:                        
                         if so.analytic_account_id and so.analytic_account_id.project_ids :
@@ -116,24 +136,44 @@ class AccountMove(models.Model):
                 self._send_approval_reminder_mail()
             else:
                 self.state = 'approved'
-
-
+        self.state = 'to_approve' if self.state != 'approved' else 'approved'
+    def send_approved_email(self):
+        if not self.invoice_filter_type_domain:
+            template = self.env.ref('fls_approvals.email_template_approved_je', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'sale':
+            template = self.env.ref('fls_approvals.email_template_approved_inv', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'purchase':
+            template = self.env.ref('fls_approvals.email_template_approved_bills', raise_if_not_found=False)
+        if template:
+            self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
+    
+    def send_rejected_email(self):
+        if not self.invoice_filter_type_domain:
+            template = self.env.ref('fls_approvals.email_template_rejected_je', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'sale':
+            template = self.env.ref('fls_approvals.email_template_rejected_inv', raise_if_not_found=False)
+        if self.invoice_filter_type_domain == 'purchase':
+            template = self.env.ref('fls_approvals.email_template_rejected_bills', raise_if_not_found=False)
+        if template:
+            self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
     def action_approve(self):
-        admin_user_group = self.env['res.groups'].search([('category_id.name','=','Administration'),('name','=','Access Rights')])
+        sudo = self.sudo()
+        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
         if self.state != 'to_approve':
             return
         if self.current_approver_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
             raise UserError(_('Unable to approve the record, it has to be approved by ' + self.current_approver.name+' first'))
-        self.no_of_approvals+=1
+        sudo.no_of_approvals+=1
         approvers = self.approver_ids.ids
         current_approver_index = approvers.index(self.current_approver.id)
         message = self.env.user.email_formatted+ 'has approved this JE'
         self.with_user(SUPERUSER_ID).message_post(body=message)
         if len(approvers) == self.no_of_approvals:
-            self.current_approver = None
-            self.state = 'approved'
+            sudo.current_approver = None
+            sudo.state = 'approved'
+            sudo.send_approved_email()
         else:
-            self.current_approver = approvers[(current_approver_index+1)%len(approvers)]
+            sudo.current_approver = approvers[(current_approver_index+1)%len(approvers)]
             self._send_approval_reminder_mail()
 
     @api.returns('self', lambda value: value.id)
@@ -143,10 +183,42 @@ class AccountMove(models.Model):
         return am
     
     def button_draft(self):
+        self.sudo().state='rejected'
         super().button_draft()
         self.write({'current_approver':None, 'current_approver_id':None,'approver_ids':None,'no_of_approvals':0})
+    
+    def action_reject(self):
+        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
+        if self.current_approver_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+            raise UserError(_('Unable to reject the record, it has to be rejected by ' + self.current_approver.name))
+        res= {
+            'name': 'Reject Entry',
+            'view_mode': 'form',
+            'res_model': 'approval.rejection.message',
+            'type': 'ir.actions.act_window',
+            'target': 'new',
+        }
+        return res
 
-        
+    def action_reject_email(self):
+        self.send_rejected_email()
+
+    def resume_approvals(self):
+        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
+        if self.bookkeeper_id.id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+            raise UserError(_('Unable to resume approvals of the record, it has to be resumed by ' + self.bookkeeper_id.name))
+        self.state = 'to_approve'
+        self._send_approval_reminder_mail()
+
+    def finalize(self):
+        sudo = self.sudo()
+        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
+        if admin_user_group.id not in self.env.user.groups_id.ids:
+            raise UserError(_('Can only be finalized by Administrator'))
+        sudo.current_approver = None
+        sudo.state = 'approved'
+        self.send_approved_email()
+
 
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'

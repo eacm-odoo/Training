@@ -1,0 +1,6 @@
+<odoo>
+    <record id="accounting_administrator_access" model="res.groups">
+       <field name="name">FLS Accounting Administrators</field>
+       <field name="category_id" ref="base.module_category_administration_administration"/>
+   </record>
+</odoo>

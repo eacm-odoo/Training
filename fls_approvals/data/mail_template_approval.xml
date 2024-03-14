@@ -97,4 +97,213 @@
         ]]></field>
     </record>
 
+    <record id="email_template_approved_je" model="mail.template">
+        <field name="name">Approved Journal Entry Email</field>
+        <field name="subject">A Journal Entry dated {{object.date}} has been approved</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Journal Entry dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/> has been approved and can be posted.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+    <record id="email_template_approved_bill" model="mail.template">
+        <field name="name">Approved Vendor Bill Email</field>
+        <field name="subject">A Vendor Bill dated {{object.date}} has been approved</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Vendor Bill dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been approved and can be posted.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+    <record id="email_template_approved_inv" model="mail.template">
+        <field name="name">Approved Invoice Email</field>
+        <field name="subject">An Invoice dated {{object.date}} has been approved</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>An Invoice dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been approved and can be posted.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_rejected_inv" model="mail.template">
+        <field name="name">Rejected Invoice Email</field>
+        <field name="subject">An Invoice dated {{object.date}} has been rejected</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>An Invoice dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected and requires your attention.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_rejected_je" model="mail.template">
+        <field name="name">Rejected Invoice Email</field>
+        <field name="subject">A Journal Entry dated {{object.date}} has been rejected</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Journal Entry dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected and requires your attention.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_rejected_bill" model="mail.template">
+        <field name="name">Rejected Vendor Bill Email</field>
+        <field name="subject">A Vendor Bill dated {{object.date}} has been rejected</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Vendor dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected and requires your attention.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_approved_so" model="mail.template">
+        <field name="name">Approved Sale Order Email</field>
+        <field name="subject">A Sale Order dated {{object.date_order}} has been approved</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Sale Order dated <t t-out="object.date_order or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/> has been approved and can be posted.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=sale.order&view_type=form'" target="_blank">Click Here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_approved_po" model="mail.template">
+        <field name="name">Approved Purchase Order Email</field>
+        <field name="subject">A Purchase Order dated {{object.date_order}} has been approved</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Purchase Order dated <t t-out="object.date_order or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/> has been approved and can be posted.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+
+    <record id="email_template_rejected_po" model="mail.template">
+        <field name="name">Rejected Purchase Order Email</field>
+        <field name="subject">A Purchase Order dated {{object.date_order}} has been rejected</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Purchase Order dated <t t-out="object.date_order or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/> has been has been rejected and requires your attention.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_rejected_so" model="mail.template">
+        <field name="name">Rejected Sale Order Email</field>
+        <field name="subject">A Sale Order dated {{object.date_order}} has been rejected</field>
+        <field name="email_to">{{ object.bookkeeper_id.email_formatted }}</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
+            <p>A Sale Order dated <t t-out="object.date_order or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/> has been has been rejected and requires your attention.</p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
+    <record id="email_template_notify_admin_bills" model="mail.template">
+        <field name="name">Notify Admin about Vendor Bills submitted via Email</field>
+        <field name="subject">A Vendor Bill has been submitted by {{object.partner_id.name}}</field>
+        <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+        <field name="email_to">{{ object.env.ref('fls_approvals.accounting_administrator_access').users[0].email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.env.ref('fls_approvals.accounting_administrator_access').users[0].email_formatted or ''"/> ,</p>
+            <p>A Vendor Bill dated <t t-out="object.invoice_date or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been submitted by <t t-out="object.partner_id.name or ''"/> and requires your attention. </p>
+            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>   
+
 </odoo>

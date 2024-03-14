@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_approval_rule,Approval Rule,model_approval_rule,base.group_user,1,1,1,1
+approval_rejection_message_rule,Rejection Rule,model_approval_rejection_message,base.group_user,1,1,1,1
