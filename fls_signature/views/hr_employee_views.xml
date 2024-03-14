@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_employee_form_inherit_fls_signature" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.fls.partner</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook[1]" position="inside">
+                <page string="Signature">
+                    <group>
+                        <field name="address_home_complete" invisible="1"/>
+                        <field name="country_name" invisible="1"/>
+                        <field name="signed_document" widget="one2many_list" options="{'no_create': True}">
+                            <tree string="Attachments">
+                                <field name="name"/>
+                                <field name="res_id"/>
+                                <field name="type"/>
+                                <field name="file_size"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="create_date"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
