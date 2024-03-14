@@ -2,7 +2,7 @@
 <odoo>
 
     <record model="sign.item.type" id="sign_item_type_contact_signature">
-        <field name="name">Contact Signature</field>
+        <field name="name">FLS: Contact Signature</field>
         <field name="item_type">signature</field>
         <field name="tip">sign it</field>
         <field name="placeholder">Contact Signature</field>
@@ -11,107 +11,124 @@
     </record>
 
     <record model="sign.item.type" id="sign_item_type_contact_email">
-        <field name="name">Contact Email</field>
+        <field name="name">FLS: Contact Email</field>
         <field name="placeholder">Contact Email</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">work_email</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_phone">
-        <field name="name">Contact Phone</field>
+        <field name="name">FLS: Contact Phone</field>
         <field name="placeholder">Contact Phone</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">work_phone</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_company">
-        <field name="name">Contact Company</field>
+        <field name="name">FLS: Contact Company</field>
         <field name="placeholder">Contact Company</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_current_date">
-        <field name="name">Current Date</field>
+        <field name="name">FLS: Current Date</field>
         <field name="placeholder">Current Date</field>
+        <field name="dynamic_auto_field"  eval="True"/>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_first_name">
-        <field name="name">Contact First Name</field>
+        <field name="name">FLS: Contact First Name</field>
         <field name="placeholder">Contact First Name</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">first_name</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_last_name">
-        <field name="name">Contact Last Name</field>
+        <field name="name">FLS: Contact Last Name</field>
         <field name="placeholder">Contact Last Name</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">last_name</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_personal_address">
-        <field name="name">Contact Personal Address</field>
+        <field name="name">FLS: Contact Personal Address</field>
         <field name="placeholder">Contact Personal Address</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">address_home_complete</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_country">
-        <field name="name">Contact Country</field>
+        <field name="name">FLS: Contact Country</field>
         <field name="placeholder">Contact Country</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">country_name</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_amount">
-        <field name="name">Amount</field>
+        <field name="name">FLS: Amount</field>
         <field name="placeholder">Amount</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_amount_in_words">
-        <field name="name">Amount In Words</field>
+        <field name="name">FLS: Amount In Words</field>
         <field name="placeholder">Amount In Words</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_passport_no">
-        <field name="name">Passport No</field>
+        <field name="name">FLS: Passport No</field>
         <field name="placeholder">Passport No</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_pass_issuing_date">
-        <field name="name">Pass issuing date</field>
+        <field name="name">FLS: Pass issuing date</field>
         <field name="placeholder">Pass issuing date</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_pass_issuing_country">
-        <field name="name">Pass issuing country</field>
+        <field name="name">FLS: Pass issuing country</field>
         <field name="placeholder">Pass issuing country</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_company_tax_id">
-        <field name="name">Company tax id</field>
+        <field name="name">FLS: Company tax id</field>
         <field name="placeholder">Company tax id</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_company_issuing_company">
-        <field name="name">Company issuing country</field>
+        <field name="name">FLS: Company issuing country</field>
         <field name="placeholder">Company issuing country</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_account_number">
-        <field name="name">Account number</field>
+        <field name="name">FLS: Account number</field>
         <field name="placeholder">Account number</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_bank_name">
-        <field name="name">Bank Name</field>
+        <field name="name">FLS: Bank Name</field>
         <field name="placeholder">Bank Name</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_swift_code">
-        <field name="name">Swift code</field>
+        <field name="name">FLS: Swift code</field>
         <field name="placeholder">Swift code</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_description_1">
-        <field name="name">Description line 1</field>
+        <field name="name">FLS: Description line 1</field>
         <field name="placeholder">Description line 1</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_description_2">
-        <field name="name">Description line 2</field>
+        <field name="name">FLS: Description line 2</field>
         <field name="placeholder">Description line 2</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_description_3">
-        <field name="name">Description line 3</field>
+        <field name="name">FLS: Description line 3</field>
         <field name="placeholder">Description line 3</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_description_4">
-        <field name="name">Description line 4</field>
+        <field name="name">FLS: Description line 4</field>
         <field name="placeholder">Description line 4</field>
     </record>
-    <record model="sign.item.type" id="sign_item_type_contact_">
-        <field name="name">Rep. Last Name</field>
-        <field name="placeholder">Rep. Last Name </field>
-    </record>
     <record model="sign.item.type" id="sign_item_type_contact_rep_first_name">
-        <field name="name">Rep. First Name</field>
+        <field name="name">FLS: Rep. First Name</field>
         <field name="placeholder">Rep. First Name</field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">first_name</field>
+    </record>
+    <record model="sign.item.type" id="sign_item_type_contact_">
+        <field name="name">FLS: Rep. Last Name</field>
+        <field name="placeholder">Rep. Last Name </field>
+        <field name="dynamic_auto_field"  eval="True"/>
+        <field name="auto_field">last_name</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_effective_date">
-        <field name="name">Effective date</field>
+        <field name="name">FLS: Effective date</field>
         <field name="placeholder">Effective date</field>
     </record>
     <record model="sign.item.type" id="sign_item_type_contact_name_english">
-        <field name="name">Name English</field>
+        <field name="name">FLS: Name English</field>
         <field name="placeholder">Name English</field>
     </record>
 
