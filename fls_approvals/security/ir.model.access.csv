@@ -1,3 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_approval_rule,Approval Rule,model_approval_rule,base.group_user,1,1,1,1
 approval_rejection_message_rule,Rejection Rule,model_approval_rejection_message,base.group_user,1,1,1,1
+access_purchase_order,Purchase Order Rule,purchase.model_purchase_order,base.group_user,1,0,0,0
+access_purchase_order_line,Purchase Order Line Rule,purchase.model_purchase_order_line,base.group_user,1,0,0,0
+access_account_move,Account Move Rule,account.model_account_move,base.group_user,1,0,0,0
+access_account_move_line,Account Move Line Rule,account.model_account_move_line,base.group_user,1,0,0,0
+access_sale_order,Sale Order Rule,sale.model_sale_order,base.group_user,1,0,0,0
+access_sale_order_line,Sale Order Line Rule,sale.model_sale_order_line,base.group_user,1,0,0,0

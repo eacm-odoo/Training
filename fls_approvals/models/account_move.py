@@ -18,7 +18,7 @@ class AccountMove(models.Model):
     no_of_approvals = fields.Integer('No of Approvals')
     delivery_director = fields.Many2one('res.users')
     buyer = fields.Many2one('res.users',string = "Buyer")
-    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper')
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
     submitter = fields.Many2one('res.users',string='Submitter')
 
     @api.model_create_multi
@@ -114,7 +114,7 @@ class AccountMove(models.Model):
             so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
             approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=','sale.invoice')]),key = lambda x :x.sequence)
             for rule in approval_rules:
-                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1),self.currency_id,self.company_id,self.date_order.strftime("%m/%d/%y"))
+                currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1),self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
                 rule_amount = currency_conversion_rate*rule.amount
                 if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not(self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                     continue  

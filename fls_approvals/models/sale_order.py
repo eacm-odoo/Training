@@ -17,7 +17,7 @@ class SaleOrder(models.Model):
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
     no_of_approvals = fields.Integer('No of Approvals')
-    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper')
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
 
     def _send_approval_reminder_mail(self,template_name):
         template = self.env.ref(template_name, raise_if_not_found=False)
@@ -87,7 +87,7 @@ class SaleOrder(models.Model):
     
     def action_reject(self):
         admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
-        if self.bookkeeper_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+        if self.current_approver_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
             raise UserError(_('Unable to reject the record, it has to be rejected by ' + self.current_approver.name))
         res= {
             'name': 'Reject Entry',

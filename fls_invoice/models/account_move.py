@@ -4,7 +4,7 @@ from odoo import models,fields,api
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    sale_order_tag_ids = fields.Many2many(name='Tags',comodel_name='crm.tag')
+    sale_order_tag_ids = fields.Many2many(string="Tags",name='Tags',comodel_name='crm.tag')
 
 
     @api.model_create_multi
