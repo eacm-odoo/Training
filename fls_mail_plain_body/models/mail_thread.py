@@ -4,6 +4,12 @@ from odoo import _, api, models, registry, SUPERUSER_ID
 from odoo.tools.misc import clean_context, split_every
 from odoo.addons.website.tools import text_from_html
 
+import lxml
+
+from odoo.tools import ustr
+from werkzeug import urls
+import re
+
 
 _logger = logging.getLogger(__name__)
 
@@ -32,10 +38,45 @@ class MailThread(models.AbstractModel):
             '</div>',
             ]
 
-        text = replace_all(str(body_html or ''), {i: '%s\n' % i for i in html_elements})
-        non_html_text = text_from_html(text, False)
+        # Append checked element text with X
+        root_html = lxml.html.fromstring(body_html)
+        checked_element = root_html.find_class('o_checked')
+        for el in checked_element:
+            el.text = '[X] %s' % el.text
+
+        # remove empty elements
+        empty_elements = [ele for ele in root_html.findall('.//*') if not [x for x in ele] and ele.text and '\n' in ele.text]
+        for element in empty_elements:
+            element.getparent().remove(element)
+
+        body_html = lxml.html.tostring(root_html)
+
+        replaced_link = self.env['mail.thread']._replace_employee_local_links(body_html)
+        # add new line after each html element
+        text = replace_all(str(replaced_link or ''), {i: '%s\n' % i for i in html_elements})
+        # remove spaces because \t is not being recognized as 4 spaces
+        text = str(text.replace(' '*4, ''))
+        text = str(text.replace('\n'*2, '\n'))
+        non_html_text = text_from_html(text, False).replace('\n ', '\n')
         return non_html_text
 
+    def _replace_employee_local_links(self, html, base_url=None):
+        if not html:
+            return html
+
+        html = ustr(html)
+
+        def _sub_relative2absolute(match):
+            if not _sub_relative2absolute.base_url:
+                _sub_relative2absolute.base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
+            return  f'{match.group(2)}: {urls.url_join(_sub_relative2absolute.base_url, match.group(1))}'
+
+        _sub_relative2absolute.base_url = base_url
+        html = re.sub(r"""(<img(?=\s)[^>]*\ssrc=")(/[^/][^"]+)""", _sub_relative2absolute, html)
+        html = re.sub(r"""<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)</a>""", _sub_relative2absolute, html)
+        html = re.sub(r"""(<[^>]+\bstyle="[^"]+\burl\('?)(/[^/'][^'")]+)""", _sub_relative2absolute, html)
+
+        return html
 
     def _notify_thread_by_email(self, message, recipients_data, msg_vals=False,
                                     mail_auto_delete=True,  # mail.mail

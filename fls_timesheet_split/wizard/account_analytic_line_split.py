@@ -17,16 +17,6 @@ class AccountAnalyticLineSplit(models.TransientModel):
         user_in_fls_operational_manager = self.env.user.has_group('__export__.res_groups_70_08a20b3f') 
         user_is_project_manager = all([True if user.id == self.env.user.id else False for user in self.account_analytic_line_ids.project_id.user_id])
         is_own_timesheets = all([True if aal.employee_user_id.id == self.env.user.id else False for aal in self.account_analytic_line_ids])
-        
-        if not user_in_fls_operational_manager and not user_is_project_manager and not is_own_timesheets:
-            raise UserError(_("""You are not authorized to perform this action.
-            \t To perform this action you must be one of the following
-            \t- Project Manager of all selected lines, or
-            \t- Member of the FLS Operational Manager group, or
-            \t- Assigned employee of all selected lines.
-            
-            \t- Please contact your system administrator for further assistance.
-            """))
 
         lines_to_split = self.account_analytic_line_ids.filtered(lambda aal: aal.unit_amount > self.work_hour_limit)
         for line in lines_to_split:
@@ -35,7 +25,6 @@ class AccountAnalyticLineSplit(models.TransientModel):
                 'time_type': 'overtime'
             }) 
             line.write({
-                'unit_amount': self.work_hour_limit,
-                'time_type': 'regular'
+                'unit_amount': self.work_hour_limit
             })
         return {'type': 'ir.actions.act_window_close'}
