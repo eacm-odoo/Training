@@ -29,7 +29,8 @@ class PurchaseOrder(models.Model):
 
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','purchase.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
-            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(rule.company_id.currency_id if rule.company_id else self.env['res.currency'].search([('name','=','USD')], limit=1),self.currency_id,self.company_id,self.date_order.strftime("%m/%d/%y"))
+            currency_id = rule.company_id.currency_id or self.env.ref('base.USD')
+            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(currency_id,self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
             rule_amount = currency_conversion_rate*rule.amount
             if rule.domain and self.id not in self.env['purchase.order'].search(ast.literal_eval(rule.domain)).ids or not (self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                 continue            
@@ -60,10 +61,10 @@ class PurchaseOrder(models.Model):
     
     def action_approve(self):
         sudo = self.sudo()
-        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
+        user_in_accounting_admin = self.env.user.has_group('fls_approvals.accounting_administrator_access')
         if self.state != 'to_approve':
             return
-        if self.current_approver_id!= self.loggedin_user_id  and admin_user_group.id not in self.env.user.groups_id.ids:
+        if self.current_approver_id!= self.loggedin_user_id  and not user_in_accounting_admin:
             raise UserError(_('Unable to approve the record, it has to be approved by ' + self.current_approver.name+' first'))
         sudo.no_of_approvals+=1
 
@@ -100,8 +101,8 @@ class PurchaseOrder(models.Model):
         return True
     
     def action_reject(self):
-        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
-        if self.current_approver_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+        user_in_accounting_admin = self.env.user.has_group('fls_approvals.accounting_administrator_access')
+        if self.current_approver_id!= self.loggedin_user_id and not user_in_accounting_admin:
             raise UserError(_('Unable to reject the record, it has to be rejected by ' + self.current_approver.name))
         res= {
             'name': 'Reject Entry',
@@ -111,9 +112,10 @@ class PurchaseOrder(models.Model):
             'target': 'new',
         }
         return res
+
     def resume_approvals(self):
-        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
-        if self.bookkeeper_id!= self.loggedin_user_id and admin_user_group.id not in self.env.user.groups_id.ids:
+        user_in_accounting_admin = self.env.user.has_group('fls_approvals.accounting_administrator_access')
+        if self.bookkeeper_id!= self.loggedin_user_id and not user_in_accounting_admin:
             raise UserError(_('Unable to resume approvals of the record, it has to be resumed by ' + self.bookkeeper_id.name))
         self.state = 'to_approve'
         self._send_approval_reminder_mail('fls_approvals.email_template_validate_po')
@@ -123,8 +125,8 @@ class PurchaseOrder(models.Model):
     
     def finalize(self):
         sudo = self.sudo()
-        admin_user_group = self.env.ref('fls_approvals.accounting_administrator_access')
-        if admin_user_group.id not in self.env.user.groups_id.ids:
+        user_in_accounting_admin = self.env.user.has_group('fls_approvals.accounting_administrator_access')
+        if not user_in_accounting_admin:
             raise UserError(_('Can only be finalized by Administrator'))
         sudo.current_approver = None
         sudo.state = 'approved'

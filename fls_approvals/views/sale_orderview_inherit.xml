@@ -33,11 +33,13 @@
             <xpath expr="//button[@name='action_confirm']" position="after">
                 <field name="loggedin_user_id" invisible="1" ></field>
             </xpath>
-
+            
             <xpath expr="//field[@name='team_id']" position="after">
                 <field name="department_id" ></field>
             </xpath>
-
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="delivery_director" ></field>
+            </xpath>
             <xpath expr="//button[@name='action_confirm']" position="after">
                     <button string="Send for Approval"
                             type="object"
