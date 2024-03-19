@@ -46,8 +46,30 @@
                         attrs="{'invisible': [('current_approver_id', '!=', 'loggedin_user_id'),('state', 'not in', ['to_approve'])]}"
                 />
             </xpath>
+
+            <xpath expr="//button[@name='action_approve']" position="after">
+                <button name="action_reject" 
+                        string="Reject" 
+                        type="object" 
+                        class="btn-danger"
+                        attrs="{'invisible': [('current_approver_id', '!=', 'loggedin_user_id'),('state', 'not in', ['to_approve'])]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_reject']" position="after">
+                <button name="resume_approvals" 
+                        string="Resume Approvals" 
+                        type="object" 
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', 'not in', ['rejected'])]}"/>
+            </xpath>
+            <xpath expr="//button[@name='resume_approvals']" position="after">
+                <button name="finalize" 
+                        string="Finalize Approvals" 
+                        type="object" 
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', 'not in', ['rejected','to_approve'])]}"/>
+            </xpath>
             <xpath expr="//field[@name='state']" position="replace">
-                <field name="state" widget="statusbar" statusbar_visible="draft,to_approve,approved,posted"/>
+                <field name="state" widget="statusbar" statusbar_visible="draft,to_approve,rejected,approved,posted"/>
             </xpath>
 
             <xpath expr="//field[@name='invoice_incoterm_id']" position="before">
@@ -55,6 +77,12 @@
             </xpath>
             <xpath expr="//field[@name='invoice_incoterm_id']" position="after">
                 <field name="buyer" attrs="{'invisible': [('invoice_filter_type_domain', '!=', 'purchase')]}"/>
+            </xpath>
+            <xpath expr="//form[1]/sheet[1]/group[1]/group[1]/t[1]" position="after">
+                <field name="submitter" string="Submitter" attrs="{'invisible': [('invoice_filter_type_domain', '!=','purchase')]}"/>
+            </xpath>
+            <xpath expr="//field[@name='submitter']" position="after">
+                <field name="bookkeeper_id"></field>
             </xpath>
         </field>
     </record>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="record_rule_journal_entry_edit" model="ir.rule">
+        <field name="name">Restrict Editing Journal Entries in To Approve Status</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('state', '!=', 'to_approve')]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>    
+    <record id="record_rule_sale_order_edit" model="ir.rule">
+        <field name="name">Restrict Editing Sales Orders in To Approve Status</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('state', '!=', 'to_approve')]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record> 
+    <record id="record_rule_purchase_order_edit" model="ir.rule">
+        <field name="name">Restrict Editing Purchase Orders in To Approve Status</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">[('state', '!=', 'to_approve')]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>   
+    
+    <record id="record_rule_purchase_order_approvers" model="ir.rule">
+        <field name="name"> FLS View Access Purchase Orders in To Approve Status</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('current_approver_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record> 
+
+    <record id="record_rule_sale_order_approvers" model="ir.rule">
+        <field name="name"> FLS View Access Sale Orders in To Approve Status</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('current_approver_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record> 
+
+    <record id="record_rule_account_move_approvers" model="ir.rule">
+        <field name="name"> FLS View Access Account Move in To Approve Status</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('current_approver_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record> 
+
+</odoo>

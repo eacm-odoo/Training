@@ -25,8 +25,11 @@
                             </group>
                         </group>
                         <group name="confitions_selection" string="Conditions">
+                            <field name="models" invisible='1'/>
+                            <field name="domain" widget="domain" options="{'model': 'models'}"/>
                             <field name="amount"/>
                             <field name="company_id"/>
+                            <field name="currency_string"/>
                             <field name="department_id" attrs="{'invisible':[('type','=','journal.entry')]}"/>
                         </group>
                     </sheet>

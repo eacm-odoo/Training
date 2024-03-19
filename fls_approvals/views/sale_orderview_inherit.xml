@@ -33,11 +33,13 @@
             <xpath expr="//button[@name='action_confirm']" position="after">
                 <field name="loggedin_user_id" invisible="1" ></field>
             </xpath>
-
+            
             <xpath expr="//field[@name='team_id']" position="after">
                 <field name="department_id" ></field>
             </xpath>
-
+            <xpath expr="//field[@name='department_id']" position="after">
+                <field name="delivery_director" ></field>
+            </xpath>
             <xpath expr="//button[@name='action_confirm']" position="after">
                     <button string="Send for Approval"
                             type="object"
@@ -56,9 +58,32 @@
                 />
             </xpath>
 
+            <xpath expr="//button[@name='action_approve']" position="after">
+                <button name="action_reject" 
+                        string="Reject" 
+                        type="object" 
+                        class="btn-danger"
+                        attrs="{'invisible': [('current_approver_id', '!=', 'loggedin_user_id'),('state', 'not in', ['to_approve'])]}"/>
+            </xpath>
+            
+            <xpath expr="//button[@name='action_reject']" position="after">
+                <button name="resume_approvals" 
+                        string="Resume Approvals" 
+                        type="object" 
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', 'not in', ['rejected'])]}"/>
+            </xpath>
+
+            <xpath expr="//button[@name='resume_approvals']" position="after">
+                <button name="finalize" 
+                        string="Finalize Approvals" 
+                        type="object" 
+                        class="oe_highlight"
+                        attrs="{'invisible': [('state', 'not in', ['rejected','to_approve'])]}"/>
+            </xpath>
             <xpath expr="//field[@name='state']" position="attributes">
                 <attribute name="widget">statusbar</attribute>
-                <attribute name="statusbar_visible">draft,sent,to_approve,approved,sale</attribute>
+                <attribute name="statusbar_visible">draft,sent,to_approve,approved,sale,rejected</attribute>
             </xpath>
 
         </field>
