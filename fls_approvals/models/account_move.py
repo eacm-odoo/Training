@@ -29,7 +29,7 @@ class AccountMove(models.Model):
         for move in moves: 
             if move.invoice_filter_type_domain == 'sale':
                 so = self.env['sale.order'].search([('name','=',move.invoice_origin)])
-                move.delivery_director = so.x_studio_delivery_director
+                move.delivery_director = so.delivery_director
                 move.department_id = so.department_id
             if move.invoice_filter_type_domain == 'purchase':
                 po = self.env['purchase.order'].search([('name','=',move.invoice_origin)])
