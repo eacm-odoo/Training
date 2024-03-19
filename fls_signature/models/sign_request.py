@@ -6,7 +6,7 @@ class SignRequest(models.Model):
     def _generate_completed_document(self, password=""):
         res = super(SignRequest, self)._generate_completed_document(password)
 
-        customer_request_partner_id = [request_item.partner_id for request_item in self.request_item_ids if request_item.role_id.name == 'Customer']
+        customer_request_partner_id = [request_item.partner_id for request_item in self.request_item_ids if request_item.role_id.name == 'Employee']
         customer_id = customer_request_partner_id[0] if customer_request_partner_id else False
 
         if customer_id:
@@ -20,16 +20,10 @@ class SignRequest(models.Model):
             if not work_contact_id_employee:
                 work_contact_id_employee = self.env['hr.employee'].search([('work_email','=',customer_id.email)])
             
-            if work_contact_id_employee:
-                attachment_id = self.env['ir.attachment'].create({
-                    'name': "%s.pdf" % self.reference if self.reference.split('.')[-1] != 'pdf' else self.reference,
-                    'datas': self.completed_document,
-                    'type': 'binary',
-                    'res_model': self._name,
-                    'res_id': work_contact_id_employee.id
-                })
+            # if work_contact_id_employee:
+                
 
-                work_contact_id_employee.signed_document = [Command.link(attachment_id.id)]
+                # work_contact_id_employee.signed_document = [Command.link(attachment_id.id)]
                 
 
         return res

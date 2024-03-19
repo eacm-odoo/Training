@@ -39,11 +39,16 @@ class Sign(main.Sign):
                                 item_type['auto_value'] = auto_field
                                 continue
 
-                            customer_sign_request_item_ids = [sign_request for sign_request in current_request_item.sign_request_id.request_item_ids if sign_request.role_id.name == 'Customer']
+                            customer_sign_request_item_ids = [sign_request for sign_request in current_request_item.sign_request_id.request_item_ids if sign_request.role_id.name == 'Employee']
                             customer_id = customer_sign_request_item_ids[0].partner_id if customer_sign_request_item_ids else False
                             if item_type['dynamic_auto_field'] and customer_id:
-                                same_name_customer_ids = request.env['res.partner'].search([('name','=',customer_id.name)]).ids
-                                work_contact_id_employee = request.env['hr.employee'].search([('work_contact_id.id','=',customer_id.id)])
+                                # same_email_customer_ids = request.env['res.partner'].search([('email','=',customer_id.email)])
+                                work_contact_id_employee_search = request.env['hr.employee'].search([('work_contact_id.id','=',customer_id.id)])
+
+                                # if not work_contact_id_employee:
+                                #     work_contact_id_employee = same_email_customer_ids[0]
+                                work_contact_id_employee = customer_id.employee_ids[0] if customer_id.employee_ids else work_contact_id_employee_search[0]
+                                    
                                 auto_field = work_contact_id_employee.mapped(item_type['auto_field'])
                                 item_type['auto_value'] = auto_field[0] if auto_field and not isinstance(auto_field, models.BaseModel) else ''
                                 continue
