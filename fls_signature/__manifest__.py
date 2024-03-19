@@ -21,6 +21,7 @@
     'data': [
         'views/sign_item_type_views.xml',
         'views/hr_employee_views.xml',
+        'views/sign_template_views.xml',
         'data/data.xml'
     ],
     'installable': True,
