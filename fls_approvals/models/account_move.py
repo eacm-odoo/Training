@@ -66,7 +66,7 @@ class AccountMove(models.Model):
     INVOICE_TYPE_FILTER_DOMAIN = {
         'purchase': 'vendor.bill',
         'sale': 'sale.invoice',
-        None: 'journal.entry'
+        False: 'journal.entry'
     }
     def action_send_validate_je_email(self):
         type = self.INVOICE_TYPE_FILTER_DOMAIN[self.invoice_filter_type_domain]
