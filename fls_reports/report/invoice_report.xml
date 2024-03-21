@@ -124,9 +124,9 @@
             <div class="col-xs-4" style="width: 70%; float:left ">
                 <div style="font-weight: bold;">INVOICE #: <span t-field="o.ref" /></div>
                 <div style="font-weight: bold;">INVOICE DATE:
-                    <span t-if = "o.company_id.country_code in ['AU','NL','DE']" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
+                    <span t-if = "o.invoice_date and o.company_id.country_code in ['AU','NL','DE']" t-esc="o.invoice_date.strftime('%d/%m/%Y')" />
 
-                    <span t-if = "o.company_id.country_code == 'US'" t-esc="o.invoice_date.strftime('%m/%d/%Y')" /></div>
+                    <span t-if = "o.invoice_date and o.company_id.country_code == 'US'" t-esc="o.invoice_date.strftime('%m/%d/%Y')" /></div>
             </div>
             <div style="width: 30%; float:right" class="col-xs-4">
                 <div style="font-weight: bold;">DELIVERY DATE: 
