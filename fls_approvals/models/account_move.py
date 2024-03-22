@@ -22,6 +22,7 @@ class AccountMove(models.Model):
     buyer = fields.Many2one('res.users',string = "Buyer")
     bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
     submitter = fields.Many2one('res.users',string='Submitter')
+    payment_registered = fields.Integer('Amount Being Registered')
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -142,6 +143,9 @@ class AccountMove(models.Model):
         if self.invoice_filter_type_domain == 'sale':
             template = self.env.ref('fls_approvals.email_template_rejected_inv', raise_if_not_found=False)
         if self.invoice_filter_type_domain == 'purchase':
+            template = self.env.ref('fls_approvals.email_template_rejected_bill_buyer', raise_if_not_found=False)
+            if self.buyer and template:
+                self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
             template = self.env.ref('fls_approvals.email_template_rejected_bill', raise_if_not_found=False)
         if template:
             self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')

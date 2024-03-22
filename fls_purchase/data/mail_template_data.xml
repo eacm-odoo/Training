@@ -49,5 +49,27 @@
                 <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             ]]></field>
         </record>
+
+        <record id="mail_template_vendor_bill_approval_submitter" model="mail.template">
+            <field name="name">Send VendorBill to Submitter</field>
+            <field name="subject">Please review the invoice created by {{object.invoice_user_id.name}}  dated {{object.invoice_date}} JE :{{ object.ref }}</field>
+            <field name="email_from">{{(object.user_id.email_formatted or user.email_formatted)}}</field>
+            <field name="email_to">{{ object.submitter.email_formatted }}</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="lang">${object.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[                    
+                <p>Dear <t t-out="object.submitter.name or ''"/> ,</p> <br/>
+                <p>Your bill dated <t t-out="object.invoice_date or ''"/> and reference <t t-out="object.ref or ''"/>  with amount of <t t-out="object.currency_id.name or ''"/><t t-out="object.formatted_amount_total or ''"/> has been received and will be processed.<br/>
+                <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+
+                <p>
+                Best regards,
+                </p>
+                <p>
+                Accounting department, <t t-out="object.vendor_company_name or ''"/>
+                </p> <br/>
+            ]]></field>
+        </record>
     </data>
 </odoo>
