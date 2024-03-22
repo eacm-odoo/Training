@@ -31,10 +31,6 @@ class AccountMove(models.Model):
                         
                         move.formatted_amount_total ="{:,}".format(move.amount_total)
                         self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment',res_id=move.id)
-                    template = self.env.ref('fls_purchase.mail_template_vendor_bill_approval_submitter', raise_if_not_found=False)
-                    if template and move.submitter:
-                        
-                        move.formatted_amount_total ="{:,}".format(move.amount_total)
-                        self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment',res_id=move.id)
+                    
 
         return move
