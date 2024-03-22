@@ -219,14 +219,32 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.buyer.email_formatted or ''"/> ,</p>
-            <p>A Vendor dated <t t-out="object.date or ''"/> of <t t-out="object.partner_id.name or ''"/> and reference <t t-out="object.ref or ''"/> with amount  <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected and requires your attention.</p>
-            <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
+            <p>Vendor Bill from <t t-out="object.partner_id.name or ''"/> dated  <t t-out="object.date or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
             <p>Accounting department</p>
 
         ]]></field>
     </record>
+
+    <record id="email_template_rejected_bill_submitter" model="mail.template">
+        <field name="name">Rejected Vendor Bill Email Submitter</field>
+        <field name="subject">A Vendor Bill dated {{object.date}} has been rejected</field>
+        <field name="email_to">{{ object.submitter.email_formatted }}</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html"><![CDATA[
+
+            <p>Dear <t t-out="object.submitter.email_formatted or ''"/> ,</p>
+            <p>Your vendor bill dated  <t t-out="object.date or ''"/> and reference <t t-out="object.ref or ''"/> with amount <t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/> has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
+            <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
+            <p>Best regards,</p>
+            <p>Accounting department</p>
+
+        ]]></field>
+    </record>
+
     <record id="email_template_approved_so" model="mail.template">
         <field name="name">Approved Sale Order Email</field>
         <field name="subject">A Sale Order dated {{object.date_order}} has been approved</field>
