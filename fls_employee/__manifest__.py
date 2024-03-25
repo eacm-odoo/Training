@@ -8,7 +8,7 @@
     'category': 'Custom Development',
     'version': '1.0',
     'license': 'OPL-1',
-    'depends': ['hr', 'hr_contract', 'sale_project', 'sale_timesheet'],
+    'depends': ['hr', 'hr_contract', 'sale_project', 'sale_timesheet', 'account_reports'],
     'data': [
         'security/ir.model.access.csv',
         'views/fls_geo_views.xml',

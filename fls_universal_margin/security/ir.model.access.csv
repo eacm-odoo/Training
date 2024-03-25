@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_analytic_account_history,access_analytic_account_history,fls_universal_margin.model_analytic_account_history,base.group_user,1,1,1,1
+access_marginality_data,access_marginality_data,fls_universal_margin.model_marginality_data,base.group_user,1,1,1,1
+access_marginality_data_initializer_wizard,access_marginality_data_initializer_wizard,fls_universal_margin.model_marginality_data_initializer_wizard,base.group_user,1,1,1,1
