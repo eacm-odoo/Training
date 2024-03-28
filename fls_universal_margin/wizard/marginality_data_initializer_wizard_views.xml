@@ -17,21 +17,8 @@
                 </form>
             </field>
         </record>
-
-        <!-- <record id="action_marginality_data_initializer_wizard" model="ir.actions.act_window">
-            <field name="name">Action marginality data initializer wizard</field>
-            <field name="res_model">marginality.data.initializer.wizard</field>
-            <field name="view_id" ref="marginality_data_initializer_wizard_view_form"/>
-            <field name="view_mode">tree,form</field>
-            <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">
-                    Create Region
-                </p>
-            </field>
-        </record> -->
-
-        
-         <record id="action_marginality_data_initializer_wizard" model="ir.actions.act_window">
+    
+        <record id="action_marginality_data_initializer_wizard" model="ir.actions.act_window">
             <field name="name">Action marginality data initializer wizard</field>
             <field name="res_model">marginality.data.initializer.wizard</field>
             <field name="view_mode">form</field>
@@ -39,8 +26,13 @@
             <field name="target">new</field>
         </record>
 
-        <!-- <menuitem id="menu_marginality_data_initializer_wizard" name="Model Name" parent="depends_module.Parent_menu_xid" sequence="6" groups="base.group_no_one"/> -->
-        <menuitem id="menu_action_marginality_data_initializer_wizard" name="Initialize Marginality Data" action="action_marginality_data_initializer_wizard" sequence="1" parent="menu_marginality_data"/>
+        <menuitem id="menu_action_marginality_data_initializer_wizard" 
+            name="Compute Marginality Model" 
+            action="action_marginality_data_initializer_wizard" 
+            sequence="1" 
+            parent="project.menu_project_report" 
+            groups="base.group_system"
+            />
         
     </data>
 </odoo>

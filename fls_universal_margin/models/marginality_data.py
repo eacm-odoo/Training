@@ -31,10 +31,10 @@ class MarginalityData(models.Model):
     salesperson_id = fields.Many2one('res.users', string='Salesperson') #AAL field name = user_id
     operation_manager_id = fields.Many2one('hr.employee', string='Operation Manager') #AL: operation_manager_id # TODO: switch from studio to regular field
     entry_type = fields.Selection([
-        ('Analytic Revenue', 'analytic_revenue'),
-        ('Analytic Cost', 'analytic_cost'),
-        ('Actual Revenue', 'actual_revenue'),
-        ('Actual Cost', 'actual_cost')], 
+        ('analytic_revenue', 'Analytic Revenue'),
+        ('analytic_cost', 'Analytic Cost'),
+        ('actual_revenue', 'Actual Revenue'),
+        ('actual_cost', 'Actual Cost')], 
         string='Entry Type') #AAL field name = entry_type
     status = fields.Selection([('Draft', 'draft'), ('In Approval', 'in_approval'), ('Approved', 'approved'), ('Posted', 'posted')], string='Status') #AAL field name = status
     currency_id = fields.Many2one('res.currency', string='Currency') #AAL field name = currency_id
@@ -43,39 +43,65 @@ class MarginalityData(models.Model):
 
 
     def initialize_data(self, date_from, date_to):
-        self.ensure_one()
-        return 
+        marginality_data_between_range_ids = self.env['marginality.data'].search([('date','>',date_from), ('date','<',date_to)])
+
+        if marginality_data_between_range_ids:
+            marginality_data_between_range_ids.unlink()
+
+        self._generate_timesheet_data_with_labor_costs(date_from, date_to)
+
+        return True
+        
     
+    def _generate_timesheet_data_with_labor_costs(self, date_from, date_to):
+        self.env.cr.execute("""
+            select 
+                AAL.date as date,
+                AAL.account_id as analytic_account_id,
+                AAL.category as category,
+                NULL as journal_item_id,
+                NULL as financial_account_id,
+                AAL.company_id as company_id,
+                AAL.product_uom_id as uom_id,
+                AAL.unit_amount as quantity,
+                AAL.product_id as product_id,
+                AAL.so_line as so_item_id,
+                AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                AAL.partner_id as partner_id,
+                AAL.employee_id as employee_id,
+                AAL.time_type as time_type,
+                AAL.is_adjusted as adjusted,
+                AAL.multiplier as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AAL.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'analytic_cost' as entry_type,
+                NULL as status,
+                AAL.currency_id as currency_id,
+                AAL.amount as amount_currency,
+                AAL.cost_usd as amount_usd
+            from account_analytic_line AAL
+            left join hr_employee_margin EH
+                on
+                    EH.date=AAL.Date AND 
+                    EH.employee_id=AAL.employee_id
+            left join analytic_account_history AH
+                on 
+                    AH.date=AAL.date AND 
+                    AH.analytic_account_id=AAL.account_id
+            where 
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
+                AAL.time_type = 'regular'
+            ;
+            """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
-    # Date
-    # AnalyticAccount
-    # Category
-    # FinancialAccount
-    # JournalItem
-    # Company
-    # UnitOfMeasure
-    # Quantity
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
 
-    # Product
-    # SOItem
-    # SOItemPolicy
-    # Partner
-    # Employee
-    # TimeType
-
-    # Adjusted,
-    # Multiplier
-    # ResourceManager
-    # EmployeeCompany
-    # EmployeeJobPosition
-    # EmployeeWorkCountry
-    # EmployeeFLSGeo
-    # Project
-    # ProjectManager
-    # Salesperson
-    # OperationManager
-    # EntryType[ AnalyticRevenue, Analytic Cost, Actual Revenue, Actual Cost]
-    # Status[ Draft, In Approval, Approved, Posted]
-    # Currency
-    # AmountCurrency
-    # AmountUSD
+        return marginality_data_vals

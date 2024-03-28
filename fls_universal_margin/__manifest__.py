@@ -2,13 +2,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
     'name': 'FLS: Universal Margin Report',
-    'version': '1.1',
+    'version': '1.0',
     'category': 'Customization',
     'description': """
         Task ID: 3750293
         Quadgram: dipa
-
-        Test Dipa
     """,
     'author': 'Odoo Inc',
     'website': 'http://www.odoo.com',
