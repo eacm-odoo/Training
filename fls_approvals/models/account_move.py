@@ -46,6 +46,8 @@ class AccountMove(models.Model):
                         
                         move.formatted_amount_total ="{:,}".format(move.amount_total)
                         self.with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment',res_id=move.id)
+                else:
+                    move.submitter = self.env.user.id
                 
         return moves
 
@@ -73,6 +75,7 @@ class AccountMove(models.Model):
         'sale': 'sale.invoice',
         False: 'journal.entry'
     }
+
     def action_send_validate_je_email(self):
         type = self.INVOICE_TYPE_FILTER_DOMAIN[self.invoice_filter_type_domain]
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=',type)]),key = lambda x :x.sequence)
@@ -80,15 +83,16 @@ class AccountMove(models.Model):
         for rule in approval_rules:
             currency_id = rule.company_id.currency_id or self.env.ref('base.USD')
             currency_conversion_rate = self.env['res.currency']._get_conversion_rate(currency_id,self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
-            rule_amount = currency_conversion_rate*rule.amount
+            domain = ast.literal_eval(rule.domain)
+            domain = rule.convert_currency_in_domain_filter(domain,currency_conversion_rate)
             if not self.invoice_filter_type_domain:
-                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not( self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id))):
+                if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id))):
                     continue                  
                 if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
             if self.invoice_filter_type_domain == 'purchase':
                 po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
-                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not(self.amount_total > rule_amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
+                if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                     continue   
                 if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]
@@ -104,12 +108,12 @@ class AccountMove(models.Model):
                                 projects = line.account_analytic.project_ids
                                 self.approver_ids = [Command.link(projects[0].user_id.id)]
                                 break
-                if po.timesheet_approver_id and rule.timesheet_approver and self.amount_total > rule.amount and  (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id)):
+                if po.timesheet_approver_id and rule.timesheet_approver and (not rule.company_id or (self.company_id == rule.company_id)):
                     self.approver_ids = [Command.link(po.timesheet_approver_id.id)]
 
             if self.invoice_filter_type_domain == 'sale':
                 so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
-                if rule.domain and self.id not in self.env['account.move'].search(ast.literal_eval(rule.domain)).ids or not(self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
+                if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                     continue  
                 if rule.user_id:
                     self.approver_ids = [Command.link(rule.user_id.id)]

@@ -30,9 +30,10 @@ class PurchaseOrder(models.Model):
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','purchase.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
             currency_id = rule.company_id.currency_id or self.env.ref('base.USD')
-            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(currency_id,self.currency_id,self.company_id,self.date.strftime("%m/%d/%y"))
-            rule_amount = currency_conversion_rate*rule.amount
-            if rule.domain and self.id not in self.env['purchase.order'].search(ast.literal_eval(rule.domain)).ids or not (self.amount_total > rule_amount and (not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
+            currency_conversion_rate = self.env['res.currency']._get_conversion_rate(currency_id,self.currency_id,self.company_id,self.date_order.strftime("%m/%d/%y"))
+            domain = ast.literal_eval(rule.domain)
+            domain = rule.convert_currency_in_domain_filter(domain,currency_conversion_rate)
+            if rule.domain and self.id not in self.env['purchase.order'].search(domain).ids or not (not rule.company_id or (self.company_id == rule.company_id)):
                 continue            
             if rule.user_id:
                 self.approver_ids = [Command.link(rule.user_id.id)]
