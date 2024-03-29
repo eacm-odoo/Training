@@ -20,8 +20,8 @@ class AccountMove(models.Model):
     no_of_approvals = fields.Integer('No of Approvals')
     delivery_director = fields.Many2one('res.users')
     buyer = fields.Many2one('res.users',string = "Buyer")
-    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
-    submitter = fields.Many2one('res.users',string='Submitter')
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',default=lambda self: self.env.user.id,required = True)
+    submitter = fields.Many2one('res.users',string='Submitter',default=lambda self: self.env.user.id)
     payment_registered = fields.Integer('Amount Being Registered')
 
     @api.model_create_multi
