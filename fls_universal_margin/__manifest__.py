@@ -15,6 +15,7 @@
     'data': [
         'security/ir.model.access.csv',
         'views/marginality_data_views.xml',
+        'views/analytic_account_history_views.xml',
         'wizard/marginality_data_initializer_wizard_views.xml',
     ],
     'installable': True,

@@ -29,7 +29,6 @@
         <menuitem id="menu_action_marginality_data_initializer_wizard" 
             name="Compute Marginality Model" 
             action="action_marginality_data_initializer_wizard" 
-            sequence="1" 
             parent="project.menu_project_report" 
             groups="base.group_system"
             />
