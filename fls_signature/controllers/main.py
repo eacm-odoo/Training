@@ -50,7 +50,13 @@ class Sign(main.Sign):
                                 work_contact_id_employee = customer_id.employee_ids[0] if customer_id.employee_ids else work_contact_id_employee_search[0]
                                     
                                 auto_field = work_contact_id_employee.mapped(item_type['auto_field'])
-                                item_type['auto_value'] = auto_field[0] if auto_field and not isinstance(auto_field, models.BaseModel) else ''
+
+                                auto_field = auto_field[0] if auto_field else ''
+
+                                if isinstance(auto_field, models.BaseModel) and auto_field:
+                                    auto_field = str(auto_field[0].display_name)
+                                    
+                                item_type['auto_value'] = auto_field
                                 continue
 
                             auto_field = current_request_item.partner_id.mapped(item_type['auto_field'])
