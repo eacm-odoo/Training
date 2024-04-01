@@ -12,7 +12,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo.</p>
+            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=sale.order&view_type=form'" target="_blank">Click Here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -31,7 +31,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo.</p>
+            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -50,7 +50,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>An Invoice dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" is waiting for your approval in Odoo. </p>
+            <p>An Invoice dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" is waiting for your approval in Odoo. </p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -69,7 +69,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Vendor Bill dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" is waiting for your approval in Odoo. </p>
+            <p>A Vendor Bill dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" is waiting for your approval in Odoo. </p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -88,7 +88,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.current_approver.email_formatted or ''"/> ,</p>
-            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo. </p>
+            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" is waiting for your approval in Odoo. </p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -107,7 +107,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
+            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -125,7 +125,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Vendor Bill dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been approved and can be posted.</p>
+            <p>A Vendor Bill dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been approved and can be posted.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -143,7 +143,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>An Invoice dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been approved and can be posted.</p>
+            <p>An Invoice dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been approved and can be posted.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -162,7 +162,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>An Invoice dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
+            <p>An Invoice dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -181,7 +181,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
+            <p>A Journal Entry dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -200,7 +200,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Vendor dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
+            <p>A Vendor dated "<t t-out="object.date or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount  "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected and requires your attention.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -219,7 +219,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.buyer.email_formatted or ''"/> ,</p>
-            <p>Vendor Bill from "<t t-out="object.partner_id.name or ''"/>" dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
+            <p>Vendor Bill from "<t t-out="object.partner_id.name or ''"/>" dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
             <p>Accounting department</p>
@@ -237,7 +237,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.submitter.email_formatted or ''"/> ,</p>
-            <p>Your vendor bill dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
+            <p>Your vendor bill dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been has been rejected. If this happened because of technical reason, the bill will be sent for approval again upon correction.
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
             <p>Accounting department</p>
@@ -255,7 +255,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.submitter.email_formatted or ''"/> ,</p>
-            <p>Your vendor bill dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>"  has been approved and is scheduled for payment on "<t t-out="object.invoice_date_due or ''"/>".</p>
+            <p>Your vendor bill dated  "<t t-out="object.date or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>"  has been approved and is scheduled for payment on "<t t-out="object.invoice_date_due or ''"/>".</p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
             <p>Accounting department</p>
@@ -273,7 +273,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
+            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=sale.order&view_type=form'" target="_blank">Click Here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -292,7 +292,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.partner_ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
+            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.partner_ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been approved and can be posted.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -312,7 +312,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.partner_ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been has been rejected and requires your attention.</p>
+            <p>A Purchase Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>" and reference "<t t-out="object.partner_ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been has been rejected and requires your attention.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -331,7 +331,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.bookkeeper_id.email_formatted or ''"/> ,</p>
-            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>"and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been has been rejected and requires your attention.</p>
+            <p>A Sale Order dated "<t t-out="object.date_order or ''"/>" of "<t t-out="object.partner_id.name or ''"/>"and reference "<t t-out="object.ref or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_total) or ''"/>" has been has been rejected and requires your attention.</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=purchase.order&view_type=form'">Click here</a></p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -351,7 +351,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.env.ref('fls_approvals.accounting_administrator_access').users[0].email_formatted or ''"/> ,</p>
-            <p>A Vendor Bill dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been submitted by "<t t-out="object.partner_id.name or ''"/>" and requires your attention. </p>
+            <p>A Vendor Bill dated "<t t-out="object.invoice_date or ''"/>" with amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.amount_residual) or ''"/>" has been submitted by "<t t-out="object.partner_id.name or ''"/>" and requires your attention. </p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
@@ -371,7 +371,7 @@
         <field name="body_html"><![CDATA[
 
             <p>Dear <t t-out="object.submitter.name or ''"/> ,</p>
-            <p>A payment in amount "<t t-out="object.currency_id.symbol or ''"/><t t-out="'{0:,.2f}'.format(object.payment_registered) or ''"/>" has been remitted to you against your bill dated "<t t-out="object.invoice_date or ''"/>" and reference "<t t-out="object.ref or ''"/>".</p>
+            <p>A payment in amount "<t t-out="object.currency_id.name or ''"/><t t-out="'{0:,.2f}'.format(object.payment_registered) or ''"/>" has been remitted to you against your bill dated "<t t-out="object.invoice_date or ''"/>" and reference "<t t-out="object.ref or ''"/>".</p>
             <p>For your convenience, here is the link to the document: <a t-att-href="'/web#id=' + str(object.id) + '&model=account.move&view_type=form'">Click here</a> </p>
             <p>Please do not reply to this message, it has been auto generated. If you have questions, contact accounts@firstlinesoftware.com instead.</p>
             <p>Best regards,</p>
