@@ -17,7 +17,7 @@ class SaleOrder(models.Model):
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
     no_of_approvals = fields.Integer('No of Approvals')
-    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',default=lambda self: self.env.user.id,required = True)
     delivery_director = fields.Many2one('res.users')
 
     def _send_approval_reminder_mail(self,template_name):
