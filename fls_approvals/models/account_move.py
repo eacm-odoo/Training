@@ -8,7 +8,7 @@ class AccountMove(models.Model):
 
     approver_ids = fields.Many2many('res.users', string='Approvers')
     current_approver = fields.Many2one('res.users',string = 'Current Approver')
-    current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id')
+    current_approver_id = fields.Integer('Current Approver Id', compute = '_compute_approver_id',store=True)
     loggedin_user_id = fields.Integer('Loggedin User', compute = '_compute_current_loggedin_user')
     department_id = fields.Many2one('hr.department', string='Department')
     state = fields.Selection(selection_add=[
