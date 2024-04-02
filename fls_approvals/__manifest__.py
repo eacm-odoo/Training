@@ -4,14 +4,14 @@
     'sequence': 100,
     'license': 'OPL-1',
     'website': 'https://www.odoo.com',
-    'version': '16.0',
+    'version': '16.0.1',
     'author': 'Odoo Inc',
     'description': """
 Task ID: 3434926
 This feature that will allow the admin (specific users) to set up approval rule(s) for the workflows 
 (specific to Sale Order, Purchase Order, Invoice, Bill, and Journal Entry) based on different conditions/ attributes explained later in this document.
     """,
-    'depends': ['sale', 'purchase','account','base'],
+    'depends': ['contacts','sale', 'purchase','account','base'],
     'data': [
         'data/ir_sequence.xml',
         'security/approvals_security.xml',
