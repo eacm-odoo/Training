@@ -1,10 +1,10 @@
 {
     'name': "Rule Based Workflow for Specific Models",
     'summary': 'Able to set approvals for Bills,Invoices, SOs,POs',
-    'sequence': 100,
+    'sequence': 99,
     'license': 'OPL-1',
     'website': 'https://www.odoo.com',
-    'version': '16.0.1',
+    'version': '16.0.2',
     'author': 'Odoo Inc',
     'description': """
 Task ID: 3434926
