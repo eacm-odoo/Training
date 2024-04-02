@@ -18,7 +18,7 @@ class PurchaseOrder(models.Model):
     department_id = fields.Many2one('hr.department', string='Department')
     delivery_director = fields.Many2one('res.users',string = 'Delivery Director')
     no_of_approvals = fields.Integer('No of Approvals')
-    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',required = True)
+    bookkeeper_id = fields.Many2one('res.users',string='Bookkeeper',default=lambda self: self.env.user.id,required = True)
 
     def _send_approval_reminder_mail(self,template_name):
         template = self.env.ref(template_name, raise_if_not_found=False)
