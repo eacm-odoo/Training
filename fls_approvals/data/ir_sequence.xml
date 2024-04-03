@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-
-    <record id="approval_sequence_generator" model="ir.sequence">
-        <field name="name">Approval Sequence Generator</field>
-        <field name="code">approval.sequence.value</field>
-        <field name="active">TRUE</field>
-        <field name="number_increment">1</field>
-        <field name="number_next">100</field>
-    </record>
-
+    <data noupdate="1">
+        <record id="approval_sequence_generator" model="ir.sequence">
+            <field name="name">Approval Sequence Generator</field>
+            <field name="code">approval.sequence.value</field>
+            <field name="active">TRUE</field>
+            <field name="number_increment">1</field>
+            <field name="number_next">200</field>
+        </record>
+    </data>
 </odoo>

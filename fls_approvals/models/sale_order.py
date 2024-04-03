@@ -5,7 +5,7 @@ import ast
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    approver_ids = fields.Many2many('res.users', string = 'Approvers')
+    approver_ids = fields.Many2many('res.approvers', string = 'Approvers')
     state = fields.Selection(selection_add = [
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
@@ -27,6 +27,7 @@ class SaleOrder(models.Model):
 
     def action_send_validate_so_email(self):
 
+        approver = self.env['res.approvers']
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','sale.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
             currency_id = rule.company_id.currency_id or self.env.ref('base.USD')
@@ -38,16 +39,16 @@ class SaleOrder(models.Model):
             if rule.project_manager: 
                 project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
                 if project:
-                    self.approver_ids = [Command.link(project.user_id.id)]
+                    self.approver_ids = [Command.link(approver.create({'approver_id':project.user_id.id}).id)]
 
             if rule.user_id:
-                self.approver_ids = [Command.link(rule.user_id.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
             if rule.delivery_director and self.delivery_director:
-                self.approver_ids = [Command.link(self.delivery_director.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
             if rule.salesperson:
-                self.approver_ids = [Command.link(self.user_id.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id}).id)]
         if self.approver_ids:
-            self.current_approver = self.approver_ids.ids[0]
+            self.current_approver = self.approver_ids[0].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_so')
             self.state = 'to_approve'
         else:
@@ -64,13 +65,14 @@ class SaleOrder(models.Model):
         approvers = self.approver_ids.ids
         message = self.env.user.email_formatted+ 'has approved this Sale Order'
         self.with_user(SUPERUSER_ID).message_post(body=message)
-        current_approver_index = approvers.index(self.current_approver.id)
+        current_approval_record = self.approver_ids.filtered(lambda x : x.approver_id == self.current_approver).id
+        current_approver_index = approvers.index(current_approval_record)
         if len(approvers) == self.no_of_approvals:
             sudo.current_approver = None
             sudo.state = 'approved'
             self._send_approval_reminder_mail('fls_approvals.email_template_approved_so')
         else:
-            sudo.current_approver = approvers[(current_approver_index+1)%len(approvers)]
+            sudo.current_approver = self.approver_ids[(current_approver_index+1)%len(approvers)].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_so')
 
     @api.depends('current_approver')
