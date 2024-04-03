@@ -11,12 +11,6 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            
-            <page name="order_lines" position="after">
-                <page name="approvers" string="Approvers">
-                    <field name="approver_ids" widget="one2many_list" readonly="1"/>
-                </page>
-            </page>
 
             <xpath expr="//button[@name='action_confirm'][1]" position="attributes">
                 <attribute name="attrs">{'invisible': [('state', '!=', 'approved')]}</attribute>

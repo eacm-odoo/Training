@@ -6,12 +6,6 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
-            <page name="aml_tab" position="after">
-                <page name="Approvers" String="Approvers">
-                    <field name="approver_ids" widget="one2many_list" readonly="1"/>
-                </page>
-            </page>
-
             <xpath expr="//button[@name='action_post'][1]" position="attributes">
                 <attribute name="attrs">{'invisible': [('state', 'not in', ['approved'])]}</attribute>
             </xpath>

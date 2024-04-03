@@ -4,7 +4,7 @@ import ast
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
-    approver_ids = fields.Many2many('res.users', string='Approvers')
+    approver_ids = fields.Many2many('res.approvers', string='Approvers')
     state = fields.Selection(selection_add=[
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
@@ -26,7 +26,8 @@ class PurchaseOrder(models.Model):
             self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
 
     def action_send_validate_po_email(self):
-
+        
+        approver = self.env['res.approvers']
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','purchase.order')]),key = lambda x :x.sequence)
         for rule in approval_rules:
             currency_id = rule.company_id.currency_id or self.env.ref('base.USD')
@@ -36,15 +37,15 @@ class PurchaseOrder(models.Model):
             if rule.domain and self.id not in self.env['purchase.order'].search(domain).ids or not (not rule.company_id or (self.company_id == rule.company_id)):
                 continue            
             if rule.user_id:
-                self.approver_ids = [Command.link(rule.user_id.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
             if rule.buyer: 
-                self.approver_ids = [Command.link(self.user_id.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id}).id)]
             if self.timesheet_approver_id and rule.timesheet_approver: 
-                self.approver_ids = [Command.link(self.timesheet_approver_id.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.timesheet_approver_id.id}).id)]
             if self.delivery_director and rule.delivery_director: 
-                self.approver_ids = [Command.link(self.delivery_director.id)]
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
         if self.approver_ids:
-            self.current_approver = self.approver_ids.ids[0]
+            self.current_approver = self.approver_ids[0].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_po')
             self.state = 'to_approve'
 
@@ -72,13 +73,14 @@ class PurchaseOrder(models.Model):
         approvers = self.approver_ids.ids
         message = self.env.user.email_formatted+ 'has approved this Purchase Order'
         self.with_user(SUPERUSER_ID).message_post(body=message)
-        current_approver_index = approvers.index(self.current_approver.id)
+        current_approval_record = self.approver_ids.filtered(lambda x : x.approver_id == self.current_approver).id
+        current_approver_index = approvers.index(current_approval_record)
         if len(approvers) == self.no_of_approvals:
             sudo.current_approver = None
             sudo.state = 'approved'
             self._send_approval_reminder_mail('fls_approvals.email_template_approved_po')
         else:
-            sudo.current_approver = approvers[(current_approver_index+1)%len(approvers)]
+            sudo.current_approver = self.approver_ids[(current_approver_index+1)%len(approvers)].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_po')
 
     def copy(self, default=None):

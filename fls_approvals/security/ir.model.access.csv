@@ -7,3 +7,4 @@ access_account_move,Account Move Rule,account.model_account_move,base.group_user
 access_account_move_line,Account Move Line Rule,account.model_account_move_line,base.group_user,1,0,0,0
 access_sale_order,Sale Order Rule,sale.model_sale_order,base.group_user,1,0,0,0
 access_sale_order_line,Sale Order Line Rule,sale.model_sale_order_line,base.group_user,1,0,0,0
+access_res_approvers,access_res_approvers,fls_approvals.model_res_approvers,base.group_user,1,1,1,1
