@@ -8,7 +8,7 @@ class AccountMove(models.Model):
     bank_acount_id = fields.Many2one(
         comodel_name='res.partner.bank', 
         domain="[('id', 'in', bank_ids)]", 
-        compute='_compute_partner_bank_id', readonly=False)
+        compute='_compute_partner_bank_id', readonly=False, store=True)
     partner_bank_id = fields.Many2one(
         'res.partner.bank',
         domain="[('id', 'in', bank_ids)]",
