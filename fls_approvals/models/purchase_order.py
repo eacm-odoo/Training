@@ -36,14 +36,14 @@ class PurchaseOrder(models.Model):
             domain = rule.convert_currency_in_domain_filter(domain,currency_conversion_rate)
             if rule.domain and self.id not in self.env['purchase.order'].search(domain).ids or not (not rule.company_id or (self.company_id == rule.company_id)):
                 continue            
-            if rule.user_id:
-                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
-            if rule.buyer: 
-                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id}).id)]
-            if self.timesheet_approver_id and rule.timesheet_approver: 
-                self.approver_ids = [Command.link(approver.create({'approver_id':self.timesheet_approver_id.id}).id)]
-            if self.delivery_director and rule.delivery_director: 
-                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
+            if rule.user_id and rule.find_duplicate_approvers(self.approver_ids,rule.user_id):
+                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id,'record_id':rule.id}).id)]
+            if rule.buyer and rule.find_duplicate_approvers(self.approver_ids,self.user_id): 
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id,'record_id':rule.id}).id)]
+            if self.timesheet_approver_id and rule.timesheet_approver and rule.find_duplicate_approvers(self.approver_ids,self.timesheet_approver_id): 
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.timesheet_approver_id.id,'record_id':rule.id}).id)]
+            if self.delivery_director and rule.delivery_director and rule.find_duplicate_approvers(self.approver_ids,self.delivery_director): 
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id,'record_id':rule.id}).id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids[0].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_po')

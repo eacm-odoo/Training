@@ -63,3 +63,8 @@ class ApprovalRule(models.Model):
                 condition = tuple(condition_list)
             domain[i] = condition
         return domain
+
+    def find_duplicate_approvers(self,approver_ids,user):
+        if user.id in approver_ids.approver_id.ids:
+            return False
+        return True
