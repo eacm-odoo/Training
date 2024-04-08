@@ -11,7 +11,7 @@
     'author': 'Odoo Inc',
     'website': 'http://www.odoo.com',
     'license': 'OPL-1',
-    'depends': ['fls_employee', 'account_reports'],
+    'depends': ['fls_employee', 'fls_approvals'],
     'data': [
         'security/ir.model.access.csv',
         'views/marginality_data_views.xml',

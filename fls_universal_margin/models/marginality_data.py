@@ -1,5 +1,18 @@
 from odoo import models, fields
+import logging
 
+_logger = logging.getLogger(__name__)
+import time
+
+def timeis(func): 
+        '''Decorator that reports the execution time.'''
+        def wrap(*args, **kwargs): 
+            start = time.time() 
+            _logger.log(logging.INFO, f'Starting: {func.__name__}')
+            result = func(*args, **kwargs) 
+            _logger.log(logging.INFO, f'finished: {func.__name__} in : {time.time()- start}')
+            return result 
+        return wrap 
 class MarginalityData(models.Model): 
     _name = 'marginality.data'
     _description = 'Marginality Data'
@@ -21,7 +34,7 @@ class MarginalityData(models.Model):
     time_type = fields.Char(string='Time Type') #AAL field name = time_type selection
     adjusted = fields.Boolean(string='Adjusted') #AI.is_adjusted boolean
     multiplier = fields.Float(string='Multiplier') #AI.x_studio_multiplier # TODO: switch from studio to regular field
-    resource_manager_id = fields.Many2one('hr.employee', string='Resource Manager') #AL: timesheet_manager_id
+    resource_manager_id = fields.Many2one('res.users', string='Resource Manager') #AL: timesheet_manager_id
     employee_company_id = fields.Many2one('res.company', string='Employee Company') #AL: company_id
     employee_job_position_id = fields.Many2one('hr.job', string='Employee Job Position') #AL: job_id
     employee_work_country_id = fields.Many2one('res.country', string='Employee Work Country') #AL: work_country_id
@@ -37,22 +50,27 @@ class MarginalityData(models.Model):
         ('actual_cost', 'Actual Cost')], 
         string='Entry Type') #AAL field name = entry_type
     status = fields.Selection([('Draft', 'draft'), ('In Approval', 'in_approval'), ('Approved', 'approved'), ('Posted', 'posted')], string='Status') #AAL field name = status
-    currency_id = fields.Many2one('res.currency', string='Currency') #AAL field name = currency_id
+    currency_id = fields.Many2one(ondelete='cascade', comodel_name='res.currency', string='Currency') #AAL field name = currency_id
     amount_currency = fields.Float(string='Amount Currency') #AAL field name = amount_currency
     amount_usd = fields.Float(string='Amount USD') #AAL field name = amount_usd
 
 
+    @timeis
     def initialize_data(self, date_from, date_to):
         marginality_data_between_range_ids = self.env['marginality.data'].search([('date','>',date_from), ('date','<',date_to)])
 
         if marginality_data_between_range_ids:
             marginality_data_between_range_ids.unlink()
 
-        created_recs = self._generate_timesheet_data_with_labor_costs(date_from, date_to)
+        self._generate_timesheet_data_with_labor_costs(date_from, date_to)
+        self._generate_timesheet_data_with_invoiced_revenue(date_from, date_to)
+        self._generate_timesheet_data_with_non_invoiced_revenue(date_from, date_to)
+        self._generate_data_for_non_timesheet_revenue_and_cost(date_from, date_to)
 
         return True
         
-    
+    # Step 2
+    @timeis
     def _generate_timesheet_data_with_labor_costs(self, date_from, date_to):
         self.env.cr.execute("""
             select 
@@ -100,6 +118,207 @@ class MarginalityData(models.Model):
                 AAL.time_type = 'regular'
             ;
             """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+
+        return marginality_data_recs
+
+    # Step 3
+    @timeis
+    def _generate_timesheet_data_with_invoiced_revenue(self, date_from, date_to):
+        self.env.cr.execute("""
+            select 
+                JI.date as date,
+                (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
+                AAL.category as category,
+                JI.account_id as financial_account_id,
+                JI.id as journal_item_id,
+                JI.company_id as company_id,
+                AAL.product_uom_id as uom_id,
+                AAL.unit_amount as quantity,
+                AAL.product_id as product_id,
+                AAL.so_line as so_item_id,
+                AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                JI.partner_id as partner_id,
+                AAL.employee_id as employee_id,
+                AAL.time_type as time_type,
+                AAL.is_adjusted as adjusted,
+                AAL.multiplier as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AAL.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'actual_revenue' as entry_type,
+                NULL as status,
+                JI.currency_id as currency_id,
+                (JI.price_unit * JI.quantity)/AAL.unit_amount as amount_currency,
+                ((JI.price_unit * JI.quantity)/AAL.unit_amount) * AAL.exchange_rate_usd as amount_usd
+            from account_analytic_line AAL
+            left join hr_employee_margin EH
+                on
+                    EH.date=AAL.Date AND 
+                    EH.employee_id=AAL.employee_id
+            left join analytic_account_history AH
+                on 
+                    AH.date=AAL.date AND 
+                    AH.analytic_account_id=AAL.account_id
+            left join account_move_line AML
+                on 
+                    AAL.move_line_id=AML.id 
+            FULL OUTER join account_move_line JI
+                on 
+                    AAL.move_line_id=JI.id 
+            where 
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
+                JI.date > '{date_from}' and JI.date < '{date_to}' and
+                AAL.time_type = 'regular'
+            ;
+            """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+
+        return marginality_data_recs
+
+    # Step 6: Produce data entries for “based on timesheets” revenue not invoiced yet.
+    @timeis
+    def _generate_timesheet_data_with_non_invoiced_revenue(self, date_from, date_to):
+        self.env.cr.execute("""
+            select 
+                AAL.date as date,
+                AAL.account_id as analytic_account_id,
+                AAL.category as category,
+                NULL as journal_item_id,
+                NULL as financial_account_id,
+                AAL.company_id as company_id,
+                AAL.product_uom_id as uom_id,
+                AAL.unit_amount as quantity,
+                AAL.product_id as product_id,
+                AAL.so_line as so_item_id,
+                AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                AAL.partner_id as partner_id,
+                AAL.employee_id as employee_id,
+                AAL.time_type as time_type,
+                AAL.is_adjusted as adjusted,
+                AAL.multiplier as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AAL.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'analytic_revenue' as entry_type,
+                NULL as status,
+                SOL.currency_id as currency_id,
+                (SOL.price_total * AAL.unit_amount) as amount_currency,
+                (SOL.price_total * AAL.unit_amount * AAL.exchange_rate_company_currency * AAL.exchange_rate_usd) as amount_usd
+            from account_analytic_line AAL
+            left outer join hr_employee_margin EH
+                on
+                    EH.date=AAL.Date AND 
+                    EH.employee_id=AAL.employee_id
+            left outer join analytic_account_history AH
+                on 
+                    AH.date=AAL.date AND 
+                    AH.analytic_account_id=AAL.account_id
+            left outer join sale_order_line SOL
+                on 
+                    SOL.id=AAL.so_line
+            where 
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
+                AAL.time_type = 'regular' and 
+                SOL.product_service_invoicing_policy = 'delivered_timesheet'
+            ;
+            """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+
+        return marginality_data_recs
+
+    #TODO Step 7: Produce data entries for “based on timesheets” revenue not invoiced yet.
+    def _generate_data_based_on_non_invoiced_delivered_quantities(self, date_from, date_to):
+        self.env.cr.execute("""
+        """)
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+
+        return marginality_data_recs
+
+
+    #TODO Step 8: Produce data entries for revenue and cost not related to timesheets
+    def _generate_data_for_non_timesheet_revenue_and_cost(self, date_from, date_to):
+        self.env.cr.execute("""
+           select 
+                JI.date as date,
+                (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
+                (select AM.move_type from account_move AM where AM.id=JI.move_id) as category,
+                JI.account_id as financial_account_id,
+                JI.id as journal_item_id,
+                JI.company_id as company_id,
+                JI.product_uom_id as uom_id,
+                JI.quantity as quantity,
+                JI.product_id as product_id,
+                JI.so_item_id as so_item_id,
+                (select P.invoice_policy from product_template P where JI.id=P.id) as so_item_policy_id,
+                JI.partner_id as partner_id,
+                (select RP.employee_id from res_partner RP where RP.id=JI.partner_id limit 1) as employee_id,
+                NULL as time_type,
+                NULL as adjusted,
+                NULL as multiplier,
+                CASE
+                    WHEN (select count(RP.id) from res_partner RP where RP.id=JI.partner_id) > 0 THEN EH.timesheet_manager_id
+                    ELSE NULL
+                END as resource_manager_id,
+                CASE
+                    WHEN (select count(RP.id) from res_partner RP where RP.id=JI.partner_id) > 0 THEN EH.company_id
+                    ELSE NULL
+                END as employee_company_id,
+                CASE
+                    WHEN (select count(RP.id) from res_partner RP where RP.id=JI.partner_id) > 0 THEN EH.job_id
+                    ELSE NULL
+                END as employee_job_position_id,
+                CASE
+                    WHEN (select count(RP.id) from res_partner RP where RP.id=JI.partner_id) > 0 THEN EH.work_country_id
+                    ELSE NULL
+                END as employee_work_country_id,
+                CASE
+                    WHEN (select count(RP.id) from res_partner RP where RP.id=JI.partner_id) > 0 THEN EH.fls_geo_id
+                    ELSE NULL
+                END as employee_fls_geo_id,
+                (select id from project_project PP where JI.so_item_id=PP.sale_line_id limit 1) as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'actual_revenue' as entry_type,
+                (select AM.state from account_move AM where AM.id=JI.move_id) as status,
+                JI.currency_id as currency_id,
+                JI.price_unit * JI.quantity as amount_currency,
+                ((JI.price_unit * JI.quantity) * JI.exchange_rate_usd * JI.exchange_rate_company_currency) as amount_usd
+            from account_move_line JI
+            left join analytic_account_history AH
+                on 
+                    AH.date=JI.date AND 
+                    AH.analytic_account_id=(select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id)
+            left join hr_employee_margin EH
+                on
+                    EH.date=JI.Date AND 
+                    EH.employee_id=JI.fls_partner_employee_id
+            where 
+                -- JI.date > '{date_from}' and JI.date < '{date_to}' and
+                JI.parent_state != 'cancel'
+        ;
+        """)
 
         marginality_data_vals = self.env.cr.dictfetchall()
         marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
