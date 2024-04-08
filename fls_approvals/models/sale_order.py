@@ -38,15 +38,15 @@ class SaleOrder(models.Model):
                 continue
             if rule.project_manager: 
                 project = self.env['project.project'].search([('sale_line_id.order_id.id','=',self.id)])
-                if project:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':project.user_id.id}).id)]
+                if project and rule.find_duplicate_approvers(self.approver_ids,project.user_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':project.user_id.id,'record_id':rule.id}).id)]
 
-            if rule.user_id:
-                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
-            if rule.delivery_director and self.delivery_director:
-                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
-            if rule.salesperson:
-                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id}).id)]
+            if rule.user_id and rule.find_duplicate_approvers(self.approver_ids,rule.user_id):
+                self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id,'record_id':rule.id}).id)]
+            if rule.delivery_director and self.delivery_director and rule.find_duplicate_approvers(self.approver_ids,self.delivery_director):
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id,'record_id':rule.id}).id)]
+            if rule.salesperson and rule.find_duplicate_approvers(self.approver_ids,self.user_id):
+                self.approver_ids = [Command.link(approver.create({'approver_id':self.user_id.id,'record_id':rule.id}).id)]
         if self.approver_ids:
             self.current_approver = self.approver_ids[0].approver_id.id
             self._send_approval_reminder_mail('fls_approvals.email_template_validate_so')

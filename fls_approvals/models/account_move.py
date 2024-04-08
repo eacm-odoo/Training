@@ -77,6 +77,8 @@ class AccountMove(models.Model):
     }
 
     def action_send_validate_je_email(self):
+        if not self.line_ids:
+            raise UserError('Cannot send empty bill for Approval')
         type = self.INVOICE_TYPE_FILTER_DOMAIN[self.invoice_filter_type_domain]
         approval_rules = sorted(self.env['approval.rule'].search([('models','=','account.move'),('type','=',type)]),key = lambda x :x.sequence)
         approver = self.env['res.approvers']
@@ -88,45 +90,45 @@ class AccountMove(models.Model):
             if not self.invoice_filter_type_domain:
                 if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id))):
                     continue                  
-                if rule.user_id:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
+                if rule.user_id and rule.find_duplicate_approvers(self.approver_ids,rule.user_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id,'record_id':rule.id}).id)]
             if self.invoice_filter_type_domain == 'purchase':
                 po = self.env['purchase.order'].search([('name','=',self.invoice_origin)])
                 if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                     continue   
-                if rule.user_id:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
-                if self.buyer and rule.buyer:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':self.buyer.id}).id)]
-                if self.delivery_director and rule.delivery_director:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
+                if rule.user_id and rule.find_duplicate_approvers(self.approver_ids,rule.user_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id,'record_id':rule.id}).id)]
+                if self.buyer and rule.buyer and rule.find_duplicate_approvers(self.approver_ids,self.buyer):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':self.buyer.id,'record_id':rule.id}).id)]
+                if self.delivery_director and rule.delivery_director and rule.find_duplicate_approvers(self.approver_ids,self.delivery_director):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id,'record_id':rule.id}).id)]
                 if rule.project_manager:
                     move_line_ids = self.line_ids
                     for line in move_line_ids:
                         if line.account_analytic:
-                            if line.account_analytic.project_ids:
+                            if line.account_analytic.project_ids and rule.find_duplicate_approvers(self.approver_ids,projects[0].user_id):
                                 projects = line.account_analytic.project_ids
-                                self.approver_ids = [Command.link(approver.create({'approver_id':projects[0].user_id.id}).id)]
+                                self.approver_ids = [Command.link(approver.create({'approver_id':projects[0].user_id.id,'record_id':rule.id}).id)]
                                 break
-                if po.timesheet_approver_id and rule.timesheet_approver and (not rule.company_id or (self.company_id == rule.company_id)):
-                    self.approver_ids = [Command.link(approver.create({'approver_id':po.timesheet_approver_id.id}).id)]
+                if po.timesheet_approver_id and rule.timesheet_approver and (not rule.company_id or (self.company_id == rule.company_id)) and rule.find_duplicate_approvers(self.approver_ids,po.timesheet_approver_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':po.timesheet_approver_id.id,'record_id':rule.id}).id)]
 
             if self.invoice_filter_type_domain == 'sale':
                 so = self.env['sale.order'].search([('name','=',self.invoice_origin)])
                 if rule.domain and self.id not in self.env['account.move'].search(domain).ids or not((not rule.company_id or (self.company_id == rule.company_id)) and (not rule.department_id or (self.department_id == rule.department_id))):
                     continue  
-                if rule.user_id:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id}).id)]
-                if self.delivery_director and rule.delivery_director:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id}).id)]
-                if self.invoice_user_id and rule.salesperson:
-                    self.approver_ids = [Command.link(approver.create({'approver_id':self.invoice_user_id.id}).id)]
+                if rule.user_id and rule.find_duplicate_approvers(self.approver_ids,rule.user_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':rule.user_id.id,'record_id':rule.id}).id)]
+                if self.delivery_director and rule.delivery_director and rule.find_duplicate_approvers(self.approver_ids,self.delivery_director):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':self.delivery_director.id,'record_id':rule.id}).id)]
+                if self.invoice_user_id and rule.salesperson and rule.find_duplicate_approvers(self.approver_ids,self.invoice_user_id):
+                    self.approver_ids = [Command.link(approver.create({'approver_id':self.invoice_user_id.id,'record_id':rule.id}).id)]
                 if rule.project_manager:
                     move_line_ids = self.line_ids
                     for line in move_line_ids:                        
-                        if so.analytic_account_id and so.analytic_account_id.project_ids :
+                        if so.analytic_account_id and so.analytic_account_id.project_ids and rule.find_duplicate_approvers(self.approver_ids,projects[0].user_id):
                             projects = so.analytic_account_id.project_ids
-                            self.approver_ids = [Command.link(approver.create({'approver_id':projects[0].user_id.id}).id)]
+                            self.approver_ids = [Command.link(approver.create({'approver_id':projects[0].user_id.id,'record_id':rule.id}).id)]
                             break
         if self.approver_ids:
             self.current_approver = self.approver_ids[0].approver_id.id
@@ -142,7 +144,7 @@ class AccountMove(models.Model):
             template = self.env.ref('fls_approvals.email_template_approved_inv', raise_if_not_found=False)
         if self.invoice_filter_type_domain == 'purchase':
             template = self.env.ref('fls_approvals.email_template_approved_bill_submitter', raise_if_not_found=False)
-            if template:
+            if template and self.submitter != self.bookkeeper_id:
                 self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
             template = self.env.ref('fls_approvals.email_template_approved_bill', raise_if_not_found=False)
 
@@ -159,7 +161,7 @@ class AccountMove(models.Model):
             if self.buyer and template:
                 self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
             template = self.env.ref('fls_approvals.email_template_rejected_bill_submitter', raise_if_not_found=False)
-            if self.submitter and template:
+            if self.submitter and self.submitter!=self.bookkeeper_id and template:
                 self.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
             template = self.env.ref('fls_approvals.email_template_rejected_bill', raise_if_not_found=False)
         if template:
