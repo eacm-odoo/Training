@@ -1,26 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_invoice"  inherit_id="fls_reports.report_invoice_document_mobility2">
+        <xpath expr="//div[contains(@t-if, 'o.move_type')][3]" position="replace">
+            <div t-if="o.partner_bank_id and o.move_type in ['in_invoice','in_refund']" name="bill_invoice">            
+                <br/>
+                <br/>
+                <br/>
+                <div style="font-weight: bold;padding-top:20px;">Payment
+                    Instructions:</div>
+                <div>IBAN/Account Number: <span
+                        t-field="o.partner_bank_id.acc_number" /></div>
+                <div>SWIFT: <span t-field="o.partner_bank_id.bank_bic" /></div>
+                <div>ABA routing No: <span t-field="o.partner_bank_id.aba_routing" /></div>
+                <div>Bank: <span t-field="o.partner_bank_id.bank_name" /></div>
+                <div>Beneficiary: <span
+                        t-field="o.partner_bank_id.acc_holder_name" /></div>
+            </div>
+        </xpath>
 
-            <xpath expr="//div[@t-if='o.bank_acount_id'][2]" position="replace">
-               <div t-if="o.partner_bank_id">
-                    IBAN/Account Number: <span t-field="o.partner_bank_id.acc_number"/>
-                </div>
-            </xpath>
-            <xpath expr="//div[@t-if='o.bank_acount_id'][3]" position="after">
-               <div t-if="o.partner_bank_id">
-                    ABA Routing No. <span t-field="o.partner_bank_id.aba_routing"/>
-                </div>
-            </xpath>
-            <xpath expr="//div[text()=' Account Number: ']" position="replace">
-               <div t-if="o.partner_bank_id">
-                   Account Number: <span t-field="o.partner_bank_id.acc_number"/>
-                </div>
-            </xpath>
-            <xpath expr="//div[contains(@t-if, 'o.bank_acount_id and o.company_id.country_code')][5]" position="after">
-                <div t-if="o.partner_bank_id">
-                    ABA Routing No. <span t-field="o.partner_bank_id.aba_routing"/>
-                </div>
-            </xpath>
+        <xpath expr="//table[3]" position="replace">
+            <table t-if="o.move_type in ['out_invoice','out_refund']"
+                class="table table-sm o_main_table table-borderless" name="invoice_display">
+                <tbody style="padding-left:10px;">
+
+                    <tr>
+                        <td></td>
+                        <td t-if="o.partner_bank_id">
+                            <div t-if="o.company_id.country_code == 'US'" style="font-weight: bold;">
+                                Wire/ACH Instructions:
+                            </div>
+                            <div t-if="o.company_id.country_code !='US'" style="font-weight: bold;">
+                                Wire Instructions:
+                            </div>
+                            <div> 
+                                Beneficiary: <span t-field="o.partner_bank_id.acc_holder_name" />
+                            </div>
+                            <div> 
+                                Account Number: <span t-field="o.partner_bank_id.acc_number" />
+                            </div>
+                            <div t-if="o.company_id.country_code in ['NL','DE']">
+                                IBAN: <span t-field="o.partner_bank_id.acc_number" />
+                            </div>
+                            <div> 
+                                Bank: <span t-field="o.partner_bank_id.bank_name" />
+                            </div>
+                            <div t-if="o.company_id.country_code == 'DE'"> 
+                                BIC: <span t-field="o.partner_bank_id.bank_bic" />
+                            </div>
+                            <div t-if="o.company_id.country_code in ['AU','NL','US']">
+                                SWIFT: <span t-field="o.partner_bank_id.bank_bic" />
+                            </div>
+                            <div t-if="o.company_id.country_code in ['AU','NL','US']">
+                                ABA routing No: <span t-field="o.partner_bank_id.aba_routing" />
+                            </div>
+                            <div t-if="o.company_id.country_code == 'AU'"> 
+                                BSB Number: <span t-field="o.partner_bank_id.bsb" />
+                            </div>
+                            <br />
+                            <div t-if="o.company_id.country_code == 'US'">
+                                <div style="font-weight: bold;">
+                                    Check Remittance:
+                                </div>
+                                <div>
+                                    <span>Please make your check payable to First Line Software Inc.</span>
+                                </div>
+                                <div>
+                                    <span>Please mail your check to:</span>
+                                </div>
+                                <div>
+                                    <span>First Line Software Inc, P.O. Box 824147, Philadelphia, PA
+                                        19182-4147</span>
+                                </div>
+                                <div>
+                                    <span>For overnight delivery:</span>
+                                </div>
+                                <div><span>First Line Software Inc.</span> </div>
+                                <div>
+                                    <span>ATTN: Box 824147</span>
+                                </div>
+                                <div>
+                                    <span>525 Fellowship Rd., Suite 330</span>
+                                </div>
+                                <div>
+                                    <span>Mt. Laurel, NJ 08054-3415</span>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
     </template>
 </odoo>
