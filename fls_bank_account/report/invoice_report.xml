@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_invoice"  inherit_id="fls_reports.report_invoice_document_mobility2">
+            <xpath expr="//div[@t-if='o.bank_acount_id'][3]" position="after">
+               <div t-if="o.bank_acount_id.aba_routing">
+                    ABA: <span t-field="o.bank_acount_id.aba_routing" />
+                </div>   
+            </xpath>
+            <xpath expr="//div[contains(@t-if, 'o.bank_acount_id and o.company_id.country_code')][5]" position="after">
+                <div t-if="o.bank_acount_id.aba_routing">
+                    ABA: <span t-field="o.bank_acount_id.aba_routing" />
+                </div>   
+            </xpath>
+    </template>
+</odoo>
