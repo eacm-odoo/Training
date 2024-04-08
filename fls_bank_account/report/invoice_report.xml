@@ -11,6 +11,7 @@
                 <div>IBAN/Account Number: <span
                         t-field="o.partner_bank_id.acc_number" /></div>
                 <div>SWIFT: <span t-field="o.partner_bank_id.bank_bic" /></div>
+                <div>ABA routing No: <span t-field="o.partner_bank_id.aba_routing" /></div>
                 <div>Bank: <span t-field="o.partner_bank_id.bank_name" /></div>
                 <div>Beneficiary: <span
                         t-field="o.partner_bank_id.acc_holder_name" /></div>
@@ -48,6 +49,9 @@
                             </div>
                             <div t-if="o.company_id.country_code in ['AU','NL','US']">
                                 SWIFT: <span t-field="o.partner_bank_id.bank_bic" />
+                            </div>
+                            <div t-if="o.company_id.country_code in ['AU','NL','US']">
+                                ABA routing No: <span t-field="o.partner_bank_id.aba_routing" />
                             </div>
                             <div t-if="o.company_id.country_code == 'AU'"> 
                                 BSB Number: <span t-field="o.partner_bank_id.bsb" />
