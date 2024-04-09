@@ -186,6 +186,17 @@ class MarginalityData(models.Model):
 
         return marginality_data_recs
 
+
+    # step 4
+    def _generate_data_for_revenue_on_timesheet_not_hour(self, date_from, date_to):
+        self.env.cr.execute("""
+        """)
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+
+        return marginality_data_recs
+
     # Step 6: Produce data entries for “based on timesheets” revenue not invoiced yet.
     @timeis
     def _generate_timesheet_data_with_non_invoiced_revenue(self, date_from, date_to):
@@ -235,8 +246,8 @@ class MarginalityData(models.Model):
                     SOL.id=AAL.so_line
             where 
                 AAL.date > '{date_from}' and AAL.date < '{date_to}' and
-                AAL.time_type = 'regular' and 
-                SOL.product_service_invoicing_policy = 'delivered_timesheet'
+                AAL.time_type = 'regular' 
+                --SOL.product_service_invoicing_policy = 'delivered_timesheet'
             ;
             """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
