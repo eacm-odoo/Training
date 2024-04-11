@@ -1,9 +1,19 @@
 from odoo import models, fields
 import logging
-
-_logger = logging.getLogger(__name__)
 import time
 
+_logger = logging.getLogger(__name__)
+
+
+SQL_QUERY_FUNCTIONS = [
+    '_generate_timesheet_data_with_labor_costs', 
+    '_generate_timesheet_data_with_invoiced_revenue', 
+    '_generate_data_for_revenue_on_timesheet_not_hour', 
+    '_generate_data_for_fixed_price_revenue_invoice', 
+    '_generate_timesheet_data_with_non_invoiced_revenue', 
+    '_generate_data_based_on_non_invoiced_delivered_quantities', 
+    '_generate_data_for_non_timesheet_revenue_and_cost', 
+]
 def timeis(func): 
         '''Decorator that reports the execution time.'''
         def wrap(*args, **kwargs): 
@@ -13,6 +23,7 @@ def timeis(func):
             _logger.log(logging.INFO, f'finished: {func.__name__} in : {time.time()- start}')
             return result 
         return wrap 
+        
 class MarginalityData(models.Model): 
     _name = 'marginality.data'
     _description = 'Marginality Data'
@@ -28,12 +39,16 @@ class MarginalityData(models.Model):
     quantity = fields.Float(string='Quantity') #AAL field name = unit_amount
     product_id = fields.Many2one('product.product', string='Product') #AAL field name = product_id
     so_item_id = fields.Many2one('sale.order.line', string='SO Item') # AI.SOItem
-    so_item_policy_id = fields.Many2one('sale.order.line', string='SO Item Policy') # AI.SOItem.ServiceInvoicingPolicy (Timesheet, Manual, Fixed Price, etc.)
+    so_item_policy_id = fields.Selection(string='Service Item Policy', selection=[
+        ('ordered_prepaid','Prepaid/Fixed Price'), 
+        ('delivered_timesheet','Based on Timesheets'), 
+        ('delivered_milestones','Based on Milestones'), 
+        ('delivered_manual','Based on Delivered Quantity (Manual)')])
     partner_id = fields.Many2one('res.partner', string='Partner') #AAL field name = partner_id
     employee_id = fields.Many2one('hr.employee', string='Employee') #AAL field name = employee_id
     time_type = fields.Char(string='Time Type') #AAL field name = time_type selection
     adjusted = fields.Boolean(string='Adjusted') #AI.is_adjusted boolean
-    multiplier = fields.Float(string='Multiplier') #AI.x_studio_multiplier # TODO: switch from studio to regular field
+    multiplier = fields.Float(string='Multiplier') #AI.x_studio_multiplier
     resource_manager_id = fields.Many2one('res.users', string='Resource Manager') #AL: timesheet_manager_id
     employee_company_id = fields.Many2one('res.company', string='Employee Company') #AL: company_id
     employee_job_position_id = fields.Many2one('hr.job', string='Employee Job Position') #AL: job_id
@@ -42,14 +57,21 @@ class MarginalityData(models.Model):
     project_id = fields.Many2one('project.project', string='Project') #AAL field name = project_id
     project_manager_id = fields.Many2one('hr.employee', string='Project Manager') #AL: project_manager_id
     salesperson_id = fields.Many2one('res.users', string='Salesperson') #AAL field name = user_id
-    operation_manager_id = fields.Many2one('hr.employee', string='Operation Manager') #AL: operation_manager_id # TODO: switch from studio to regular field
+    operation_manager_id = fields.Many2one('hr.employee', string='Operation Manager') #AL: operation_manager_id
     entry_type = fields.Selection([
         ('analytic_revenue', 'Analytic Revenue'),
         ('analytic_cost', 'Analytic Cost'),
         ('actual_revenue', 'Actual Revenue'),
         ('actual_cost', 'Actual Cost')], 
         string='Entry Type') #AAL field name = entry_type
-    status = fields.Selection([('Draft', 'draft'), ('In Approval', 'in_approval'), ('Approved', 'approved'), ('Posted', 'posted')], string='Status') #AAL field name = status
+    status = fields.Selection([
+        ('draft', 'Draft'), 
+        ('in_approval', 'In Approval'), 
+        ('to_approve', 'To Approve'),
+        ('approved', 'Approved'), 
+        ('posted', 'Posted'),
+        ('cancel', 'Cancelled'),
+        ('rejected', 'Rejected')], string='Status') #AAL field name = status
     currency_id = fields.Many2one(ondelete='cascade', comodel_name='res.currency', string='Currency') #AAL field name = currency_id
     amount_currency = fields.Float(string='Amount Currency') #AAL field name = amount_currency
     amount_usd = fields.Float(string='Amount USD') #AAL field name = amount_usd
@@ -62,12 +84,16 @@ class MarginalityData(models.Model):
         if marginality_data_between_range_ids:
             marginality_data_between_range_ids.unlink()
 
-        self._generate_timesheet_data_with_labor_costs(date_from, date_to)
-        self._generate_timesheet_data_with_invoiced_revenue(date_from, date_to)
-        self._generate_timesheet_data_with_non_invoiced_revenue(date_from, date_to)
-        self._generate_data_for_non_timesheet_revenue_and_cost(date_from, date_to)
+        vals = []
+        for query in SQL_QUERY_FUNCTIONS:
+            try:
+                vals += getattr(self, query)(date_from, date_to)
+            except Exception as e:
+                _logger.error(f'ERROR: FLS UNIVERSAL MARGIN REPORT - {query}\n{e}')
+                continue
 
-        return True
+        recs = self.env['marginality.data'].create(vals)
+        return recs
         
     # Step 2
     @timeis
@@ -114,15 +140,15 @@ class MarginalityData(models.Model):
                     AH.date=AAL.date AND 
                     AH.analytic_account_id=AAL.account_id
             where 
-                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
-                AAL.time_type = 'regular'
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' 
+                and AAL.time_type = 'regular'
             ;
             """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
-
-        return marginality_data_recs
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
 
     # Step 3
     @timeis
@@ -175,28 +201,180 @@ class MarginalityData(models.Model):
                 on 
                     AAL.move_line_id=JI.id 
             where 
-                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
-                JI.date > '{date_from}' and JI.date < '{date_to}' and
-                AAL.time_type = 'regular'
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' 
+                and JI.date > '{date_from}' and JI.date < '{date_to}' 
+                and AAL.time_type = 'regular' 
+                and AAL.sol_product_service_invoicing_policy = 'delivered_timesheet'
             ;
             """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
-
-        return marginality_data_recs
-
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
 
     # step 4
+    @timeis
     def _generate_data_for_revenue_on_timesheet_not_hour(self, date_from, date_to):
         self.env.cr.execute("""
-        """)
+            select
+                JI.date as date,
+                (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
+                AIG.category as category,
+                JI.account_id as financial_account_id,
+                JI.id as journal_item_id,
+                JI.company_id as company_id,
+                AIG.uom_id as uom_id,
+                AIG.quantity as quantity,
+                AIG.product_id as product_id,
+                AIG.so_item_id as so_item_id,
+                AIG.so_item_policy_id as so_item_policy_id,
+                JI.partner_id as partner_id,
+                AIG.employee_id as employee_id,
+                NULL as time_type,
+                NULL as adjusted,
+                null as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AIG.project_id as project_id
+            from 
+            (
+                select
+                    AAL.category as category,
+                    AAL.date as date,
+                    AAL.product_uom_id as uom_id,
+                    sum(AAL.unit_amount) as quantity,
+                    AAL.product_id as product_id,
+                    AAL.so_line as so_item_id,
+                    AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                    AAL.employee_id  as employee_id,
+                    AAL.project_id as project_id,
+
+                    AAL.timesheet_invoice_id as timesheet_invoice_id
+                from account_analytic_line as AAL
+                where 
+                    AAL.time_type = 'regular' 
+                    and AAl.sol_product_service_invoicing_policy = 'delivered_manual'  
+                group by 
+                    DATE_TRUNC('month',AAL.date), 
+                    AAL.date, 
+                    AAL.product_uom_id,
+                    AAL.category, 
+                    AAL.unit_amount,AAL.product_id,
+                    AAL.so_line,
+                    AAL.sol_product_service_invoicing_policy,
+                    AAL.employee_id,
+                    AAL.project_id, 
+                    AAL.timesheet_invoice_id
+            ) as AIG
+            left join account_move_line JI
+                on 
+                    AIG.timesheet_invoice_id=JI.id 
+            left outer join hr_employee_margin EH
+                on
+                    EH.date=AIG.Date AND 
+                    EH.employee_id=AIG.employee_id
+            left join analytic_account_history AH
+                on 
+                    AH.date=AIG.date AND 
+                    AH.analytic_account_id=JI.account_id
+            where
+                AIG.date > '{date_from}' and AIG.date < '{date_to}' and
+                JI.date > '{date_from}' and JI.date < '{date_to}' and
+                JI.parent_state != 'cancel'
+            ;
+        """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
 
-        return marginality_data_recs
 
+    # step 5: Produce data entries for revenue invoiced on fixed price assignments.
+    @timeis
+    def _generate_data_for_fixed_price_revenue_invoice(self, date_from, date_to):
+        self.env.cr.execute("""
+            select
+                JI.date as date,
+                (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
+                AIG.category as category,
+                JI.account_id as financial_account_id,
+                JI.id as journal_item_id,
+                JI.company_id as company_id,
+                AIG.uom_id as uom_id,
+                AIG.quantity as quantity,
+                AIG.product_id as product_id,
+                AIG.so_item_id as so_item_id,
+                AIG.so_item_policy_id as so_item_policy_id,
+                JI.partner_id as partner_id,
+                AIG.employee_id as employee_id,
+                NULL as time_type,
+                NULL as adjusted,
+                null as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AIG.project_id as project_id
+            from 
+            (
+                select
+                    AAL.category as category,
+                    AAL.date as date,
+                    AAL.product_uom_id as uom_id,
+                    sum(AAL.unit_amount) as quantity,
+                    AAL.product_id as product_id,
+                    AAL.so_line as so_item_id,
+                    AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                    AAL.employee_id  as employee_id,
+                    AAL.project_id as project_id,
+                    AAL.timesheet_invoice_id as timesheet_invoice_id
+                from account_analytic_line as AAL
+                where 
+                    AAL.time_type = 'regular' 
+                    and AAl.sol_product_service_invoicing_policy = 'ordered_prepaid'  
+                group by 
+                    DATE_TRUNC('month',AAL.date), 
+                    AAL.date, 
+                    AAL.product_uom_id,
+                    AAL.category, 
+                    AAL.unit_amount,AAL.product_id,
+                    AAL.so_line,
+                    AAL.sol_product_service_invoicing_policy,
+                    AAL.employee_id,
+                    AAL.project_id, 
+                    AAL.timesheet_invoice_id
+            ) as AIG
+            left join account_move_line JI
+                on 
+                    AIG.timesheet_invoice_id=JI.id 
+            left outer join hr_employee_margin EH
+                on
+                    EH.date=AIG.Date AND 
+                    EH.employee_id=AIG.employee_id
+            left join analytic_account_history AH
+                on 
+                    AH.date=AIG.date AND 
+                    AH.analytic_account_id=JI.account_id
+            where
+                AIG.date > '{date_from}' and AIG.date < '{date_to}' and
+                JI.date > '{date_from}' and JI.date < '{date_to}' and
+                JI.parent_state != 'cancel'
+            ;
+        """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))    
+
+        marginality_data_vals = self.env.cr.dictfetchall()
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
+
+
+        
     # Step 6: Produce data entries for “based on timesheets” revenue not invoiced yet.
     @timeis
     def _generate_timesheet_data_with_non_invoiced_revenue(self, date_from, date_to):
@@ -245,32 +423,101 @@ class MarginalityData(models.Model):
                 on 
                     SOL.id=AAL.so_line
             where 
-                AAL.date > '{date_from}' and AAL.date < '{date_to}' and
-                AAL.time_type = 'regular' 
-                --SOL.product_service_invoicing_policy = 'delivered_timesheet'
+                AAL.date > '{date_from}' and AAL.date < '{date_to}' 
+                and AAL.time_type = 'regular' 
+                and AAL.sol_product_service_invoicing_policy= 'delivered_timesheet'
             ;
             """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
 
-        return marginality_data_recs
-
-    #TODO Step 7: Produce data entries for “based on timesheets” revenue not invoiced yet.
+    # Step 7: Produce data entries for “based on timesheets” revenue not invoiced yet.
+    @timeis
     def _generate_data_based_on_non_invoiced_delivered_quantities(self, date_from, date_to):
         self.env.cr.execute("""
-        """)
+            select
+                JI.date as date,
+                (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
+                AIG.category as category,
+                JI.account_id as financial_account_id,
+                JI.id as journal_item_id,
+                JI.company_id as company_id,
+                AIG.uom_id as uom_id,
+                AIG.quantity as quantity,
+                AIG.product_id as product_id,
+                AIG.so_item_id as so_item_id,
+                AIG.so_item_policy_id as so_item_policy_id,
+                JI.partner_id as partner_id,
+                AIG.employee_id as employee_id,
+                NULL as time_type,
+                NULL as adjusted,
+                null as multiplier,
+                EH.timesheet_manager_id as resource_manager_id,
+                EH.company_id as employee_company_id,
+                EH.job_id as employee_job_position_id,
+                EH.work_country_id as employee_work_country_id,
+                EH.fls_geo_id as employee_fls_geo_id,
+                AIG.project_id as project_id
+            from 
+            (
+                select
+                    AAL.category as category,
+                    AAL.date as date,
+                    AAL.product_uom_id as uom_id,
+                    sum(AAL.unit_amount) as quantity,
+                    AAL.product_id as product_id,
+                    AAL.so_line as so_item_id,
+                    AAL.sol_product_service_invoicing_policy as so_item_policy_id,
+                    AAL.employee_id  as employee_id,
+                    AAL.project_id as project_id,
+                    AAL.timesheet_invoice_id as timesheet_invoice_id
+                from account_analytic_line as AAL
+                where 
+                    AAL.time_type = 'regular' 
+                    and AAl.sol_product_service_invoicing_policy = 'delivered_manual'  
+                group by 
+                    DATE_TRUNC('month',AAL.date), 
+                    AAL.date, 
+                    AAL.product_uom_id,
+                    AAL.category, 
+                    AAL.unit_amount,AAL.product_id,
+                    AAL.so_line,
+                    AAL.sol_product_service_invoicing_policy,
+                    AAL.employee_id,
+                    AAL.project_id, 
+                    AAL.timesheet_invoice_id
+            ) as AIG
+            left join account_move_line JI
+                on 
+                    AIG.timesheet_invoice_id=JI.id 
+            left outer join hr_employee_margin EH
+                on
+                    EH.date=AIG.Date AND 
+                    EH.employee_id=AIG.employee_id
+            left join analytic_account_history AH
+                on 
+                    AH.date=AIG.date AND 
+                    AH.analytic_account_id=JI.account_id
+            where
+                AIG.date > '{date_from}' and AIG.date < '{date_to}' and
+                JI.date > '{date_from}' and JI.date < '{date_to}' and
+                JI.parent_state != 'cancel'
+            ;
+        """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals
 
-        return marginality_data_recs
-
-
-    #TODO Step 8: Produce data entries for revenue and cost not related to timesheets
+    # Step 8: Produce data entries for revenue and cost not related to timesheets
+    @timeis
     def _generate_data_for_non_timesheet_revenue_and_cost(self, date_from, date_to):
         self.env.cr.execute("""
-           select 
+            select 
                 JI.date as date,
                 (select POL.analytic_account from purchase_order_line POL where POL.id = JI.purchase_line_id) as analytic_account_id,
                 (select AM.move_type from account_move AM where AM.id=JI.move_id) as category,
@@ -326,12 +573,12 @@ class MarginalityData(models.Model):
                     EH.date=JI.Date AND 
                     EH.employee_id=JI.fls_partner_employee_id
             where 
-                -- JI.date > '{date_from}' and JI.date < '{date_to}' and
+                JI.date > '{date_from}' and JI.date < '{date_to}' and
                 JI.parent_state != 'cancel'
         ;
-        """)
+        """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
         marginality_data_vals = self.env.cr.dictfetchall()
-        marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
-
-        return marginality_data_recs
+        # marginality_data_recs = self.env['marginality.data'].create(marginality_data_vals)
+        # return marginality_data_recs
+        return marginality_data_vals

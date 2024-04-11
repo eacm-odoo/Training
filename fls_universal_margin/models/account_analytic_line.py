@@ -5,14 +5,20 @@ class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
 
     multiplier = fields.Float(string='Multiplier', default=0.0)
-    sol_product_service_invoicing_policy = fields.Selection(string='Order Item Service Invoicing Policy', selection=[
+    sol_product_service_invoicing_policy = fields.Selection(string='Service Invoicing Policy', selection=[
         ('ordered_prepaid','Prepaid/Fixed Price'), 
         ('delivered_timesheet','Based on Timesheets'), 
         ('delivered_milestones','Based on Milestones'), 
-        ('delivered_manual','Based on Delivered Quantity (Manual)')], store=True)
+        ('delivered_manual','Based on Delivered Quantity (Manual)')], compute='_compute_product_service_invoicing_policy', store=True, readonly=True)
+
+
     exchange_rate_usd = fields.Float(string='Exchange Rate USD', compute='_compute_exchange_rate_usd', store=True)
     exchange_rate_company_currency = fields.Float(string='Exchange Rate Company Currency', compute='_compute_exchange_rate_company', store=True)
 
+    @api.depends('product_id')
+    def _compute_product_service_invoicing_policy(self):
+        for line in self:
+            line.sol_product_service_invoicing_policy = line.product_id.service_policy
 
     @api.depends('amount', 'currency_id', 'date')
     def _compute_exchange_rate_usd(self):
