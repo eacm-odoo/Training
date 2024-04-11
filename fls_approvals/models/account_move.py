@@ -38,6 +38,9 @@ class AccountMove(models.Model):
                 move.department_id = po.department_id
                 move.delivery_director = po.delivery_director
                 if move.invoice_source_email: 
+                    user = self.env['res.users'].search([('login','=',move.invoice_source_email)])
+                    if user:
+                        move.submitter = user.id
                     template = self.env.ref('fls_approvals.email_template_notify_admin_bills', raise_if_not_found=False)
                     if template:
                         move.with_user(SUPERUSER_ID).with_context(is_reminder=True).message_post_with_template(template.id, email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature", composition_mode='comment')
