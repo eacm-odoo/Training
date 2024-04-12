@@ -81,13 +81,17 @@ class MarginalityData(models.Model):
     def initialize_data(self, date_from, date_to):
         marginality_data_between_range_ids = self.env['marginality.data'].search([('date','>',date_from), ('date','<',date_to)])
 
+        # self.with_user(33).with_company(1).env['documents.document'].search([])
+
         if marginality_data_between_range_ids:
             marginality_data_between_range_ids.unlink()
 
         vals = []
         for query in SQL_QUERY_FUNCTIONS:
             try:
-                vals += getattr(self, query)(date_from, date_to)
+                new_vals = getattr(self, query)(date_from, date_to)
+                _logger.error(f'VALS: {query} generated {len(new_vals)} rows')
+                vals += new_vals
             except Exception as e:
                 _logger.error(f'ERROR: FLS UNIVERSAL MARGIN REPORT - {query}\n{e}')
                 continue
@@ -239,7 +243,15 @@ class MarginalityData(models.Model):
                 EH.job_id as employee_job_position_id,
                 EH.work_country_id as employee_work_country_id,
                 EH.fls_geo_id as employee_fls_geo_id,
-                AIG.project_id as project_id
+                AIG.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'actual_revenue' as entry_type,
+                (select AM.state from account_move AM where AM.id=JI.move_id) as status,
+                JI.currency_id as currency_id,
+                JI.price_unit / JI.quantity as amount_currency,
+                ((JI.price_unit / JI.quantity)* JI.exchange_rate_company_currency * JI.exchange_rate_usd) as amount_usd
             from 
             (
                 select
@@ -320,7 +332,55 @@ class MarginalityData(models.Model):
                 EH.job_id as employee_job_position_id,
                 EH.work_country_id as employee_work_country_id,
                 EH.fls_geo_id as employee_fls_geo_id,
-                AIG.project_id as project_id
+                AIG.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'actual_revenue' as entry_type,
+                (select AM.state from account_move AM where AM.id=JI.move_id) as status,
+                JI.currency_id as currency_id,
+                (JI.price_unit / (
+                    (
+                        select
+                        count(*)
+                        from account_analytic_line as AAL
+                        where 
+                            AAL.time_type = 'regular' 
+                            and AAl.sol_product_service_invoicing_policy = 'ordered_prepaid'  
+                        group by 
+                            DATE_TRUNC('month',AAL.date), 
+                            AAL.date, 
+                            AAL.product_uom_id,
+                            AAL.category, 
+                            AAL.unit_amount,AAL.product_id,
+                            AAL.so_line,
+                            AAL.sol_product_service_invoicing_policy,
+                            AAL.employee_id,
+                            AAL.project_id, 
+                            AAL.timesheet_invoice_id
+                    )
+                )) as amount_currency,
+                ((JI.price_unit / (
+                    (
+                        select
+                        count(*)
+                        from account_analytic_line as AAL
+                        where 
+                            AAL.time_type = 'regular' 
+                            and AAl.sol_product_service_invoicing_policy = 'ordered_prepaid'  
+                        group by 
+                            DATE_TRUNC('month',AAL.date), 
+                            AAL.date, 
+                            AAL.product_uom_id,
+                            AAL.category, 
+                            AAL.unit_amount,AAL.product_id,
+                            AAL.so_line,
+                            AAL.sol_product_service_invoicing_policy,
+                            AAL.employee_id,
+                            AAL.project_id, 
+                            AAL.timesheet_invoice_id
+                    )
+                )) * JI.exchange_rate_company_currency * JI.exchange_rate_usd) as amount_usd
             from 
             (
                 select
@@ -460,7 +520,15 @@ class MarginalityData(models.Model):
                 EH.job_id as employee_job_position_id,
                 EH.work_country_id as employee_work_country_id,
                 EH.fls_geo_id as employee_fls_geo_id,
-                AIG.project_id as project_id
+                AIG.project_id as project_id,
+                AH.project_manager_id as project_manager_id,
+                AH.salesperson_id as salesperson_id,
+                AH.operating_director_id as operation_manager_id,
+                'analytic_revenue' as entry_type,
+                NULL as status,
+                SOL.currency_id as currency_id,
+                (SOL.price_total) as amount_currency,
+                (SOL.price_total * JI.exchange_rate_company_currency * JI.exchange_rate_usd) as amount_usd
             from 
             (
                 select
@@ -490,6 +558,9 @@ class MarginalityData(models.Model):
                     AAL.project_id, 
                     AAL.timesheet_invoice_id
             ) as AIG
+            left outer join sale_order_line SOL
+                on 
+                    SOL.id=AIG.so_item_id
             left join account_move_line JI
                 on 
                     AIG.timesheet_invoice_id=JI.id 
@@ -558,7 +629,7 @@ class MarginalityData(models.Model):
                 AH.project_manager_id as project_manager_id,
                 AH.salesperson_id as salesperson_id,
                 AH.operating_director_id as operation_manager_id,
-                'actual_revenue' as entry_type,
+                'actual_cost' as entry_type,
                 (select AM.state from account_move AM where AM.id=JI.move_id) as status,
                 JI.currency_id as currency_id,
                 JI.price_unit * JI.quantity as amount_currency,
@@ -574,7 +645,8 @@ class MarginalityData(models.Model):
                     EH.employee_id=JI.fls_partner_employee_id
             where 
                 JI.date > '{date_from}' and JI.date < '{date_to}' and
-                JI.parent_state != 'cancel'
+                JI.parent_state != 'cancel' and
+                (select count(*) from account_analytic_line AAL where AAL.move_line_id=JI.id) = 0
         ;
         """.format(date_from = date_from.strftime('%m/%d/%Y'), date_to = date_to.strftime('%m/%d/%Y')))
 
